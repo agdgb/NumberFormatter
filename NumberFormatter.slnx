@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NumberFormatter/NumberFormatter.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NumberFormatter.Tests/NumberFormatter.Tests.csproj" />
+  </Folder>
+</Solution>
