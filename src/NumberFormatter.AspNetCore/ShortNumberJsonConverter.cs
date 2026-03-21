@@ -1,0 +1,287 @@
+﻿using System.Globalization;
+using System.Numerics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+
+namespace NumberFormatter.AspNetCore;
+
+/// <summary>
+/// JSON converter factory for short number formatting
+/// </summary>
+public class ShortNumberJsonConverterFactory : JsonConverterFactory
+{
+    private readonly int _defaultDecimalPlaces;
+    private readonly bool _defaultIsCurrency;
+    private readonly string? _defaultCurrencyCode;
+
+    public ShortNumberJsonConverterFactory(
+        int defaultDecimalPlaces = 2,
+        bool defaultIsCurrency = false,
+        string? defaultCurrencyCode = null)
+    {
+        _defaultDecimalPlaces = defaultDecimalPlaces;
+        _defaultIsCurrency = defaultIsCurrency;
+        _defaultCurrencyCode = defaultCurrencyCode;
+    }
+
+    public override bool CanConvert(Type typeToConvert)
+    {
+        return IsNumericType(typeToConvert);
+    }
+
+    private static bool IsNumericType(Type type)
+    {
+        // Handle nullable types
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+        return underlyingType == typeof(decimal) ||
+               underlyingType == typeof(double) ||
+               underlyingType == typeof(float) ||
+               underlyingType == typeof(int) ||
+               underlyingType == typeof(long) ||
+               underlyingType == typeof(short) ||
+               underlyingType == typeof(byte) ||
+               underlyingType == typeof(uint) ||
+               underlyingType == typeof(ulong) ||
+               underlyingType == typeof(ushort) ||
+               underlyingType == typeof(sbyte);
+    }
+
+    //public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    //{
+    //    var underlyingType = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
+
+    //    // Create the appropriate converter based on the type
+    //    var converterType = typeof(ShortNumberJsonConverter<>).MakeGenericType(underlyingType);
+    //    return (JsonConverter)Activator.CreateInstance(
+    //        converterType, 
+    //        _defaultDecimalPlaces, 
+    //        _defaultIsCurrency, 
+    //        _defaultCurrencyCode)!;
+    //}
+
+    public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(typeToConvert);
+        bool isNullable = underlyingType != null;
+        Type actualType = underlyingType ?? typeToConvert;
+
+        // Ensure the actual type is numeric (should be, because CanConvert returned true)
+        if (!IsNumericType(actualType))
+            return null;
+
+        if (isNullable)
+        {
+            // Create the nullable converter for the underlying type
+            var converterType = typeof(ShortNumberNullableJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(
+                converterType,
+                _defaultDecimalPlaces,
+                _defaultIsCurrency,
+                _defaultCurrencyCode)!;
+        }
+        else
+        {
+            // Create the non‑nullable converter
+            var converterType = typeof(ShortNumberJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(
+                converterType,
+                _defaultDecimalPlaces,
+                _defaultIsCurrency,
+                _defaultCurrencyCode)!;
+        }
+    }
+}
+
+
+/// <summary>
+/// Generic JSON converter for short number formatting
+/// </summary>
+public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, INumber<T>
+{
+    private readonly int _decimalPlaces;
+    private readonly bool _isCurrency;
+    private readonly string? _currencyCode;
+
+    // Suffix multipliers (case-insensitive)
+    public static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["K"] = 1000m,
+        ["M"] = 1000000m,
+        ["B"] = 1000000000m,
+        ["T"] = 1000000000000m,
+        ["Qa"] = 1000000000000000m,
+        ["Qi"] = 1000000000000000000m
+    };
+
+    // Currency symbols to strip
+    private static readonly string[] CurrencySymbols = { "$", "€", "£", "¥", "₹", "Br" };
+
+    public ShortNumberJsonConverter(
+        int decimalPlaces = 2,
+        bool isCurrency = false,
+        string? currencyCode = null)
+    {
+        _decimalPlaces = decimalPlaces;
+        _isCurrency = isCurrency;
+        _currencyCode = currencyCode;
+    }
+
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var stringValue = reader.GetString();
+            if (string.IsNullOrWhiteSpace(stringValue))
+                return T.Zero;
+
+            var parsedValue = ParseFormattedNumber(stringValue);
+            return T.CreateChecked(parsedValue);
+        }
+
+        if (reader.TokenType == JsonTokenType.Number)
+        {
+            // Direct number token – read according to the target type
+            return T.CreateChecked(reader.GetDecimal());
+        }
+
+        return T.Zero;
+    }
+
+    private decimal ParseFormattedNumber(string value)
+    {
+        // Trim and remove currency symbols
+        var cleanValue = value.Trim();
+        foreach (var symbol in CurrencySymbols)
+        {
+            if (cleanValue.StartsWith(symbol))
+            {
+                cleanValue = cleanValue.Substring(symbol.Length).TrimStart();
+                break;
+            }
+        }
+
+        // Use regex to extract number and optional suffix
+        // Pattern: optional sign, digits, optional decimal point and digits, optional whitespace, optional suffix
+        var match = Regex.Match(cleanValue, @"^([+-]?\d+\.?\d*)\s*([KkMmBbTt][aA]?[iI]?)?$");
+        if (match.Success)
+        {
+            var numberPart = match.Groups[1].Value;
+            var suffix = match.Groups[2].Value;
+
+            if (decimal.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+            {
+                if (!string.IsNullOrEmpty(suffix) && SuffixMultipliers.TryGetValue(suffix, out var multiplier))
+                {
+                    return number * multiplier;
+                }
+                return number; // No suffix
+            }
+        }
+
+        // Fallback: try to parse the whole string as a plain decimal
+        if (decimal.TryParse(cleanValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var fallback))
+        {
+            return fallback;
+        }
+
+        return 0;
+    }
+
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    {
+        var decimalValue = Convert.ToDecimal(value);
+
+        string formatted;
+        if (_isCurrency)
+        {
+            formatted = _currencyCode != null
+                ? decimalValue.ToShortCurrencyString(_currencyCode, _decimalPlaces)
+                : decimalValue.ToShortCurrencyString(_decimalPlaces);
+        }
+        else
+        {
+            formatted = decimalValue.ToShortString(_decimalPlaces);
+        }
+
+        writer.WriteStringValue(formatted);
+    }
+}
+
+/// <summary>
+/// Attribute to apply short number formatting to properties
+/// </summary>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+public class ShortNumberFormatAttribute : JsonConverterAttribute
+{
+    private readonly int _decimalPlaces;
+    private readonly bool _isCurrency;
+    private readonly string? _currencyCode;
+
+    public ShortNumberFormatAttribute(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
+    {
+        _decimalPlaces = decimalPlaces;
+        _isCurrency = isCurrency;
+        _currencyCode = currencyCode;
+    }
+
+    //public override JsonConverter? CreateConverter(Type typeToConvert)
+    //{
+    //    var underlyingType = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
+    //    var converterType = typeof(ShortNumberJsonConverter<>).MakeGenericType(underlyingType);
+    //    return (JsonConverter)Activator.CreateInstance(
+    //        converterType, 
+    //        _decimalPlaces, 
+    //        _isCurrency, 
+    //        _currencyCode)!;
+    //}
+    public override JsonConverter? CreateConverter(Type typeToConvert)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(typeToConvert);
+        bool isNullable = underlyingType != null;
+        Type actualType = underlyingType ?? typeToConvert;
+
+        if (isNullable)
+        {
+            var converterType = typeof(ShortNumberNullableJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(
+                converterType,
+                _decimalPlaces,
+                _isCurrency,
+                _currencyCode)!;
+        }
+        else
+        {
+            var converterType = typeof(ShortNumberJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(
+                converterType,
+                _decimalPlaces,
+                _isCurrency,
+                _currencyCode)!;
+        }
+    }
+}
+
+/// <summary>
+/// Attribute to apply short number formatting to all numeric properties in a class
+/// </summary>
+[AttributeUsage(AttributeTargets.Class)]
+public class ShortNumberFormatGloballyAttribute : JsonConverterAttribute
+{
+    private readonly int _decimalPlaces;
+    private readonly bool _isCurrency;
+    private readonly string? _currencyCode;
+
+    public ShortNumberFormatGloballyAttribute(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
+    {
+        _decimalPlaces = decimalPlaces;
+        _isCurrency = isCurrency;
+        _currencyCode = currencyCode;
+    }
+
+    public override JsonConverter? CreateConverter(Type typeToConvert)
+    {
+        return new ShortNumberJsonConverterFactory(_decimalPlaces, _isCurrency, _currencyCode);
+    }
+}
