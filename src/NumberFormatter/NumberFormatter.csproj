@@ -5,24 +5,22 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<!-- NuGet Package Metadata -->
+		<IsPackable>true</IsPackable>
+		<PackageId>agdgb.NumberFormatter</PackageId>
+		<Version>1.0.0-preview.1</Version>
+		<Authors>Amanuel Girma</Authors>
+		<Description>Culture‑aware short number formatter for .NET – formats numbers with K, M, B, T suffixes, supports currency and culture awareness.</Description>
+		<PackageTags>number;format;short-number;currency;k;m;b;t;culture</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/agdgb/NumberFormatter</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/agdgb/NumberFormatter</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<None Include="../../README.md" Pack="true" PackagePath="/" />
 	</ItemGroup>
 
 </Project>
-<!--<Project Sdk="Microsoft.NET.Sdk">
-
-	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-	</ItemGroup>
-
-</Project>-->

@@ -1,4 +1,4 @@
-﻿using NumberFormatter;
+using NumberFormatter;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,26 +6,23 @@ using System.Text.RegularExpressions;
 
 namespace NumberFormatter.AspNetCore;
 
+/// <summary>
+/// JSON converter for serializing a dictionary of decimal values into structured currency strings.
+/// </summary>
 public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, decimal>>
 {
     private readonly int _decimalPlaces;
-    private static readonly string[] CurrencySymbols = { "$", "€", "£", "¥", "₹", "Br" };
-    // Suffix multipliers (case-insensitive)
-    public static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["K"] = 1000m,
-        ["M"] = 1000000m,
-        ["B"] = 1000000000m,
-        ["T"] = 1000000000000m,
-        ["Qa"] = 1000000000000000m,
-        ["Qi"] = 1000000000000000000m
-    };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CurrencyDictionaryConverter"/> class.
+    /// </summary>
+    /// <param name="decimalPlaces">Number of decimal places for formatting.</param>
     public CurrencyDictionaryConverter(int decimalPlaces = 2)
     {
         _decimalPlaces = decimalPlaces;
     }
 
+    /// <inheritdoc />
     public override Dictionary<string, decimal> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         // Deserialize as a normal dictionary (the converter is for writing only, or we can implement reading as well)
@@ -64,6 +61,7 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
         return dict;
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, Dictionary<string, decimal> value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
@@ -93,41 +91,10 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
 
     private decimal ParseFormattedNumber(string value)
     {
-        // Trim and remove currency symbols
-        var cleanValue = value.Trim();
-        foreach (var symbol in CurrencySymbols)
+        if (NumberFormatter.TryParse(value, out var parsedValue))
         {
-            if (cleanValue.StartsWith(symbol))
-            {
-                cleanValue = cleanValue.Substring(symbol.Length).TrimStart();
-                break;
-            }
+            return parsedValue;
         }
-
-        // Use regex to extract number and optional suffix
-        // Pattern: optional sign, digits, optional decimal point and digits, optional whitespace, optional suffix
-        var match = Regex.Match(cleanValue, @"^([+-]?\d+\.?\d*)\s*([KkMmBbTt][aA]?[iI]?)?$");
-        if (match.Success)
-        {
-            var numberPart = match.Groups[1].Value;
-            var suffix = match.Groups[2].Value;
-
-            if (decimal.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
-            {
-                if (!string.IsNullOrEmpty(suffix) && SuffixMultipliers.TryGetValue(suffix, out var multiplier))
-                {
-                    return number * multiplier;
-                }
-                return number; // No suffix
-            }
-        }
-
-        // Fallback: try to parse the whole string as a plain decimal
-        if (decimal.TryParse(cleanValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var fallback))
-        {
-            return fallback;
-        }
-
         return 0;
     }
 }

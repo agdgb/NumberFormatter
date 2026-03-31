@@ -4,11 +4,25 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<!-- NuGet Package Metadata -->
+		<IsPackable>true</IsPackable>
+		<PackageId>agdgb.NumberFormatter.AspNetCore</PackageId>
+		<Version>1.0.0-preview.1</Version>
+		<Authors>Amanuel Girma</Authors>
+		<Description>ASP.NET Core integration for NumberFormatter – includes JSON converters, tag helpers, and DI extensions for short number formatting.</Description>
+		<PackageTags>aspnetcore;number;format;short-number;json;taghelper</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/agdgb/NumberFormatter</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/agdgb/NumberFormatter</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-		<ProjectReference Include="..\NumberFormatter\NumberFormatter.csproj" />
+		<ProjectReference Include="..\NumberFormatter\NumberFormatter.csproj" Version="1.0.0-preview.1" />
+		<None Include="../../README.md" Pack="true" PackagePath="/" />
 	</ItemGroup>
 
 </Project>

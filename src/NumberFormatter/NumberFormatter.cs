@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Numerics;
 
@@ -11,6 +11,18 @@ public static class NumberFormatter
 {
     private static readonly NumberSuffix[] DefaultSuffixes = NumberSuffixes.Default;
     private static readonly ConcurrentDictionary<string, NumberFormatInfo> FormatCache = new();
+    
+    // Suffix multipliers used for parsing
+    private static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["k"] = 1000m,
+        ["K"] = 1000m,
+        ["M"] = 1000000m,
+        ["B"] = 1000000000m,
+        ["T"] = 1000000000000m,
+        ["Qa"] = 1000000000000000m,
+        ["Qi"] = 1000000000000000000m
+    };
 
     #region Public API
 
@@ -23,6 +35,7 @@ public static class NumberFormatter
         CultureInfo? culture = null)
     {
         var options = new ShortNumberFormatOptions { DecimalPlaces = decimalPlaces };
+            
         return FormatNumber(value, options, culture);
     }
 
@@ -34,7 +47,6 @@ public static class NumberFormatter
         ShortNumberFormatOptions options,
         CultureInfo? culture = null)
     {
-        ArgumentNullException.ThrowIfNull(options);
         return FormatNumber(value, options, culture);
     }
 
@@ -85,6 +97,73 @@ public static class NumberFormatter
         return decimalValue.ToShortString(decimalPlaces, culture);
     }
 
+    /// <summary>
+    /// Parses a formatted short numeric string (e.g., "$1.5M", "50K") back to a decimal.
+    /// </summary>
+    public static bool TryParse(string? value, out decimal result)
+    {
+        result = 0;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var span = value.AsSpan().Trim();
+
+        // Strip non-numeric prefixes (like currency symbols)
+        while (span.Length > 0 && !char.IsDigit(span[0]) && span[0] != '+' && span[0] != '-' && span[0] != '.')
+        {
+            span = span.Slice(1).TrimStart();
+        }
+
+        // Find where the number ends
+        int numEnd = 0;
+        while (numEnd < span.Length && (char.IsDigit(span[numEnd]) || span[numEnd] == '.' || span[numEnd] == '+' || span[numEnd] == '-'))
+        {
+            numEnd++;
+        }
+
+        var numberPart = span.Slice(0, numEnd);
+        var suffixPart = span.Slice(numEnd).Trim();
+
+        // Strip trailing non-numeric/non-letter characters (like trailing currency symbols)
+        int suffixEnd = suffixPart.Length;
+        while (suffixEnd > 0 && !char.IsLetter(suffixPart[suffixEnd - 1]))
+        {
+            suffixEnd--;
+        }
+        suffixPart = suffixPart.Slice(0, suffixEnd);
+
+        if (decimal.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+        {
+            if (suffixPart.Length > 0)
+            {
+                var suffixStr = new string(suffixPart);
+                if (SuffixMultipliers.TryGetValue(suffixStr, out var multiplier))
+                {
+                    result = number * multiplier;
+                    return true;
+                }
+            }
+            else
+            {
+                result = number;
+                return true;
+            }
+        }
+
+        // Fallback: Try parsing the whole string natively
+        return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out result);
+    }
+
+    /// <summary>
+    /// Parses a formatted short numeric string, throwing an exception if invalid.
+    /// </summary>
+    public static decimal Parse(string? value)
+    {
+        if (TryParse(value, out var result))
+            return result;
+        throw new FormatException($"Input string '{value}' was not in a correct format.");
+    }
+
     #endregion
 
     #region Core Formatting Logic
@@ -105,7 +184,7 @@ public static class NumberFormatter
         var numberFormat = GetNumberFormatInfo(culture);
 
         // Handle zero
-        if (value == 0)
+        if (value == 0 && !options.AlwaysShowSuffix)
         {
             return options.CurrencySymbol != null
                 ? FormatCurrencyNumber(0, "", options, numberFormat)
@@ -116,11 +195,9 @@ public static class NumberFormatter
         var absValue = Math.Abs(value);
 
         // Get appropriate suffix
-        var suffixes = options.CustomSuffixes != null
-            ? CreateCustomSuffixes(options.CustomSuffixes)
-            : DefaultSuffixes;
+        var suffixes = options.CachedCustomSuffixes ?? DefaultSuffixes;
 
-        var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold);
+        var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold, options.AlwaysShowSuffix);
 
         // Format the number
         var scaledValue = absValue / divisor;
@@ -206,9 +283,10 @@ public static class NumberFormatter
         decimal value,
         NumberSuffix[] suffixes,
         decimal threshold,
-        decimal promotionThreshold)
+        decimal promotionThreshold,
+        bool alwaysShowSuffix)
     {
-        if (value < threshold)
+        if (value < threshold && !alwaysShowSuffix)
             return (1m, "");
 
         // Suffixes are ordered descending (largest first)
@@ -221,6 +299,13 @@ public static class NumberFormatter
             // Check promotion to this suffix if there is a larger one
             if (i > 0 && value >= suffixes[i - 1].Threshold * promotionThreshold)
                 return (suffixes[i - 1].Threshold, suffixes[i - 1].Suffix);
+        }
+
+        if (alwaysShowSuffix && suffixes.Length > 1)
+        {
+            // Use the smallest valid suffix (second to last since the last is empty fallback)
+            var smallestSuffix = suffixes[^2];
+            return (smallestSuffix.Threshold, smallestSuffix.Suffix);
         }
 
         return (1m, "");
@@ -237,7 +322,7 @@ public static class NumberFormatter
     /// </summary>
     /// <param name="suffixes">Array of suffix strings, starting from the smallest unit.</param>
     /// <returns>Array of NumberSuffix in descending order (largest threshold first).</returns>
-    private static NumberSuffix[] CreateCustomSuffixes(string[] suffixes)
+    internal static NumberSuffix[] CreateCustomSuffixes(string[] suffixes)
     {
         var result = new List<NumberSuffix>();
         var multiplier = 1m;

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -104,20 +104,6 @@ public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
     private readonly bool _isCurrency;
     private readonly string? _currencyCode;
 
-    // Suffix multipliers (case-insensitive)
-    public static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["K"] = 1000m,
-        ["M"] = 1000000m,
-        ["B"] = 1000000000m,
-        ["T"] = 1000000000000m,
-        ["Qa"] = 1000000000000000m,
-        ["Qi"] = 1000000000000000000m
-    };
-
-    // Currency symbols to strip
-    private static readonly string[] CurrencySymbols = { "$", "€", "£", "¥", "₹", "Br" };
-
     public ShortNumberJsonConverter(
         int decimalPlaces = 2,
         bool isCurrency = false,
@@ -151,41 +137,10 @@ public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
 
     private decimal ParseFormattedNumber(string value)
     {
-        // Trim and remove currency symbols
-        var cleanValue = value.Trim();
-        foreach (var symbol in CurrencySymbols)
+        if (NumberFormatter.TryParse(value, out var parsedValue))
         {
-            if (cleanValue.StartsWith(symbol))
-            {
-                cleanValue = cleanValue.Substring(symbol.Length).TrimStart();
-                break;
-            }
+            return parsedValue;
         }
-
-        // Use regex to extract number and optional suffix
-        // Pattern: optional sign, digits, optional decimal point and digits, optional whitespace, optional suffix
-        var match = Regex.Match(cleanValue, @"^([+-]?\d+\.?\d*)\s*([KkMmBbTt][aA]?[iI]?)?$");
-        if (match.Success)
-        {
-            var numberPart = match.Groups[1].Value;
-            var suffix = match.Groups[2].Value;
-
-            if (decimal.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
-            {
-                if (!string.IsNullOrEmpty(suffix) && SuffixMultipliers.TryGetValue(suffix, out var multiplier))
-                {
-                    return number * multiplier;
-                }
-                return number; // No suffix
-            }
-        }
-
-        // Fallback: try to parse the whole string as a plain decimal
-        if (decimal.TryParse(cleanValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var fallback))
-        {
-            return fallback;
-        }
-
         return 0;
     }
 

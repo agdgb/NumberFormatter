@@ -10,13 +10,16 @@ A powerful .NET library for formatting numbers into short, human-readable string
 ## Features
 
 * **Short number formatting** – Convert numbers like `1,234,567` into `1.23M`
+* **Parsing support** – Parse formatted strings safely back to numbers without Regex
 * **Currency support** – Display currency symbols with suffix logic (`$1.23M`, `€987.65K`)
 * **Culture-aware** – Respects decimal separators and formatting rules of the specified culture
+* **Digital byte sizes** – Format numbers as digital storage (e.g., `MB`, `MiB`, `GB`)
+* **Roman numerals** – Convert integers to Roman numeral strings
 * **Customizable suffixes** – Use your own suffixes (e.g., "Thousand", "Million", "Lac", "Crore")
 * **Flexible options** – Control decimal places, plus sign, negative patterns, and more
+* **High performance** – Caches formatting options, uses zero-allocation span parsers and efficient logic
 * **ASP.NET Core integration** – JSON converters, DI service, Tag Helper, View Component, and MVC/Razor Pages extensions
-* **High performance** – Caches `NumberFormatInfo` and uses efficient suffix selection logic
-* **Round-trip JSON** – Serialize and deserialize formatted numbers back to numeric values
+* **Round-trip JSON** – Serialize and deserialize formatted numbers directly securely
 
 ---
 
@@ -103,6 +106,38 @@ The library supports any type implementing `INumber<T>`, including `int`, `long`
 ```csharp
 long bigNumber = 1234567890123L;
 Console.WriteLine(bigNumber.ToShortString()); // "1.23T"
+```
+
+### Parsing Short Numbers
+
+You can parse formatted short strings back into numeric values using `TryParse` and `Parse`. This safely strips currency symbols and understands suffixes.
+
+```csharp
+if (NumberFormatter.TryParse("$1.5M", out decimal result))
+{
+    Console.WriteLine(result); // 1500000
+}
+
+decimal value = NumberFormatter.Parse("50K"); // 50000
+```
+
+### Byte Size Formatting
+
+Format digital storage sizes with `ToShortByteString`. Supports both binary (base-1024, e.g. MiB) and decimal (base-1000, e.g. MB) prefixes.
+
+```csharp
+long memory = 1536 * 1024;
+Console.WriteLine(memory.ToShortByteString(decimalPlaces: 2, useBinaryPrefixes: true));  // "1.50 MiB"
+Console.WriteLine(memory.ToShortByteString(decimalPlaces: 2, useBinaryPrefixes: false)); // "1.57 MB"
+```
+
+### Roman Numerals
+
+Convert integers (between 1 and 3999) to Roman numerals.
+
+```csharp
+int year = 2024;
+Console.WriteLine(year.ToRomanNumeral()); // "MMXXIV"
 ```
 
 ---

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace NumberFormatter;
 
@@ -10,7 +10,7 @@ namespace NumberFormatter;
 /// Defaults produce standard short formatting like "1.23M" or "$1.23K".
 /// Supports culture-aware formatting via <see cref="NumberFormatter"/> methods.
 /// </remarks>
-public class ShortNumberFormatOptions
+public record struct ShortNumberFormatOptions()
 {
     /// <summary>
     /// Number of decimal places in output (default: <c>2</c>).
@@ -41,6 +41,8 @@ public class ShortNumberFormatOptions
     /// <remarks>Supported: <c>"-n"</c> → "-1.23M"; <c>"(n)"</c> → "(1.23M)"; <c>"n-"</c> → "1.23M-"</remarks>
     public string NegativePattern { get; set; } = "-n";
 
+    private string[]? _customSuffixes;
+
     /// <summary>
     /// Replaces standard suffixes (e.g. <c>["thou", "lac", "cr"]</c> for Indian numbering).
     /// </summary>
@@ -48,7 +50,17 @@ public class ShortNumberFormatOptions
     /// Array processed largest-to-smallest. Thresholds auto-assigned as 10³, 10⁶, 10⁹...
     /// <example><c>["K", "M", "B"]</c> → same as <see cref="NumberSuffixes.Default"/></example>
     /// </remarks>
-    public string[]? CustomSuffixes { get; set; }
+    public string[]? CustomSuffixes
+    {
+        get => _customSuffixes;
+        set
+        {
+            _customSuffixes = value;
+            CachedCustomSuffixes = value != null ? NumberFormatter.CreateCustomSuffixes(value) : null;
+        }
+    }
+
+    internal NumberSuffix[]? CachedCustomSuffixes { get; private set; }
 
     /// <summary>
     /// Force suffix display for all values (default: <see langword="false"/>).

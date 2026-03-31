@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using System.Globalization;
 
 namespace NumberFormatter.AspNetCore;
@@ -9,18 +9,33 @@ namespace NumberFormatter.AspNetCore;
 [HtmlTargetElement("short-number")]
 public class ShortNumberTagHelper : TagHelper
 {
+    /// <summary>
+    /// The numeric value to format.
+    /// </summary>
     [HtmlAttributeName("value")]
     public decimal Value { get; set; }
 
+    /// <summary>
+    /// The formatting style: optionally set to "currency".
+    /// </summary>
     [HtmlAttributeName("format")]
     public string? Format { get; set; }
 
+    /// <summary>
+    /// The number of decimal places to include.
+    /// </summary>
     [HtmlAttributeName("decimal-places")]
     public int DecimalPlaces { get; set; } = 2;
 
+    /// <summary>
+    /// The ISO currency code to prepend or append, if format is "currency".
+    /// </summary>
     [HtmlAttributeName("currency-code")]
     public string? CurrencyCode { get; set; }
 
+    /// <summary>
+    /// Optional CSS classes to apply to the rendered span.
+    /// </summary>
     [HtmlAttributeName("css-class")]
     public string? CssClass { get; set; }
 
