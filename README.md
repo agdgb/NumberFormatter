@@ -28,13 +28,13 @@ A powerful .NET library for formatting numbers into short, human-readable string
 ### Core Library
 
 ```bash
-dotnet add package NumberFormatter
+dotnet add package agdgb.NumberFormatter
 ```
 
 ### ASP.NET Core Integration
 
 ```bash
-dotnet add package NumberFormatter.AspNetCore
+dotnet add package agdgb.NumberFormatter.AspNetCore
 ```
 
 ---
