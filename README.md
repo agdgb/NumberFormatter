@@ -142,6 +142,15 @@ Console.WriteLine(year.ToRomanNumeral()); // "MMXXIV"
 
 ---
 
+## Breaking Changes
+
+If you are upgrading from an earlier version, please note the following breaking changes:
+
+* **Object Allocation Removal (`ShortNumberFormatOptions`)**: To significantly improve performance and eliminate heap allocations during formatting, `ShortNumberFormatOptions` has been changed from a `class` to a `record struct`. If your code passed this configuration object between methods and modified it expecting reference type semantics, you must update your code to either pass by `ref` or assign the modified struct back to your variable.
+* **Deprecation of Public Parsing Expositions**: The public static dictionaries `SuffixMultipliers` and `CurrencySymbols` previously exposed on `ShortNumberJsonConverter<T>` and `CurrencyDictionaryConverter` have been removed. This logic is now efficiently managed and centralized within the core library's `NumberFormatter.TryParse` method, avoiding duplicate Regex and allocation overhead.
+
+---
+
 ## ASP.NET Core Integration
 
 ### 1. Register the JSON Converter (Global)
