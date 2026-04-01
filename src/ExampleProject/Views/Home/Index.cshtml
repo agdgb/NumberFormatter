@@ -1,97 +1,246 @@
-﻿@{
-    ViewData["Title"] = "NumberFormatter Demo";
+﻿@addTagHelper *, NumberFormatter.AspNetCore
+
+@{
+    ViewData["Title"] = "NumberFormatter Showcase";
+    Layout = "_Layout";
 }
-
-<h1>NumberFormatter Demo</h1>
-
-<div>
-    <button onclick="fetchData()">Get Financial Data</button>
-    <button onclick="formatManual(1234567)">Format 1,234,567</button>
-    <button onclick="formatManual(987654, 'EUR')">Format 987,654 as EUR</button>
-    <button onclick="formatManual(555555, 'GBP')">Format 555,555 as GBP</button>
-</div>
-
-<div id="result" style="margin-top:20px; white-space:pre-wrap; background:#f5f5f5; padding:10px;">
-    Click a button to see result.
-</div>
 
 @using NumberFormatter
 
-<div class="row mt-5">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Company Metrics (Short Formatted)</h5>
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">NumberFormatter Showcase</h1>
+        <p class="lead text-muted">A beautiful demonstration of the features available in the
+            <code>NumberFormatter</code> and <code>NumberFormatter.AspNetCore</code> libraries.</p>
+    </div>
+
+    <!-- 1. Extension Methods -->
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h4 class="mb-0 fw-semibold"><i class="bi bi-code-square me-2"></i>1. Extension Methods</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <p class="card-text text-secondary mb-4">
+                Format numbers elegantly using modern extension methods like <code>ToShortString()</code> and
+                <code>ToShortCurrencyString()</code> right off your numeric types.
+            </p>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="p-4 border border-light-subtle rounded-4 bg-light text-center shadow-sm transition-hover">
+                        <span class="text-secondary text-uppercase fw-semibold small d-block mb-2">Revenue</span>
+                        <h3 class="mb-2 text-primary fw-bold">@((12345678.90m).ToShortString())</h3>
+                        <span
+                            class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"><i
+                                class="bi bi-arrow-up-right me-1"></i>12.3%</span>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="p-4 border border-light-subtle rounded-4 bg-light text-center shadow-sm transition-hover">
+                        <span class="text-secondary text-uppercase fw-semibold small d-block mb-2">Active Users</span>
+                        <h3 class="mb-2 text-primary fw-bold">@((2456789).ToShortString(1))</h3>
+                        <span
+                            class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"><i
+                                class="bi bi-arrow-up-right me-1"></i>5.6%</span>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="p-4 border border-light-subtle rounded-4 bg-light text-center shadow-sm transition-hover">
+                        <span class="text-secondary text-uppercase fw-semibold small d-block mb-2">Downloads</span>
+                        <h3 class="mb-2 text-primary fw-bold">@((987654).ToShortString(0))</h3>
+                        <span
+                            class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1"><i
+                                class="bi bi-arrow-right me-1"></i>2.1%</span>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="p-4 border border-light-subtle rounded-4 bg-light text-center shadow-sm transition-hover">
+                        <span class="text-secondary text-uppercase fw-semibold small d-block mb-2">Net Profit</span>
+                        <h3 class="mb-2 text-primary fw-bold">@((3456789.12m).ToShortCurrencyString("USD"))</h3>
+                        <span
+                            class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"><i
+                                class="bi bi-arrow-up-right me-1"></i>8.4%</span>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded bg-light">
-                            <span class="text-muted small">Revenue</span>
-                            <h3 class="mb-0 fw-bold">@((12345678.90m).ToShortString())</h3>
-                            <small class="text-success">↑ 12.3%</small>
+        </div>
+    </div>
+
+    <!-- 2. Tag Helpers -->
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        <div class="card-header bg-success text-white py-3"
+            style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+            <h4 class="mb-0 fw-semibold"><i class="bi bi-tags-fill me-2"></i>2. ASP.NET Core Tag Helpers</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <p class="card-text text-secondary mb-4">
+                Use intuitive HTML tags like <code>&lt;short-number&gt;</code> to render formatted data directly within
+                your Razor views cleanly.
+            </p>
+            <div class="p-4 border border-success border-opacity-25 rounded-4 bg-success bg-opacity-10">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <div class="bg-dark rounded-3 p-3 shadow-sm">
+                            <pre class="mb-0 text-light"><code class="language-html">&lt;short-number value="1234567.89m"
+              format="currency"
+              currency-code="USD"
+              decimal-places="2"
+              css-class="display-6 fw-bold text-success mb-0"&gt;
+&lt;/short-number&gt;</code></pre>
                         </div>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded bg-light">
-                            <span class="text-muted small">Users</span>
-                            <h3 class="mb-0 fw-bold">@((2456789).ToShortString(1))</h3>
-                            <small class="text-success">↑ 5.6%</small>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded bg-light">
-                            <span class="text-muted small">Downloads</span>
-                            <h3 class="mb-0 fw-bold">@((987654).ToShortString(0))</h3>
-                            <small class="text-warning">↗ 2.1%</small>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 border rounded bg-light">
-                            <span class="text-muted small">Profit</span>
-                            <h3 class="mb-0 fw-bold">@((3456789.12m).ToShortCurrencyString("USD"))</h3>
-                            <small class="text-success">↑ 8.4%</small>
+                    <div class="col-md-5 text-center mt-4 mt-md-0 d-flex flex-column justify-content-center">
+                        <span class="text-success text-uppercase fw-bold small mb-2"><i
+                                class="bi bi-magic me-1"></i>Output</span>
+                        <div class="p-4 bg-white rounded-4 shadow-sm border border-success border-opacity-25">
+                            <short-number value="1234567.89m" format="currency" currency-code="USD" decimal-places="2"
+                                css-class="display-6 fw-bold text-success mb-0"></short-number>
                         </div>
                     </div>
                 </div>
-                <hr />
-                <p class="text-muted small mb-0">
-                    Demonstrates <code>ToShortString()</code> and <code>ToShortCurrencyString()</code> with various decimal places.
-                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Dependency Injection -->
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        <div class="card-header bg-info text-dark py-3"
+            style="background: linear-gradient(135deg, #0dcaf0 0%, #0bacce 100%);">
+            <h4 class="mb-0 fw-semibold text-white"><i class="bi bi-box-seam-fill me-2"></i>3. Dependency Injection
+                Service</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <p class="card-text text-secondary mb-4">
+                Inject <code>INumberFormatterService</code> directly into your controllers or view models via
+                constructor injection for easy server-side formatting.
+            </p>
+            <div class="p-4 border border-info border-opacity-25 rounded-4 bg-info bg-opacity-10">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase fw-bold text-info-emphasis mb-3">Formatted in HomeController:</h6>
+                        <ul class="list-group list-group-flush shadow-sm rounded-3">
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <i class="bi bi-check-circle-fill text-info me-2"></i>
+                                    <code>1,234,567.89m</code>
+                                </div>
+                                <strong><span class="fs-5">@ViewBag.FormattedValue</span></strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <i class="bi bi-check-circle-fill text-info me-2"></i>
+                                    <code>9,876,543.21m (EUR)</code>
+                                </div>
+                                <strong><span class="fs-5">@ViewBag.FormattedCurrency</span></strong>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mt-4 mt-md-0 d-flex align-items-center">
+                        <div class="alert alert-info border-0 shadow-sm w-100 mb-0 d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill fs-3 me-3"></i>
+                            <div>
+                                <strong>Controller Injection</strong><br />
+                                The values on the left were formatted purely in C# backend logic before rendering the
+                                view.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. JSON Serialization API -->
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        <div class="card-header bg-warning text-dark py-3"
+            style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
+            <h4 class="mb-0 fw-semibold"><i class="bi bi-diagram-3-fill me-2"></i>4. ASP.NET Core JSON Integration</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <p class="card-text text-secondary mb-4">
+                Automatically format numeric properties returned through Web APIs using the built-in
+                <code>ShortNumberJsonConverterFactory</code>.
+            </p>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex flex-column gap-3">
+                        <button class="btn btn-warning btn-lg shadow-sm fw-semibold" onclick="fetchData()">
+                            <i class="bi bi-cloud-download me-2"></i>Fetch API Data
+                        </button>
+                        <button class="btn btn-outline-secondary btn-lg fw-semibold"
+                            onclick="formatManual(987654, 'EUR')">
+                            <i class="bi bi-currency-euro me-2"></i>Format Custom Request
+                        </button>
+                        <div class="text-muted small mt-2">
+                            <i class="bi bi-info-circle me-1"></i> These buttons hit standard API endpoints returning
+                            JSON data formatted automatically by the converter.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 mt-4 mt-md-0">
+                    <div class="position-relative h-100">
+                        <pre class="bg-dark text-light p-4 rounded-4 shadow-sm h-100 mb-0"
+                            style="min-height: 200px; overflow-x: auto;"><code id="result" class="language-json">// Click a button to fetch API response...</code></pre>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    async function fetchData() {
-        const response = await fetch('/api/demo/data');
-        const data = await response.json();
-        document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-    }
-
-    async function formatManual(value, currency) {
-        let url = `/api/demo/manual/${value}`;
-        if (currency) {
-            url += `?currency=${currency}`;
-        }
-        const response = await fetch(url);
-        const data = await response.json();
-        document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-    }
-</script>
-
 <style>
-    button {
-        margin-right: 10px;
-        padding: 8px 12px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+    .transition-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    button:hover {
-        background-color: #0056b3;
+
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
     }
 </style>
+
+@section Scripts {
+    <script>
+        async function fetchData() {
+            try {
+                const resultBlock = document.getElementById('result');
+                resultBlock.innerText = "Loading data...";
+                resultBlock.style.opacity = '0.5';
+
+                const response = await fetch('/api/demo/data');
+                const data = await response.json();
+
+                resultBlock.innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById('result').innerText = "Error loading data: " + e.message;
+            } finally {
+                document.getElementById('result').style.opacity = '1';
+            }
+        }
+
+        async function formatManual(value, currency) {
+            try {
+                const resultBlock = document.getElementById('result');
+                resultBlock.innerText = "Loading data...";
+                resultBlock.style.opacity = '0.5';
+
+                let url = `/api/demo/manual/${value}`;
+                if (currency) {
+                    url += `?currency=${currency}`;
+                }
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultBlock.innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById('result').innerText = "Error loading data: " + e.message;
+            } finally {
+                document.getElementById('result').style.opacity = '1';
+            }
+        }
+    </script>
+}
