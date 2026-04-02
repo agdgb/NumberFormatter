@@ -38,14 +38,14 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
             if (reader.TokenType != JsonTokenType.PropertyName)
                 throw new JsonException();
 
-            string key = reader.GetString();
+            string key = reader.GetString() ?? string.Empty;
             reader.Read();
 
             // The value might be a string (formatted) or a number
             if (reader.TokenType == JsonTokenType.String)
             {
                 // Parse the formatted string back to decimal (using your existing logic)
-                var str = reader.GetString();
+                var str = reader.GetString() ?? string.Empty;
                 var parsed = ParseFormattedNumber(str);  // Reuse your parser
                 dict[key] = parsed;
             }

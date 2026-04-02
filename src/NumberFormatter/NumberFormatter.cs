@@ -98,6 +98,62 @@ public static class NumberFormatter
     }
 
     /// <summary>
+    /// Formats a nullable number to a short string (e.g., 1.23M, 5.68B). Returns string.Empty if null.
+    /// </summary>
+    public static string ToShortString(
+        this decimal? value,
+        int decimalPlaces = 2,
+        CultureInfo? culture = null)
+    {
+        return value.HasValue ? value.Value.ToShortString(decimalPlaces, culture) : string.Empty;
+    }
+
+    /// <summary>
+    /// Formats a nullable number to a short string with custom options. Returns string.Empty if null.
+    /// </summary>
+    public static string ToShortString(
+        this decimal? value,
+        ShortNumberFormatOptions options,
+        CultureInfo? culture = null)
+    {
+        return value.HasValue ? value.Value.ToShortString(options, culture) : string.Empty;
+    }
+
+    /// <summary>
+    /// Formats a nullable number as currency in short form. Returns string.Empty if null.
+    /// </summary>
+    public static string ToShortCurrencyString(
+        this decimal? value,
+        int decimalPlaces = 2,
+        CultureInfo? culture = null)
+    {
+        return value.HasValue ? value.Value.ToShortCurrencyString(decimalPlaces, culture) : string.Empty;
+    }
+
+    /// <summary>
+    /// Formats a nullable number as currency with explicit currency code. Returns string.Empty if null.
+    /// </summary>
+    public static string ToShortCurrencyString(
+        this decimal? value,
+        string currencyCode,
+        int decimalPlaces = 2,
+        CultureInfo? culture = null)
+    {
+        return value.HasValue ? value.Value.ToShortCurrencyString(currencyCode, decimalPlaces, culture) : string.Empty;
+    }
+
+    /// <summary>
+    /// Generic version for any nullable numeric type. Returns string.Empty if null.
+    /// </summary>
+    public static string ToShortString<T>(
+        this T? value,
+        int decimalPlaces = 2,
+        CultureInfo? culture = null) where T : struct, INumber<T>
+    {
+        return value.HasValue ? value.Value.ToShortString(decimalPlaces, culture) : string.Empty;
+    }
+
+    /// <summary>
     /// Parses a formatted short numeric string (e.g., "$1.5M", "50K") back to a decimal.
     /// </summary>
     public static bool TryParse(string? value, out decimal result)
@@ -278,6 +334,7 @@ public static class NumberFormatter
     /// <param name="suffixes">Array of possible suffixes in descending order (largest first).</param>
     /// <param name="threshold">Minimum value to apply short formatting (default 1000).</param>
     /// <param name="promotionThreshold">Percentage (0-1) of the next suffix threshold to promote.</param>
+    /// <param name="alwaysShowSuffix">If true, forces the suffix to be appended even for small numbers.</param>
     /// <returns>A tuple containing the divisor and suffix to use.</returns>
     private static (decimal Divisor, string Suffix) GetSuffixAndDivisor(
         decimal value,
