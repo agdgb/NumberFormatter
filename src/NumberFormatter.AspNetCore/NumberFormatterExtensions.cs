@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Numerics;
@@ -72,8 +72,29 @@ public static class NumberFormatterExtensions
 /// </summary>
 public interface INumberFormatterService
 {
+    /// <summary>
+    /// Formats a numeric value using short number formatting (e.g., 1K, 1M).
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="culture">The optional culture string for formatting.</param>
     string FormatShort(decimal value, int decimalPlaces = 2, string? culture = null);
+
+    /// <summary>
+    /// Formats a numeric value using short currency formatting.
+    /// </summary>
+    /// <param name="value">The value to format.</param>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="currencyCode">The optional currency code to prepend or append.</param>
     string FormatCurrency(decimal value, int decimalPlaces = 2, string? currencyCode = null);
+
+    /// <summary>
+    /// Formats a generic numeric value using short number formatting.
+    /// </summary>
+    /// <typeparam name="T">The generic numeric type.</typeparam>
+    /// <param name="value">The value to format.</param>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="culture">The optional culture string for formatting.</param>
     string FormatShort<T>(T value, int decimalPlaces = 2, string? culture = null) where T : INumber<T>;
 }
 
@@ -82,12 +103,14 @@ public interface INumberFormatterService
 /// </summary>
 public class NumberFormatterService : INumberFormatterService
 {
+    /// <inheritdoc />
     public string FormatShort(decimal value, int decimalPlaces = 2, string? culture = null)
     {
         var cultureInfo = culture != null ? new System.Globalization.CultureInfo(culture) : null;
         return value.ToShortString(decimalPlaces, cultureInfo);
     }
 
+    /// <inheritdoc />
     public string FormatCurrency(decimal value, int decimalPlaces = 2, string? currencyCode = null)
     {
         if (currencyCode != null)
@@ -98,6 +121,7 @@ public class NumberFormatterService : INumberFormatterService
         return value.ToShortCurrencyString(decimalPlaces);
     }
 
+    /// <inheritdoc />
     public string FormatShort<T>(T value, int decimalPlaces = 2, string? culture = null) where T : INumber<T>
     {
         var decimalValue = Convert.ToDecimal(value);

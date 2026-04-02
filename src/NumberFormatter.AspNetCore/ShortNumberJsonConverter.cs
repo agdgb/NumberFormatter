@@ -15,6 +15,12 @@ public class ShortNumberJsonConverterFactory : JsonConverterFactory
     private readonly bool _defaultIsCurrency;
     private readonly string? _defaultCurrencyCode;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ShortNumberJsonConverterFactory"/> class.
+    /// </summary>
+    /// <param name="defaultDecimalPlaces">The default number of decimal places to include.</param>
+    /// <param name="defaultIsCurrency">Whether to format as currency by default.</param>
+    /// <param name="defaultCurrencyCode">The default currency code.</param>
     public ShortNumberJsonConverterFactory(
         int defaultDecimalPlaces = 2,
         bool defaultIsCurrency = false,
@@ -25,6 +31,7 @@ public class ShortNumberJsonConverterFactory : JsonConverterFactory
         _defaultCurrencyCode = defaultCurrencyCode;
     }
 
+    /// <inheritdoc />
     public override bool CanConvert(Type typeToConvert)
     {
         return IsNumericType(typeToConvert);
@@ -61,6 +68,7 @@ public class ShortNumberJsonConverterFactory : JsonConverterFactory
     //        _defaultCurrencyCode)!;
     //}
 
+    /// <inheritdoc />
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         var underlyingType = Nullable.GetUnderlyingType(typeToConvert);
@@ -104,6 +112,12 @@ public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
     private readonly bool _isCurrency;
     private readonly string? _currencyCode;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ShortNumberJsonConverter{T}"/> class.
+    /// </summary>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="isCurrency">Whether the value represents currency.</param>
+    /// <param name="currencyCode">The optional currency code.</param>
     public ShortNumberJsonConverter(
         int decimalPlaces = 2,
         bool isCurrency = false,
@@ -114,6 +128,7 @@ public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
         _currencyCode = currencyCode;
     }
 
+    /// <inheritdoc />
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
@@ -144,6 +159,7 @@ public class ShortNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
         return 0;
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         var decimalValue = Convert.ToDecimal(value);
@@ -174,6 +190,12 @@ public class ShortNumberFormatAttribute : JsonConverterAttribute
     private readonly bool _isCurrency;
     private readonly string? _currencyCode;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ShortNumberFormatAttribute"/> class.
+    /// </summary>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="isCurrency">Whether the value represents currency.</param>
+    /// <param name="currencyCode">The optional currency code.</param>
     public ShortNumberFormatAttribute(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
     {
         _decimalPlaces = decimalPlaces;
@@ -191,6 +213,7 @@ public class ShortNumberFormatAttribute : JsonConverterAttribute
     //        _isCurrency, 
     //        _currencyCode)!;
     //}
+    /// <inheritdoc />
     public override JsonConverter? CreateConverter(Type typeToConvert)
     {
         var underlyingType = Nullable.GetUnderlyingType(typeToConvert);
@@ -228,6 +251,12 @@ public class ShortNumberFormatGloballyAttribute : JsonConverterAttribute
     private readonly bool _isCurrency;
     private readonly string? _currencyCode;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ShortNumberFormatGloballyAttribute"/> class.
+    /// </summary>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="isCurrency">Whether the value represents currency.</param>
+    /// <param name="currencyCode">The optional currency code.</param>
     public ShortNumberFormatGloballyAttribute(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
     {
         _decimalPlaces = decimalPlaces;
@@ -235,6 +264,7 @@ public class ShortNumberFormatGloballyAttribute : JsonConverterAttribute
         _currencyCode = currencyCode;
     }
 
+    /// <inheritdoc />
     public override JsonConverter? CreateConverter(Type typeToConvert)
     {
         return new ShortNumberJsonConverterFactory(_decimalPlaces, _isCurrency, _currencyCode);

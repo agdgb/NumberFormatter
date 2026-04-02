@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,11 +11,18 @@ public class ShortNumberNullableJsonConverter<T> : JsonConverter<T?> where T : s
 {
     private readonly ShortNumberJsonConverter<T> _innerConverter;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ShortNumberNullableJsonConverter{T}"/> class.
+    /// </summary>
+    /// <param name="decimalPlaces">The number of decimal places to include.</param>
+    /// <param name="isCurrency">Whether the value represents currency.</param>
+    /// <param name="currencyCode">The optional currency code.</param>
     public ShortNumberNullableJsonConverter(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
     {
         _innerConverter = new ShortNumberJsonConverter<T>(decimalPlaces, isCurrency, currencyCode);
     }
 
+    /// <inheritdoc />
     public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
@@ -25,6 +32,7 @@ public class ShortNumberNullableJsonConverter<T> : JsonConverter<T?> where T : s
         return _innerConverter.Read(ref reader, typeof(T), options);
     }
 
+    /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
     {
         if (value is null)

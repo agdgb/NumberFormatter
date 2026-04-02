@@ -9,13 +9,14 @@
 		<!-- NuGet Package Metadata -->
 		<IsPackable>true</IsPackable>
 		<PackageId>agdgb.NumberFormatter</PackageId>
-		<Version>1.0.0-preview.1</Version>
+		<Version>1.0.0</Version>
 		<Authors>Amanuel Girma</Authors>
 		<Description>Culture‑aware short number formatter for .NET – formats numbers with K, M, B, T suffixes, supports currency and culture awareness.</Description>
 		<PackageTags>number;format;short-number;currency;k;m;b;t;culture</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/agdgb/NumberFormatter</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/agdgb/NumberFormatter</RepositoryUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
@@ -23,4 +24,7 @@
 		<None Include="../../README.md" Pack="true" PackagePath="/" />
 	</ItemGroup>
 
+	<ItemGroup>
+  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+</ItemGroup>
 </Project>

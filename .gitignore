@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /src/NumberFormatter.AspNetCore/errors.txt
 /.vscode/launch.json
 /.vscode/tasks.json
+/nuget.config
