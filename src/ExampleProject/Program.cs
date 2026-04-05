@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NumberFormatter;
 using NumberFormatter.AspNetCore;
+using NumberFormatter.AspNetCore.Financial;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,9 @@ builder.Services.AddControllers()
     {
         // This will apply short number formatting to all numeric properties
         options.JsonSerializerOptions.Converters.Add(new ShortNumberJsonConverterFactory());
-    });
+        options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    })
+    .AddFinancialFormatters();
 
 builder.Services.AddNumberFormatter(); // Add formatter service
 

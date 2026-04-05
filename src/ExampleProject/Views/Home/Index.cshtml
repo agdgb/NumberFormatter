@@ -1,4 +1,4 @@
-﻿@addTagHelper *, NumberFormatter.AspNetCore
+@addTagHelper *, NumberFormatter.AspNetCore
 
 @{
     ViewData["Title"] = "NumberFormatter Showcase";
@@ -190,6 +190,79 @@
             </div>
         </div>
     </div>
+
+    <!-- 5. Financial Playground -->
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        <div class="card-header bg-danger text-white py-3" style="background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);">
+            <h4 class="mb-0 fw-semibold"><i class="bi bi-wallet2 me-2"></i>5. Financial Systems Playground</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <p class="card-text text-secondary mb-4">
+                Test the robust new <code>[BasisPoints]</code> and <code>[FractionPrice]</code> attribute deserialization mapping dynamically natively capturing JSON round-trip stability.
+            </p>
+
+            <div id="financialErrorBox" class="alert alert-danger d-none rounded-3 shadow-sm border-0">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span id="financialErrorText" class="fw-semibold"></span>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <h5 class="fw-bold text-danger-emphasis mb-3">Live JSON Input</h5>
+                    <div class="mb-3 d-flex flex-wrap gap-2">
+                        <div class="dropdown">
+                          <button class="btn btn-outline-danger btn-sm dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-collection-play me-1"></i>Pre-built Presets
+                          </button>
+                          <ul class="dropdown-menu shadow-sm border-0" style="z-index:9999;">
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadPreset('golden')"><i class="bi bi-star-fill text-warning me-2"></i>Golden Standard</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="loadPreset('negative')"><i class="bi bi-graph-down text-danger me-2"></i>Negative Edge Cases</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="loadPreset('error-bps')">Invalid BPS Syntax</a></li>
+                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="loadPreset('error-frac')">Invalid Fraction Sizes</a></li>
+                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="loadPreset('empty')">Empty / Null</a></li>
+                          </ul>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" onclick="copyDto()"><i class="bi bi-code-slash me-1"></i>Copy C# DTO</button>
+                    </div>
+
+                    <textarea id="financialInput" class="form-control font-monospace shadow-sm bg-light border-light-subtle rounded-3" rows="8">
+{
+  "spread": "125 bps",
+  "treasuryPrice": "101 16/32",
+  "rawAmount": "5432.10"
+}</textarea>
+                    
+                    <button class="btn btn-danger w-100 mt-3 shadow-sm fw-bold border-0" style="background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%);" onclick="executePlayground()"><i class="bi bi-braces me-2"></i>Execute Model Binding</button>
+                </div>
+
+                <div class="col-lg-7">
+                     <h5 class="fw-bold text-success-emphasis mb-3 d-flex justify-content-between align-items-center">
+                         API Serialization Response 
+                         <span id="matchBadge" class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25 rounded-pill fw-normal fs-6 px-3">Idle</span>
+                     </h5>
+                     <div class="position-relative h-100">
+                        <pre id="financialResult" class="bg-dark text-light p-4 rounded-4 shadow-sm mb-0 font-monospace" style="min-height: 250px; overflow-x: auto;">// Hit Execute to map via ASP.NET...</pre>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Insights Component -->
+            <div id="financialInsights" class="mt-4 p-4 border border-danger border-opacity-25 rounded-4 bg-danger bg-opacity-10 d-none">
+                <h6 class="text-uppercase fw-bold text-danger-emphasis mb-3"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Verification Layer Insights</h6>
+                <div class="row align-items-center">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                       <span class="d-block small text-muted text-uppercase fw-semibold mb-1">Parsed Fraction (Decimal representation)</span>
+                       <h4 id="fractionDecimalDisplay" class="text-danger fw-bold mb-0"></h4>
+                    </div>
+                    <div class="col-md-7 border-start border-danger border-opacity-25 ps-md-4">
+                       <span class="d-block small text-muted text-uppercase fw-semibold mb-1">C# ToCheckWords() Extractor</span>
+                       <span id="wordsDisplay" class="fs-5 text-dark"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -240,6 +313,85 @@
                 document.getElementById('result').innerText = "Error loading data: " + e.message;
             } finally {
                 document.getElementById('result').style.opacity = '1';
+            }
+        }
+
+        function loadPreset(type) {
+            const el = document.getElementById('financialInput');
+            if (type === 'golden') el.value = '{\n  "spread": "125 bps",\n  "treasuryPrice": "101 16/32",\n  "rawAmount": "5432.10"\n}';
+            if (type === 'negative') el.value = '{\n  "spread": "-50 bps",\n  "treasuryPrice": "99 1/32",\n  "rawAmount": "-1000.00"\n}';
+            if (type === 'error-bps') el.value = '{\n  "spread": "12x bps",\n  "treasuryPrice": "100"\n}';
+            if (type === 'error-frac') el.value = '{\n  "spread": "100",\n  "treasuryPrice": "100 99/32"\n}';
+            if (type === 'empty') el.value = '{\n  "spread": null,\n  "treasuryPrice": null,\n  "rawAmount": null\n}';
+        }
+
+        function copyDto() {
+            navigator.clipboard.writeText(`public class FinancialPlaygroundRequest
+{
+    [BasisPoints] public decimal? Spread { get; set; }
+    [FractionPrice(32)] public decimal? TreasuryPrice { get; set; }
+    public decimal? RawAmount { get; set; }
+}`);
+            alert("DTO structure copied directly to clipboard!");
+        }
+
+        async function executePlayground() {
+            const inputTxt = document.getElementById('financialInput').value;
+            const resEl = document.getElementById('financialResult');
+            const errBox = document.getElementById('financialErrorBox');
+            const errTxt = document.getElementById('financialErrorText');
+            const badge = document.getElementById('matchBadge');
+            const insightsBox = document.getElementById('financialInsights');
+            const fractionDisp = document.getElementById('fractionDecimalDisplay');
+            const wordsDisp = document.getElementById('wordsDisplay');
+
+            errBox.classList.add('d-none');
+            insightsBox.classList.add('d-none');
+            resEl.innerText = "Processing...";
+            resEl.style.opacity = '0.5';
+
+            try {
+                let parsedInput;
+                try {
+                     parsedInput = JSON.parse(inputTxt);
+                } catch(e) {
+                     throw new Error("Syntax Error: Input content must be structurally valid JSON.");
+                }
+
+                const response = await fetch('/api/demo/financial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: inputTxt
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "A fatal server error occurred processing bindings.");
+                }
+
+                resEl.innerText = JSON.stringify(data, null, 2);
+
+                if (data.roundtripMatch) {
+                    badge.className = "badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                    badge.innerHTML = "<i class='bi bi-check-circle-fill me-2'></i>Perfect System.Text.Json Roundtrip";
+                } else {
+                    badge.className = "badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                    badge.innerHTML = "<i class='bi bi-exclamation-circle-fill me-2'></i>Differs from Input";
+                }
+
+                fractionDisp.innerText = data.parsed.treasuryPrice !== null ? data.parsed.treasuryPrice : "N/A";
+                wordsDisp.innerText = data.wordsOutput || "N/A";
+                insightsBox.classList.remove('d-none');
+
+            } catch (e) {
+                resEl.innerText = "// Exception caught by pipeline framework.";
+                errTxt.innerText = e.message;
+                errBox.classList.remove('d-none');
+                badge.className = "badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                badge.innerHTML = "<i class='bi bi-x-circle-fill me-2'></i>Deserialization Failed";
+            } finally {
+                resEl.style.opacity = '1';
             }
         }
     </script>

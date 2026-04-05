@@ -1,13 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>99cbceae-b71f-4194-9889-c30257a4833d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NumberFormatter\NumberFormatter.csproj" />
     <ProjectReference Include="..\NumberFormatter.AspNetCore\NumberFormatter.AspNetCore.csproj" />
   </ItemGroup>
-
+	
 </Project>
