@@ -15,11 +15,15 @@ A powerful .NET library for formatting numbers into short, human-readable string
 * **Culture-aware** – Respects decimal separators and formatting rules of the specified culture
 * **Digital byte sizes** – Format numbers as digital storage (e.g., `MB`, `MiB`, `GB`)
 * **Roman numerals** – Convert integers to Roman numeral strings
+* **Basis Points (BPS)** – Parse and format financial spreads (`125 bps` ↔ `0.0125`)
+* **Fractional Prices** – Support for Treasury market fractions (`101 16/32` ↔ `101.5`)
+* **Spelled-out numbers** – Convert decimals to words for check writing (`"One Hundred and 50/100"`)
 * **Customizable suffixes** – Use your own suffixes (e.g., "Thousand", "Million", "Lac", "Crore")
 * **Flexible options** – Control decimal places, plus sign, negative patterns, and more
 * **High performance** – Caches formatting options, uses zero-allocation span parsers and efficient logic
 * **ASP.NET Core integration** – JSON converters, DI service, Tag Helper, View Component, and MVC/Razor Pages extensions
 * **Round-trip JSON** – Serialize and deserialize formatted numbers directly securely
+* **Financial Hardening** – Recursive attribute mapping for `decimal?`, `List<decimal>`, and `Dictionary<string, decimal>`
 
 ---
 
@@ -140,6 +144,57 @@ int year = 2024;
 Console.WriteLine(year.ToRomanNumeral()); // "MMXXIV"
 ```
 
+### Financial Formatting
+
+The library provides specialized support for financial domain concepts including Basis Points, Fractional Prices, and Check Writing.
+
+#### 1. Basis Points (BPS)
+Convert between raw decimal values and their BPS representation.
+
+```csharp
+using NumberFormatter.Financial;
+
+decimal spread = 0.0125m;
+Console.WriteLine(spread.ToBpsString()); // "125 bps"
+Console.WriteLine(spread.ToBps());       // 125.0
+
+// Parsing
+if (BasisPointFormatter.TryParseBps("50 bps", out decimal result))
+{
+    Console.WriteLine(result); // 0.005
+}
+```
+
+#### 2. Fractional Prices (Treasury Markets)
+Format and parse prices using market-standard fractions (default denominator: 32).
+
+```csharp
+using NumberFormatter.Financial;
+
+decimal price = 101.5m;
+Console.WriteLine(price.ToFractionString(32)); // "101 16/32"
+
+// Parsing
+if (FinancialRounding.TryParseFraction("99 2/32", out decimal result))
+{
+    Console.WriteLine(result); // 99.0625
+}
+```
+
+#### 3. Spelled-out Numbers (Check Writing)
+Convert decimals directly into words for check writing or legal documents.
+
+```csharp
+using NumberFormatter.Financial;
+
+decimal amount = 5432.10m;
+Console.WriteLine(amount.ToWords()); // "Five Thousand Four Hundred Thirty-Two and 10/100"
+
+// With currency units
+Console.WriteLine(amount.ToCheckWords("Dollars", "Dollar")); 
+// "Five Thousand Four Hundred Thirty-Two Dollars and 10/100"
+```
+
 ---
 
 ## Breaking Changes
@@ -160,7 +215,8 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new ShortNumberJsonConverterFactory());
-    });
+    })
+    .AddFinancialFormatters(); // Registers BPS and Fraction converters
 ```
 
 All numeric properties in API responses will be formatted with default settings. The converter also supports **deserialization**, allowing values like `"1.23M"` to be parsed back into numeric form. Nullable types are handled automatically.
@@ -170,20 +226,22 @@ All numeric properties in API responses will be formatted with default settings.
 ### 2. Per-Property Control with Attribute
 
 ```csharp
-public class FinancialData
+public class TradeDto
 {
-    [ShortNumberFormat(isCurrency: true)]
-    public decimal Revenue { get; set; }
+    [BasisPoints(decimals: 1)]
+    public decimal Spread { get; set; }
 
-    [ShortNumberFormat(isCurrency: true, currencyCode: "EUR")]
-    public decimal EuroRevenue { get; set; }
+    [FractionPrice(32)]
+    public decimal BondPrice { get; set; }
 
-    [ShortNumberFormat(decimalPlaces: 1)]
-    public decimal GrowthRate { get; set; }
-
-    public long PageViews { get; set; }
+    public long Quantity { get; set; }
 }
 ```
+
+Supports recursive property mapping for advanced models:
+- `decimal?` (Nullable support)
+- `List<decimal>` or `decimal[]` (Collection support)
+- `Dictionary<string, decimal>` (Dictionary support)
 
 Apply formatting globally per class:
 
@@ -233,6 +291,9 @@ public class MyController : ControllerBase
 
 ```html
 <short-number value="1234567.89" format="currency" currency-code="USD" decimal-places="2" css-class="money"></short-number>
+
+<!-- Spelled-out numbers for check writing -->
+<check-amount value="5432.10" major-currency="Dollars" major-currency-singular="Dollar"></check-amount>
 ```
 
 ---
