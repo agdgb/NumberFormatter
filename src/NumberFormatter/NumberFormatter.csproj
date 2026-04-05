@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -9,7 +9,7 @@
 		<!-- NuGet Package Metadata -->
 		<IsPackable>true</IsPackable>
 		<PackageId>agdgb.NumberFormatter</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<Authors>Amanuel Girma</Authors>
 		<Description>Culture‑aware short number formatter for .NET – formats numbers with K, M, B, T suffixes, supports currency and culture awareness.</Description>
 		<PackageTags>number;format;short-number;currency;k;m;b;t;culture</PackageTags>
