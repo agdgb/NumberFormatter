@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="agdgb.NumberFormatter" Version="1.0.0" />
-    <PackageReference Include="agdgb.NumberFormatter.AspNetCore" Version="1.0.0" />
+    <ProjectReference Include="..\NumberFormatter\NumberFormatter.csproj" />
+    <ProjectReference Include="..\NumberFormatter.AspNetCore\NumberFormatter.AspNetCore.csproj" />
   </ItemGroup>
 	
 </Project>

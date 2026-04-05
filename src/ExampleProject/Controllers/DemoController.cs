@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using NumberFormatter.AspNetCore;
+using NumberFormatter.AspNetCore.Financial;
 using NumberFormatter.Demo.Models;
+using NumberFormatter.Financial;
 
 namespace NumberFormatter.Demo.Controllers;
 
@@ -54,5 +57,50 @@ public class DemoController : ControllerBase
             return Ok(new { formatted = _formatter.FormatCurrency(value, currencyCode: currency) });
         }
         return Ok(new { formatted = _formatter.FormatShort(value) });
+    }
+
+    [HttpPost("financial")]
+    public IActionResult ProcessFinancialPlayground([FromBody] JsonElement rawInput)
+    {
+        try
+        {
+            var jsonString = rawInput.GetRawText();
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+            };
+            
+            var parsed = JsonSerializer.Deserialize<FinancialPlaygroundRequest>(jsonString, options);
+            
+            var roundtripString = JsonSerializer.Serialize(parsed, options);
+            var roundtripJsonElement = JsonSerializer.Deserialize<JsonElement>(roundtripString);
+
+            var node1 = System.Text.Json.Nodes.JsonNode.Parse(jsonString);
+            var node2 = System.Text.Json.Nodes.JsonNode.Parse(roundtripString);
+            bool isMatch = System.Text.Json.Nodes.JsonNode.DeepEquals(node1, node2);
+
+            return Ok(new
+            {
+                input = rawInput,
+                parsed = new { 
+                   spread = parsed?.Spread,
+                   treasuryPrice = parsed?.TreasuryPrice,
+                   rawAmount = parsed?.RawAmount
+                },
+                roundtrip = roundtripJsonElement,
+                roundtripMatch = isMatch,
+                wordsOutput = parsed?.RawAmount != null ? parsed.RawAmount.Value.ToWords() : null
+            });
+        }
+        catch (JsonException ex)
+        {
+            // Explicitly returning 400 with the JSON parse exception string exactly as requested
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = "An unexpected error occurred: " + ex.Message });
+        }
     }
 }
