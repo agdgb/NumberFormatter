@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace NumberFormatter.AspNetCore.Financial;
+namespace HumanNumbers.AspNetCore.Financial;
 
 /// <summary>
 /// Applies fractional price JSON conversion specifically to the decorated property.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace NumberFormatter.AspNetCore.Financial;
+namespace HumanNumbers.AspNetCore.Financial;
 
 internal sealed class NullableConverterWrapper<T> : JsonConverter<T?> where T : struct
 {

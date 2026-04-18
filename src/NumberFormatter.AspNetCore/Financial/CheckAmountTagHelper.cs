@@ -1,13 +1,13 @@
+using HumanNumbers.Financial;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using NumberFormatter.Financial;
 
-namespace NumberFormatter.AspNetCore.Financial;
+namespace HumanNumbers.AspNetCore.Financial;
 
 /// <summary>
 /// A tag helper that formats a decimal value into its spelled-out, check-friendly representation.
 /// </summary>
-[HtmlTargetElement("check-amount")]
-public class CheckAmountTagHelper : TagHelper
+[HtmlTargetElement("hn-check")]
+public class HumanCheckAmountTagHelper : TagHelper
 {
     /// <summary>
     /// The decimal value to format.
@@ -30,10 +30,10 @@ public class CheckAmountTagHelper : TagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        output.TagName = "span"; // Render as a span by default
-        
+        output.TagName = "span";
+
         var words = Value.ToCheckWords(MajorCurrency, MajorCurrencySingular);
-        
+
         output.Content.SetContent(words);
     }
 }

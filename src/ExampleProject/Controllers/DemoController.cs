@@ -1,21 +1,35 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using NumberFormatter.AspNetCore;
-using NumberFormatter.AspNetCore.Financial;
-using NumberFormatter.Demo.Models;
-using NumberFormatter.Financial;
+using System.Globalization;
+using System.Linq;
+using HumanNumbers;
+using HumanNumbers.AspNetCore;
+using HumanNumbers.AspNetCore.Financial;
+using HumanNumbers.Demo.Models;
+using HumanNumbers.Financial;
+using HumanNumbers.Roman;
+using HumanNumbers.Bytes;
 
-namespace NumberFormatter.Demo.Controllers;
+namespace HumanNumbers.Demo.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class DemoController : ControllerBase
 {
-    private readonly INumberFormatterService _formatter;
+    private readonly IHumanNumberService _formatter;
 
-    public DemoController(INumberFormatterService formatter)
+    public DemoController(IHumanNumberService formatter)
     {
         _formatter = formatter;
+    }
+
+    public class ParseResult
+    {
+        public string Input { get; set; } = string.Empty;
+        public string Culture { get; set; } = string.Empty;
+        
+        [NoHumanFormat]
+        public decimal ParsedValue { get; set; }
     }
 
     [HttpGet("data")]
@@ -56,7 +70,51 @@ public class DemoController : ControllerBase
         {
             return Ok(new { formatted = _formatter.FormatCurrency(value, currencyCode: currency) });
         }
-        return Ok(new { formatted = _formatter.FormatShort(value) });
+        return Ok(new { formatted = _formatter.Format(value) });
+    }
+
+    [HttpGet("showcase")]
+    public IActionResult GetShowcase()
+    {
+        return Ok(new ShowcaseModel());
+    }
+
+    [HttpGet("roman/{value:int}")]
+    public IActionResult ToRoman(int value)
+    {
+        try
+        {
+            return Ok(new { value, roman = value.ToRoman() });
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("bytes/{value:long}")]
+    public IActionResult FormatBytes(long value, [FromQuery] bool binary = false)
+    {
+        return Ok(new { 
+            value, 
+            formatted = value.ToHumanBytes(useBinaryPrefixes: binary),
+            type = binary ? "Binary (IEC)" : "Decimal (SI)"
+        });
+    }
+
+    [HttpGet("parse")]
+    public IActionResult ParseSnippet([FromQuery] string input, [FromQuery] string? culture = null)
+    {
+        try
+        {
+            var cultureInfo = string.IsNullOrEmpty(culture) ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+            var result = HumanNumber.Parse(input, cultureInfo);
+            return Ok(new ParseResult { Input = input, Culture = cultureInfo.Name, ParsedValue = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = "Parsing failed: " + ex.Message });
+        }
     }
 
     [HttpPost("financial")]

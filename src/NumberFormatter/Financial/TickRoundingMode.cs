@@ -1,22 +1,40 @@
-namespace NumberFormatter.Financial;
-
-/// <summary>
-/// Defines the rounding behavior when snapping to a tick size.
-/// </summary>
-public enum TickRoundingMode
+namespace HumanNumbers.Financial
 {
     /// <summary>
-    /// Rounds to the nearest tick. Standard rounding.
+    /// Defines the rounding behavior when snapping to a tick size.
     /// </summary>
-    Nearest,
-    
+    public enum TickRoundingMode
+    {
+        /// <summary>
+        /// Rounds to the nearest tick. Standard rounding.
+        /// </summary>
+        Nearest,
+        
+        /// <summary>
+        /// Always rounds up to the next tick value (Ceiling).
+        /// </summary>
+        Up,
+        
+        /// <summary>
+        /// Always rounds down to the previous tick value (Floor).
+        /// </summary>
+        Down
+    }
+}
+
+namespace NumberFormatter.Financial
+{
     /// <summary>
-    /// Always rounds up to the next tick value (Ceiling).
+    /// Obsolete alias for <see cref="HumanNumbers.Financial.TickRoundingMode"/>.
     /// </summary>
-    Up,
-    
-    /// <summary>
-    /// Always rounds down to the previous tick value (Floor).
-    /// </summary>
-    Down
+    [System.Obsolete("Use HumanNumbers.Financial.TickRoundingMode instead. This alias will be removed in a future version.")]
+    public enum TickRoundingMode
+    {
+        /// <summary>Nearest tick.</summary>
+        Nearest = HumanNumbers.Financial.TickRoundingMode.Nearest,
+        /// <summary>Next tick.</summary>
+        Up = HumanNumbers.Financial.TickRoundingMode.Up,
+        /// <summary>Previous tick.</summary>
+        Down = HumanNumbers.Financial.TickRoundingMode.Down
+    }
 }

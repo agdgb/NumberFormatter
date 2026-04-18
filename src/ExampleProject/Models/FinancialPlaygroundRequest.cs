@@ -1,6 +1,7 @@
-using NumberFormatter.AspNetCore.Financial;
+using HumanNumbers.AspNetCore;
+using HumanNumbers.AspNetCore.Financial;
 
-namespace NumberFormatter.Demo.Models;
+namespace HumanNumbers.Demo.Models;
 
 public class FinancialPlaygroundRequest
 {
@@ -10,5 +11,6 @@ public class FinancialPlaygroundRequest
     [FractionPrice(32)] 
     public decimal? TreasuryPrice { get; set; }
 
+    [NoHumanFormat]
     public decimal? RawAmount { get; set; }
 }

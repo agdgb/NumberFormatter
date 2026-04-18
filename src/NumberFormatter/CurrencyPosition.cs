@@ -1,4 +1,4 @@
-﻿namespace NumberFormatter;
+namespace HumanNumbers.Currencies;
 
 /// <summary>
 /// Defines the possible positions for the currency symbol relative to the formatted number.

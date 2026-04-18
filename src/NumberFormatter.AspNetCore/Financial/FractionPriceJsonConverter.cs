@@ -1,9 +1,9 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using NumberFormatter.Financial;
+using HumanNumbers.Financial;
 
-namespace NumberFormatter.AspNetCore.Financial;
+namespace HumanNumbers.AspNetCore.Financial;
 
 /// <summary>
 /// Options for configuring the <see cref="FractionPriceJsonConverter"/>.

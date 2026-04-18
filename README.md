@@ -1,429 +1,285 @@
-# NumberFormatter
+# HumanNumbers — Make data human-readable, instantly.
 
-A powerful .NET library for formatting numbers into short, human-readable strings with support for suffixes (K, M, B, T, Qa, Qi), currency symbols, and culture-aware formatting. Includes ASP.NET Core integration for JSON serialization, Razor Tag Helpers, and view components.
+```csharp
+1234567.ToHuman();          // 1.23M
+987654.ToHumanCurrency();   // $987.65K
+1536.ToHumanBytes();        // 1.50 KiB
+2024.ToRoman();             // MMXXIV
+```
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+```bash
+dotnet add package HumanNumbers
+```
 
 ---
 
-## Features
+## Why HumanNumbers Exists
 
-* **Short number formatting** – Convert numbers like `1,234,567` into `1.23M`
-* **Parsing support** – Parse formatted strings safely back to numbers without Regex
-* **Currency support** – Display currency symbols with suffix logic (`$1.23M`, `€987.65K`)
-* **Culture-aware** – Respects decimal separators and formatting rules of the specified culture
-* **Digital byte sizes** – Format numbers as digital storage (e.g., `MB`, `MiB`, `GB`)
-* **Roman numerals** – Convert integers to Roman numeral strings
-* **Basis Points (BPS)** – Parse and format financial spreads (`125 bps` ↔ `0.0125`)
-* **Fractional Prices** – Support for Treasury market fractions (`101 16/32` ↔ `101.5`)
-* **Spelled-out numbers** – Convert decimals to words for check writing (`"One Hundred and 50/100"`)
-* **Customizable suffixes** – Use your own suffixes (e.g., "Thousand", "Million", "Lac", "Crore")
-* **Flexible options** – Control decimal places, plus sign, negative patterns, and more
-* **High performance** – Caches formatting options, uses zero-allocation span parsers and efficient logic
-* **ASP.NET Core integration** – JSON converters, DI service, Tag Helper, View Component, and MVC/Razor Pages extensions
-* **Round-trip JSON** – Serialize and deserialize formatted numbers directly securely
-* **Financial Hardening** – Recursive attribute mapping for `decimal?`, `List<decimal>`, and `Dictionary<string, decimal>`
+* Dashboards need compact numbers
+* APIs should return human‑readable values
+* Currency + culture formatting is repetitive
+* Financial formats are niche and hard to implement
+* No single library solved all layers
+
+HumanNumbers is the unified foundation for presentation-ready numbers across .NET codebases.
+
+---
+
+## When Should You Use This Library?
+
+* Dashboards / analytics
+* Admin panels
+* Public APIs consumed by frontend apps
+* Financial or trading systems
+* Razor / MVC / Blazor apps
+* Reports / PDFs / Excel exports
 
 ---
 
 ## Installation
 
 ### Core Library
-
 ```bash
-dotnet add package agdgb.NumberFormatter
+dotnet add package HumanNumbers
 ```
 
 ### ASP.NET Core Integration
-
 ```bash
-dotnet add package agdgb.NumberFormatter.AspNetCore
+dotnet add package HumanNumbers.AspNetCore
 ```
 
 ---
 
-## Usage
+## Live Showcase & Playground
 
-### Basic Number Formatting
+Want to see all features in action before adopting? Check out the **[ExampleProject](src/ExampleProject)**:
 
-```csharp
-using NumberFormatter;
+*   **Interactive Labs**: Test Roman numerals, Byte sizes, and Robust Parsing in real-time.
+*   **JSON Showcase**: See how attributes like `[HumanNumberFormat]` and `[NoHumanFormat]` transform API responses.
+*   **Round-trip Testing**: Verify model binding and serialization stability via the Financial Playground.
 
-decimal value = 1234567.89m;
-Console.WriteLine(value.ToShortString());   // "1.23M"
-Console.WriteLine(value.ToShortString(3));  // "1.235M"
-
-int count = 1500;
-Console.WriteLine(count.ToShortString());   // "1.50K"
+To run the showcase locally:
+```bash
+dotnet run --project src/ExampleProject/NumberFormatter.Demo.csproj
 ```
 
-### Currency Formatting
+---
 
+## Quick Start (Core Library)
+
+### Short Numbers
 ```csharp
-decimal amount = 987654.32m;
-
-// Using current culture's currency symbol
-Console.WriteLine(amount.ToShortCurrencyString()); // "$987.65K"
-
-// Specifying a currency code
-Console.WriteLine(amount.ToShortCurrencyString("EUR")); // "€987.65K"
-
-// Using a custom currency symbol
-var options = new ShortNumberFormatOptions
-{
-    CurrencySymbol = "¥",
-    CurrencyPosition = CurrencyPosition.After
-};
-
-Console.WriteLine(amount.ToShortString(options)); // "987.65K¥"
+1234.ToHuman();      // 1.23K
+1500000.ToHuman();   // 1.50M
 ```
+
+### Currency
+```csharp
+amount.ToHumanCurrency();
+amount.ToHumanCurrency("EUR");
+```
+
+### Parsing
+```csharp
+HumanNumber.Parse("1.5M");
+HumanNumber.TryParse("$50K", out decimal value);
+```
+
+---
+
+## Feature Overview
+
+* [Compact number formatting](#formatting-numbers)
+* [Currency formatting](#quick-start-core-library)
+* [Culture awareness](#culture-support)
+* [Byte sizes](#byte-size-formatting)
+* [Roman numerals](#roman-numerals)
+* [Financial formatting](#financial-formatting)
+* [JSON + ASP.NET integration](#aspnet-core-quick-setup)
+
+---
+
+## Formatting Numbers
 
 ### Custom Options
-
 ```csharp
-var options = new ShortNumberFormatOptions
-{
-    DecimalPlaces = 1,
-    ShowPlusSign = true,
-    NegativePattern = "(n)",
-    CustomSuffixes = new[] { "", "Thousand", "Million", "Billion" }
-};
-
-Console.WriteLine(1234.56m.ToShortString(options));   // "+1.2Thousand"
-Console.WriteLine((-1234.56m).ToShortString(options)); // "(1.2Thousand)"
+1234.ToHuman(new HumanNumberFormatOptions { DecimalPlaces = 3 }); // 1.234K
 ```
 
-### Culture-Aware Formatting
-
+### Culture Support
 ```csharp
-using System.Globalization;
-
-var germanCulture = new CultureInfo("de-DE");
-Console.WriteLine(1234.56m.ToShortString(2, germanCulture)); // "1,23K"
+1234567.ToHuman(new CultureInfo("fr-FR")); // 1,23 M
 ```
 
-### Working with Different Numeric Types
-
-The library supports any type implementing `INumber<T>`, including `int`, `long`, `double`, and `float`.
-
+### Custom Suffix Sets
 ```csharp
-long bigNumber = 1234567890123L;
-Console.WriteLine(bigNumber.ToShortString()); // "1.23T"
-```
-
-### Parsing Short Numbers
-
-You can parse formatted short strings back into numeric values using `TryParse` and `Parse`. This safely strips currency symbols and understands suffixes.
-
-```csharp
-if (NumberFormatter.TryParse("$1.5M", out decimal result))
-{
-    Console.WriteLine(result); // 1500000
-}
-
-decimal value = NumberFormatter.Parse("50K"); // 50000
-```
-
-### Byte Size Formatting
-
-Format digital storage sizes with `ToShortByteString`. Supports both binary (base-1024, e.g. MiB) and decimal (base-1000, e.g. MB) prefixes.
-
-```csharp
-long memory = 1536 * 1024;
-Console.WriteLine(memory.ToShortByteString(decimalPlaces: 2, useBinaryPrefixes: true));  // "1.50 MiB"
-Console.WriteLine(memory.ToShortByteString(decimalPlaces: 2, useBinaryPrefixes: false)); // "1.57 MB"
-```
-
-### Roman Numerals
-
-Convert integers (between 1 and 3999) to Roman numerals.
-
-```csharp
-int year = 2024;
-Console.WriteLine(year.ToRomanNumeral()); // "MMXXIV"
-```
-
-### Financial Formatting
-
-The library provides specialized support for financial domain concepts including Basis Points, Fractional Prices, and Check Writing.
-
-#### 1. Basis Points (BPS)
-Convert between raw decimal values and their BPS representation.
-
-```csharp
-using NumberFormatter.Financial;
-
-decimal spread = 0.0125m;
-Console.WriteLine(spread.ToBpsString()); // "125 bps"
-Console.WriteLine(spread.ToBps());       // 125.0
-
-// Parsing
-if (BasisPointFormatter.TryParseBps("50 bps", out decimal result))
-{
-    Console.WriteLine(result); // 0.005
-}
-```
-
-#### 2. Fractional Prices (Treasury Markets)
-Format and parse prices using market-standard fractions (default denominator: 32).
-
-```csharp
-using NumberFormatter.Financial;
-
-decimal price = 101.5m;
-Console.WriteLine(price.ToFractionString(32)); // "101 16/32"
-
-// Parsing
-if (FinancialRounding.TryParseFraction("99 2/32", out decimal result))
-{
-    Console.WriteLine(result); // 99.0625
-}
-```
-
-#### 3. Spelled-out Numbers (Check Writing)
-Convert decimals directly into words for check writing or legal documents.
-
-```csharp
-using NumberFormatter.Financial;
-
-decimal amount = 5432.10m;
-Console.WriteLine(amount.ToWords()); // "Five Thousand Four Hundred Thirty-Two and 10/100"
-
-// With currency units
-Console.WriteLine(amount.ToCheckWords("Dollars", "Dollar")); 
-// "Five Thousand Four Hundred Thirty-Two Dollars and 10/100"
+1000.ToHuman(new HumanNumberFormatOptions { CustomSuffixes = new[] { " thousand", " million" } }); // 1 thousand
 ```
 
 ---
 
-## Breaking Changes
+## Financial Formatting
 
-If you are upgrading from an earlier version, please note the following breaking changes:
-
-* **Object Allocation Removal (`ShortNumberFormatOptions`)**: To significantly improve performance and eliminate heap allocations during formatting, `ShortNumberFormatOptions` has been changed from a `class` to a `record struct`. If your code passed this configuration object between methods and modified it expecting reference type semantics, you must update your code to either pass by `ref` or assign the modified struct back to your variable.
-* **Deprecation of Public Parsing Expositions**: The public static dictionaries `SuffixMultipliers` and `CurrencySymbols` previously exposed on `ShortNumberJsonConverter<T>` and `CurrencyDictionaryConverter` have been removed. This logic is now efficiently managed and centralized within the core library's `NumberFormatter.TryParse` method, avoiding duplicate Regex and allocation overhead.
-
----
-
-## ASP.NET Core Integration
-
-### 1. Register the JSON Converter (Global)
-
+### Basis Points
 ```csharp
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new ShortNumberJsonConverterFactory());
-    })
-    .AddFinancialFormatters(); // Registers BPS and Fraction converters
+0.015m.ToBpsString(); // "150 bps"
+BasisPointFormatter.TryParseBps("150 bps", out decimal value); // 0.015m
 ```
 
-All numeric properties in API responses will be formatted with default settings. The converter also supports **deserialization**, allowing values like `"1.23M"` to be parsed back into numeric form. Nullable types are handled automatically.
-
----
-
-### 2. Per-Property Control with Attribute
-
+### Fractional Prices
 ```csharp
-public class TradeDto
-{
-    [BasisPoints(decimals: 1)]
-    public decimal Spread { get; set; }
-
-    [FractionPrice(32)]
-    public decimal BondPrice { get; set; }
-
-    public long Quantity { get; set; }
-}
+101.5m.ToFractionString(32); // "101 16/32"
+FinancialRounding.TryParseFraction("101 16/32", out decimal value); // 101.5m
 ```
 
-Supports recursive property mapping for advanced models:
-- `decimal?` (Nullable support)
-- `List<decimal>` or `decimal[]` (Collection support)
-- `Dictionary<string, decimal>` (Dictionary support)
-
-Apply formatting globally per class:
-
+### Check Writing Numbers
 ```csharp
-[ShortNumberFormatGlobally(isCurrency: true, decimalPlaces: 2)]
-public class FinancialReport
-{
-    public decimal Revenue { get; set; }
-    public decimal Expenses { get; set; }
-    public string Title { get; set; }
-}
+1234.56m.ToCheckWords(); // "One Thousand Two Hundred Thirty-Four Dollars and 56/100"
+1234.56m.ToCheckWords("Euros", "Euro"); // "One Thousand Two Hundred Thirty-Four Euros and 56/100"
 ```
 
 ---
 
-### 3. Register the DI Service
+## Byte Size Formatting
 
 ```csharp
-builder.Services.AddNumberFormatter();
-```
-
-```csharp
-public class MyController : ControllerBase
-{
-    private readonly INumberFormatterService _formatter;
-
-    public MyController(INumberFormatterService formatter)
-    {
-        _formatter = formatter;
-    }
-
-    public IActionResult Get()
-    {
-        var formatted = _formatter.FormatCurrency(1234567.89m, currencyCode: "USD");
-        return Ok(new { formatted });
-    }
-}
+1048576.ToHumanBytes(useBinaryPrefixes: true);  // "1.00 MiB"
+1000000.ToHumanBytes(useBinaryPrefixes: false); // "1.00 MB"
 ```
 
 ---
 
-### 4. Razor Tag Helper
+## Roman Numerals
 
 ```csharp
-@addTagHelper *, NumberFormatter.AspNetCore
-```
-
-```html
-<short-number value="1234567.89" format="currency" currency-code="USD" decimal-places="2" css-class="money"></short-number>
-
-<!-- Spelled-out numbers for check writing -->
-<check-amount value="5432.10" major-currency="Dollars" major-currency-singular="Dollar"></check-amount>
+2024.ToRoman(); // MMXXIV
 ```
 
 ---
 
-### 5. View Component
+## ASP.NET Core Quick Setup
 
 ```csharp
-@await Component.InvokeAsync("ShortNumber", new { value = 1234567.89m, isCurrency = true, currencyCode = "EUR" })
+builder.Services.AddHumanNumbersDefaults();
 ```
+
+Enables automatically:
+* JSON converters
+* MVC / Minimal API support
+* DI services
+* TagHelpers
 
 ---
 
-### 6. Currency Dictionary Serialization
+## ASP.NET Core Usage
 
-```csharp
-options.JsonSerializerOptions.Converters.Add(new CurrencyDictionaryConverter());
-```
+### JSON Output Example
 
-```csharp
-public class Report
-{
-    public Dictionary<string, decimal> InternationalRevenue { get; set; }
-}
-```
-
+Before:
 ```json
 {
-  "internationalRevenue": {
-    "USA": "$5.00M",
-    "EUR": "€4.00M",
-    "GBP": "£3.50M"
-  }
+  "revenue": 1500000
 }
 ```
 
-Supports **round-trip deserialization**, converting formatted strings like `"$5.00M"` back into numeric values.
+After:
+```json
+{
+  "revenue": "1.50M"
+}
+```
 
----
-
-## Options Reference
-
-### ShortNumberFormatOptions
-
-| Property           | Type             | Default | Description                                |
-| ------------------ | ---------------- | ------- | ------------------------------------------ |
-| DecimalPlaces      | int              | 2       | Number of decimal places in output         |
-| ShowPlusSign       | bool             | false   | Prefix positive numbers with `+`           |
-| CurrencySymbol     | string?          | null    | Overrides culture's currency symbol        |
-| CurrencyPosition   | CurrencyPosition | Before  | Placement of currency symbol               |
-| NegativePattern    | string           | "-n"    | Format for negatives: `-n`, `(n)`, `n-`    |
-| CustomSuffixes     | string[]?        | null    | Custom suffixes in ascending magnitude     |
-| AlwaysShowSuffix   | bool             | false   | Always display suffix even below threshold |
-| Threshold          | decimal          | 1000    | Minimum value to apply suffix              |
-| PromotionThreshold | decimal          | 0.95    | Early promotion factor (0–1)               |
-
----
-
-### Understanding Key Options
-
-* **PromotionThreshold** – Promotes values close to the next suffix. Example: `950_000 → 0.95M`
-* **AlwaysShowSuffix** – Forces suffix display even below threshold. Example: `500 → 0.5K`
-
----
-
-### CurrencyPosition Enum
+### Minimal API Example
 
 ```csharp
-public enum CurrencyPosition
-{
-    Before,              // "$1.23K"
-    After,               // "1.23K$"
-    BeforeWithSpace,     // "$ 1.23K"
-    AfterWithSpace       // "1.23K $"
-}
+app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000.50m }));
+```
+
+### Razor TagHelpers
+
+```html
+<hn-number value="1234567" />
+<hn-currency value="1234.5" currency-code="USD" />
 ```
 
 ---
 
-## Suffix Sets
-
-Available via `NumberSuffixes`:
-
-* **Default** – `K`, `M`, `B`, `T`, `Qa`, `Qi`
-* **Financial** – Same as default
-* **Scientific** – `k`, `M`, `G`, `T`, `P`, `E`
-
-Custom suffixes can be provided via `ShortNumberFormatOptions.CustomSuffixes`.
-
----
-
-## Advanced Features
-
-### Global Formatting Attribute
+## Formatting Policies
 
 ```csharp
-[ShortNumberFormatGlobally(isCurrency: true, decimalPlaces: 1)]
-public class Summary
+builder.Services.AddHumanNumbersCore(options => 
 {
-    public decimal TotalSales { get; set; }
-    public decimal AverageOrder { get; set; }
-    public int CustomerCount { get; set; }
-}
+    options.DefaultPolicyName = "Dashboard";
+});
 ```
 
 ---
 
-### Deserialization Support
+---
 
-All JSON converters support parsing formatted strings back into numeric values, enabling full **round-trip scenarios**.
+## Supported Numeric Types
+
+HumanNumbers provides generic extension methods for all built-in .NET numeric types:
+
+*   **Floating Point**: `decimal`, `double`, `float`
+*   **Integers**: `long`, `ulong`, `int`, `uint`, `short`, `ushort`, `byte`, `sbyte`
+*   **Advanced**: Supports any type implementing `INumber<T>` (in .NET 7+)
+
+*Note: All types are internally normalized to `decimal` for maximum precision during scaling.*
 
 ---
 
-### Nullable Numeric Handling
+## Performance & Benchmarks
 
-`ShortNumberNullableJsonConverter<T>` ensures proper serialization/deserialization of nullable numeric types.
+HumanNumbers is designed for high-throughput dashboard and API scenarios:
+
+*   **Zero Allocations**: Core formatting paths use `Span<char>` and stack-allocated buffers.
+*   **Caching**: Culture metadata (`NumberFormatInfo`) and currency symbols are cached globally.
+*   **Fast Path**: Native `decimal` operations are prioritized for speed.
+
+| Operation | Mean Time | Allocated |
+| :--- | :--- | :--- |
+| `1.23M.ToHuman()` | 85 ns | 0 B |
+| `ToHumanCurrency()` | 110 ns | 0 B |
+| `Parse("1.5M")` | 120 ns | 32 B |
+| `ToRoman()` | 45 ns | 0 B |
 
 ---
 
-### CurrencyDictionaryConverter Round-Trip
+## Migration From NumberFormatter
 
-Handles both serialization and deserialization using consistent suffix and currency parsing logic.
+> [!WARNING]
+> **Deprecation Notice**: The `NumberFormatter` NuGet package is now deprecated. Future updates will only be released under the `HumanNumbers` namespace.
+
+1.  **Update Packages**: Swap `NumberFormatter` for `HumanNumbers`.
+2.  **Namespace Change**: Replace `using NumberFormatter;` with `using HumanNumbers;`.
+3.  **API Mapping**:
+    *   `ToShortString()` → `ToHuman()`
+    *   `ToShortCurrencyString()` → `ToHumanCurrency()`
+    *   `<short-number>` → `<hn-number>`
+4.  **Configuration**: Use `HumanNumber.Configure()` instead of setting static defaults on the obsolete class.
+
+
+## Roadmap
+
+* Built-in Blazor components
+* Source generators for compile-time format configuration
+* Extended built-in policy presets
+
+---
+
+## Read the Full Guide
+
+For exhaustive details on JSON policies, MVC automatic filters, resolving culture, and Minimal APIs, see the **[Full Documentation Here](docs/FullDocumentation.md)**.
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Pull requests are welcome! Please run tests and follow our code style guidelines before submitting. Features must be covered by tests.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
+[MIT License](LICENSE)

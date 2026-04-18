@@ -1,7 +1,8 @@
 using System;
 using System.Text.Json.Serialization;
+using HumanNumbers.Financial;
 
-namespace NumberFormatter.AspNetCore.Financial;
+namespace HumanNumbers.AspNetCore.Financial;
 
 /// <summary>
 /// Applies basis points JSON conversion specifically to the decorated property.

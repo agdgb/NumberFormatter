@@ -1,5 +1,7 @@
-﻿using System.Globalization;
+using System.Globalization;
 using NumberFormatter;
+using HumanNumbers.Currencies;
+using HumanNumbers.Formatting;
 
 namespace NumberFormatter.Tests;
 

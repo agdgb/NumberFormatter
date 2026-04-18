@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NumberFormatter\NumberFormatter.csproj" />
-    <ProjectReference Include="..\NumberFormatter.AspNetCore\NumberFormatter.AspNetCore.csproj" />
+    <ProjectReference Include="..\NumberFormatter.AspNetCore\HumanNumbers.AspNetCore.csproj" />
+    <ProjectReference Include="..\NumberFormatter\HumanNumbers.csproj" />
   </ItemGroup>
 	
 </Project>

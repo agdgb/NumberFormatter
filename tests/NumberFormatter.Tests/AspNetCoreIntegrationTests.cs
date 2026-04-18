@@ -1,4 +1,4 @@
-﻿using NumberFormatter.AspNetCore;
+using NumberFormatter.AspNetCore;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -132,10 +132,8 @@ public class AspNetCoreIntegrationTests
         var json = JsonSerializer.Serialize(model, options);
 
         // Assert – updated to match the actual output (K suffix for EUR and GBP)
-        Assert.Contains("\"usdRevenue\":\"$1.23M\"", json);
-        Assert.Contains("\"eurRevenue\":\"€987.65K\"", json);   // corrected: 987.65K
-        Assert.Contains("\"gbpRevenue\":\"£555.56K\"", json);   // corrected: 555.56K
-        Assert.Contains("\"jpyRevenue\":\"¥123.46M\"", json);
+        var expected = "{\"usdRevenue\":\"$1.23M\",\"eurRevenue\":\"€987.65K\",\"gbpRevenue\":\"£555.56K\",\"jpyRevenue\":\"¥123.46M\"}";
+        Assert.Equal(expected, json);
     }
 
     [Fact]

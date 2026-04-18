@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<RootNamespace>HumanNumbers</RootNamespace>
+		<AssemblyName>HumanNumbers</AssemblyName>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+		<!-- NuGet Package Metadata -->
+		<IsPackable>true</IsPackable>
+		<PackageId>HumanNumbers</PackageId>
+		<Version>2.0.0</Version>
+		<Authors>Amanuel Girma</Authors>
+		<Description>The official successor to the NumberFormatter library. HumanNumbers is a high-performance, culture‑aware platform for human-readable number formatting in .NET. Supports short numbers (K, M, B), currencies, byte sizes, Roman numerals, and more.</Description>
+		<PackageTags>number;format;short-number;currency;k;m;b;t;culture;humannumbers;bytes;size;roman</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/agdgb/HumanNumbers</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/agdgb/HumanNumbers</RepositoryUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="System.Memory" Version="4.5.5" />
+	</ItemGroup>
+</Project>
