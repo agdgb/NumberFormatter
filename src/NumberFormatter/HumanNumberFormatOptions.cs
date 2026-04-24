@@ -102,6 +102,12 @@ namespace HumanNumbers.Formatting
         /// <example>950_000 ≥ 1_000_000 × 0.95 → "0.95M" instead of "950K"</example>
         /// </remarks>
         public decimal PromotionThreshold { get; set; } = 0.95m;
+
+        /// <summary>
+        /// Suppress decimals if the number is not scaled and has no fractional part (default: <see langword="true"/>).
+        /// </summary>
+        /// <example><c>true</c>: 12 → "12"; <c>false</c>: 12 → "12.00"</example>
+        public bool SuppressDefaultDecimals { get; set; } = true;
     }
 }
 

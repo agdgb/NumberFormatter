@@ -20,7 +20,7 @@ namespace HumanNumbers.Bytes
             this long bytes,
             out string result,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null)
         {
             return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, out result);
@@ -33,7 +33,7 @@ namespace HumanNumbers.Bytes
         public static string ToHumanBytes(
             this long bytes,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null)
         {
             if (TryToHumanBytes(bytes, out var result, decimalPlaces, useBinaryPrefixes, culture)) return result;
@@ -48,7 +48,7 @@ namespace HumanNumbers.Bytes
             this ulong bytes,
             out string result,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null)
         {
             return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, out result);
@@ -61,7 +61,7 @@ namespace HumanNumbers.Bytes
         public static string ToHumanBytes(
             this ulong bytes,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null)
         {
             if (TryToHumanBytes(bytes, out var result, decimalPlaces, useBinaryPrefixes, culture)) return result;
@@ -77,14 +77,14 @@ namespace HumanNumbers.Bytes
             this T bytes,
             out string result,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null) where T : INumber<T>
 #else
         public static bool TryToHumanBytes<T>(
             this T bytes,
             out string result,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null) where T : struct
 #endif
         {
@@ -109,13 +109,13 @@ namespace HumanNumbers.Bytes
         public static string ToHumanBytes<T>(
             this T bytes,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null) where T : INumber<T>
 #else
         public static string ToHumanBytes<T>(
             this T bytes,
             int decimalPlaces = 2,
-            bool useBinaryPrefixes = false,
+            bool useBinaryPrefixes = true,
             CultureInfo? culture = null) where T : struct
 #endif
         {
@@ -156,7 +156,10 @@ namespace HumanNumbers.Bytes
                 }
 
                 string sign = bytes < 0 ? culture.NumberFormat.NegativeSign : "";
-                string formatString = $"F{decimalPlaces}";
+                
+                // Suppress decimals if it's the base unit (B) and is a whole number
+                int precision = (place == 0 && num == Math.Truncate(num)) ? 0 : decimalPlaces;
+                string formatString = $"F{precision}";
                 
                 result = $"{sign}{num.ToString(formatString, culture)} {suffixes[place]}";
                 return true;

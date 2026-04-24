@@ -737,8 +737,29 @@ namespace HumanNumbers
                 var scaledValue = absValue / divisor;
                 var roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
 
+                // Re-evaluate if rounding pushed us to a higher threshold
+                // We use a factor of 1.0 here because we only want to promote if the ROUNDED value
+                // actually hits or exceeds the next threshold.
+                while (divisor > 0)
+                {
+                    var reconstructedValue = roundedValue * divisor;
+                    var (newDivisor, newSuffix) = GetSuffixAndDivisor(reconstructedValue, suffixes, options.Threshold, 1.0m, options.AlwaysShowSuffix);
+                    
+                    if (newDivisor <= divisor) break;
+
+                    divisor = newDivisor;
+                    suffix = newSuffix;
+                    scaledValue = absValue / divisor;
+                    roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
+                }
+
                 // Build the formatted number part
-                var formattedNumber = roundedValue.ToString($"F{options.DecimalPlaces}", numberFormat);
+                // Suppress decimals if not scaled and is a whole number (if option enabled)
+                var precision = (options.SuppressDefaultDecimals && divisor == 1m && string.IsNullOrEmpty(suffix) && roundedValue == Math.Truncate(roundedValue))
+                    ? 0
+                    : options.DecimalPlaces;
+
+                var formattedNumber = roundedValue.ToString($"F{precision}", numberFormat);
 
                 // Apply currency if needed
                 if (options.CurrencySymbol != null)
@@ -809,18 +830,21 @@ namespace HumanNumbers
             if (value < threshold && !alwaysShowSuffix)
                 return (1m, "");
 
-            for (int i = 0; i < suffixes.Length; i++)
+            foreach (var current in suffixes)
             {
-                var current = suffixes[i];
-                if (value >= current.Threshold)
-                    return (current.Threshold, current.Suffix);
+                // If alwaysShowSuffix is true, we skip the "no-suffix" entry (empty string)
+                // to force selection of a higher magnitude suffix.
+                if (string.IsNullOrEmpty(current.Suffix) && alwaysShowSuffix)
+                    continue;
 
-                if (i > 0 && value >= suffixes[i - 1].Threshold * promotionThreshold)
-                    return (suffixes[i - 1].Threshold, suffixes[i - 1].Suffix);
+                if (value >= current.Threshold * promotionThreshold)
+                    return (current.Threshold, current.Suffix);
             }
 
             if (alwaysShowSuffix && suffixes.Length > 1)
             {
+                // Return the smallest non-empty suffix (usually "K")
+                // Suffixes are ordered largest to smallest, so it's the one before the empty one.
                 var smallestSuffix = suffixes[suffixes.Length - 2];
                 return (smallestSuffix.Threshold, smallestSuffix.Suffix);
             }

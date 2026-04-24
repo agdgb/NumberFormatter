@@ -55,7 +55,7 @@ dotnet add package HumanNumbers.AspNetCore
 Want to see all features in action before adopting? Check out the **[ExampleProject](src/ExampleProject)**:
 
 *   **Interactive Labs**: Test Roman numerals, Byte sizes, and Robust Parsing in real-time.
-*   **JSON Showcase**: See how attributes like `[HumanNumberFormat]` and `[NoHumanFormat]` transform API responses.
+*   **JSON Showcase**: See how `[HumanNumber]` with `OutputMode` transforms API responses selectively.
 *   **Round-trip Testing**: Verify model binding and serialization stability via the Financial Playground.
 
 To run the showcase locally:
@@ -79,10 +79,30 @@ amount.ToHumanCurrency();
 amount.ToHumanCurrency("EUR");
 ```
 
+### Financial
+```csharp
+0.015m.ToHumanBps();                        // "150 bps"
+101.5m.ToHumanFraction(32);                 // "101 16/32"
+1234.56m.ToHumanWords();                    // "One Thousand Two Hundred Thirty-Four Dollars and 56/100"
+1234.56m.ToHumanWords("Euros", "Euro");     // "One Thousand Two Hundred Thirty-Four Euros and 56/100"
+
+// Financial rounding for market ticks
+10.22m.RoundToTick(0.05m, TickRoundingMode.Down); // 10.20m
+```
+
 ### Parsing
 ```csharp
 HumanNumber.Parse("1.5M");
 HumanNumber.TryParse("$50K", out decimal value);
+```
+
+### Try Pattern Methods (Exception-Free)
+```csharp
+if (1500m.TryToHuman(out var result))
+    Console.WriteLine(result); // "1.50K"
+
+if (1250m.TryToHumanCurrency("EUR", out var currency))
+    Console.WriteLine(currency); // "€1.25K"
 ```
 
 ---
@@ -94,7 +114,7 @@ HumanNumber.TryParse("$50K", out decimal value);
 * [Culture awareness](#culture-support)
 * [Byte sizes](#byte-size-formatting)
 * [Roman numerals](#roman-numerals)
-* [Financial formatting](#financial-formatting)
+* [Financial formatting](#quick-start-core-library)
 * [JSON + ASP.NET integration](#aspnet-core-quick-setup)
 
 ---
@@ -106,6 +126,17 @@ HumanNumber.TryParse("$50K", out decimal value);
 1234.ToHuman(new HumanNumberFormatOptions { DecimalPlaces = 3 }); // 1.234K
 ```
 
+### Fluent API
+```csharp
+HumanNumber.Format(1500000m)
+    .UsingPolicy("Dashboard")
+    .UsingCulture(new CultureInfo("fr-FR"))
+    .ToHuman(); // "1,5M"
+
+HumanNumber.Format(987654m)
+    .ToHumanCurrency("EUR"); // "€987.65K"
+```
+
 ### Culture Support
 ```csharp
 1234567.ToHuman(new CultureInfo("fr-FR")); // 1,23 M
@@ -114,28 +145,6 @@ HumanNumber.TryParse("$50K", out decimal value);
 ### Custom Suffix Sets
 ```csharp
 1000.ToHuman(new HumanNumberFormatOptions { CustomSuffixes = new[] { " thousand", " million" } }); // 1 thousand
-```
-
----
-
-## Financial Formatting
-
-### Basis Points
-```csharp
-0.015m.ToBpsString(); // "150 bps"
-BasisPointFormatter.TryParseBps("150 bps", out decimal value); // 0.015m
-```
-
-### Fractional Prices
-```csharp
-101.5m.ToFractionString(32); // "101 16/32"
-FinancialRounding.TryParseFraction("101 16/32", out decimal value); // 101.5m
-```
-
-### Check Writing Numbers
-```csharp
-1234.56m.ToCheckWords(); // "One Thousand Two Hundred Thirty-Four Dollars and 56/100"
-1234.56m.ToCheckWords("Euros", "Euro"); // "One Thousand Two Hundred Thirty-Four Euros and 56/100"
 ```
 
 ---
@@ -164,7 +173,7 @@ builder.Services.AddHumanNumbersDefaults();
 ```
 
 Enables automatically:
-* JSON converters
+* Per-property JSON formatting (opt-in via `[HumanNumber]`)
 * MVC / Minimal API support
 * DI services
 * TagHelpers
@@ -173,21 +182,50 @@ Enables automatically:
 
 ## ASP.NET Core Usage
 
-### JSON Output Example
+### The `[HumanNumber]` Attribute
 
-Before:
-```json
+The attribute is a **metadata marker** by default. It signals intent but does not alter JSON output unless explicitly opted-in via `OutputMode`.
+
+```csharp
+public class RevenueReport
 {
-  "revenue": 1500000
+    // Stays a raw number in JSON — safe default
+    [HumanNumber]
+    public decimal Revenue { get; set; }
+
+    // Formatted as a human string in JSON — explicit opt-in
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
+    public decimal DisplayRevenue { get; set; }
+
+    // Currency with explicit opt-in
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, IsCurrency = true, CurrencyCode = "USD")]
+    public decimal UsdRevenue { get; set; }
 }
 ```
 
-After:
+**JSON Output:**
 ```json
 {
-  "revenue": "1.50M"
+  "revenue": 1550000.50,
+  "displayRevenue": "1.55M",
+  "usdRevenue": "$1.55M"
 }
 ```
+
+### Global Mode (Format Everything)
+
+If you want blanket formatting across your entire API surface (old v1 behavior):
+
+```csharp
+builder.Services.AddHumanNumbersJsonGlobal();
+```
+
+### JSON Output: Attribute-Driven vs Global
+
+| Setup | `revenue` output | `[HumanNumber]` output | `[SerializeAsHuman]` output |
+| :--- | :--- | :--- | :--- |
+| `AddHumanNumbersJson()` | `1550000.5` | `1550000.5` | `"1.55M"` |
+| `AddHumanNumbersJsonGlobal()` | `"1.55M"` | `"1.55M"` | `"1.55M"` |
 
 ### Minimal API Example
 
@@ -195,11 +233,48 @@ After:
 app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000.50m }));
 ```
 
+### Financial-Specific Attributes
+```csharp
+public record FinancialData(
+    [property: BasisPoints(Decimals = 1, WriteAsString = true)] decimal Spread,
+    [property: FractionPrice(Denominator = 32)] decimal BondPrice
+);
+```
+
 ### Razor TagHelpers
 
 ```html
 <hn-number value="1234567" />
 <hn-currency value="1234.5" currency-code="USD" />
+<hn-check value="1250.50" major-currency="Dollars" major-currency-singular="Dollar" />
+```
+
+### Dependency Injection Service
+
+```csharp
+// Manual formatting in services/controllers
+public class MyService(IHumanNumberService humanNumberService)
+{
+    public string FormatRevenue(decimal revenue) 
+        => humanNumberService.Format(revenue, decimalPlaces: 1);
+    
+    public string FormatCurrency(decimal amount, string currency)
+        => humanNumberService.FormatCurrency(amount, currency);
+}
+```
+
+### Error Handling & Conflict Safety
+
+```csharp
+// Safe-first: [HumanNumber] respects existing converters
+[JsonConverter(typeof(MyCustomConverter))]
+[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)] // Silently skipped
+public decimal Value { get; set; }
+
+// Error modes
+builder.Services.AddHumanNumbersCore(options => {
+    options.CoreOptions.ErrorMode = HumanNumbersErrorMode.Strict; // Throw on errors
+});
 ```
 
 ---
@@ -215,8 +290,6 @@ builder.Services.AddHumanNumbersCore(options =>
 
 ---
 
----
-
 ## Supported Numeric Types
 
 HumanNumbers provides generic extension methods for all built-in .NET numeric types:
@@ -224,8 +297,20 @@ HumanNumbers provides generic extension methods for all built-in .NET numeric ty
 *   **Floating Point**: `decimal`, `double`, `float`
 *   **Integers**: `long`, `ulong`, `int`, `uint`, `short`, `ushort`, `byte`, `sbyte`
 *   **Advanced**: Supports any type implementing `INumber<T>` (in .NET 7+)
+*   **Nullable**: All types support nullable variants that return `string.Empty` for null values
 
 *Note: All types are internally normalized to `decimal` for maximum precision during scaling.*
+
+### Generic Type Support
+```csharp
+// Works with any INumber<T> type
+myCustomNumeric.ToHuman();
+myCustomNumeric.ToHumanCurrency("USD");
+
+// Safe nullable handling
+decimal? value = null;
+var result = value.ToHuman(); // Returns "" (empty string)
+```
 
 ---
 
@@ -246,7 +331,7 @@ HumanNumbers is designed for high-throughput dashboard and API scenarios:
 
 ---
 
-## Migration From NumberFormatter
+## Migration From NumberFormatter / v1.x
 
 > [!WARNING]
 > **Deprecation Notice**: The `NumberFormatter` NuGet package is now deprecated. Future updates will only be released under the `HumanNumbers` namespace.
@@ -256,9 +341,15 @@ HumanNumbers is designed for high-throughput dashboard and API scenarios:
 3.  **API Mapping**:
     *   `ToShortString()` → `ToHuman()`
     *   `ToShortCurrencyString()` → `ToHumanCurrency()`
+    *   `ToBpsString()` → `ToHumanBps()`
+    *   `ToFractionString()` → `ToHumanFraction()`
+    *   `ToCheckWords()` → `ToHumanWords()`
     *   `<short-number>` → `<hn-number>`
-4.  **Configuration**: Use `HumanNumber.Configure()` instead of setting static defaults on the obsolete class.
-
+4.  **Attribute Changes**:
+    *   `[ShortNumberFormat]` → `[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]`
+    *   `[HumanNumberFormat]` → `[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]`
+5.  **Serialization Default Changed**: `[HumanNumber]` no longer alters JSON by default. Add `OutputMode = SerializeAsHuman` where you need formatted output in JSON.
+6.  **Configuration**: Use `HumanNumber.Configure()` instead of setting static defaults on the obsolete class.
 
 ## Roadmap
 
