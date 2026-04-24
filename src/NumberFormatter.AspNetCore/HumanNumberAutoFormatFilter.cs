@@ -6,17 +6,6 @@ using HumanNumbers.Formatting;
 
 namespace HumanNumbers.AspNetCore;
 
-/// <summary>
-/// Attribute to mark a property for automatic human-readable formatting in API responses.
-/// </summary>
-[AttributeUsage(AttributeTargets.Property)]
-public class HumanNumberAttribute : Attribute
-{
-    /// <summary>Number of decimal places to use for this property.</summary>
-    public int? DecimalPlaces { get; set; }
-    /// <summary>The name of the policy to use for formatting this property.</summary>
-    public string? PolicyName { get; set; }
-}
 
 /// <summary>
 /// Action filter that automatically formats numeric properties in API responses.

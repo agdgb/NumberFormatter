@@ -75,7 +75,7 @@ public sealed class FractionPriceJsonConverter : JsonConverter<decimal>
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options)
     {
-        var stringValue = value.ToFractionString(_options.Denominator, _options.Rounding);
+        var stringValue = value.ToHumanFraction(_options.Denominator, _options.Rounding);
         writer.WriteStringValue(stringValue);
     }
 }

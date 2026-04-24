@@ -16,6 +16,12 @@ public class HumanNumbersOptions
     public int DefaultDecimalPlaces { get => _coreOptions.DecimalPlaces; set => _coreOptions.DecimalPlaces = value; }
 
     /// <summary>
+    /// Default error mode (SafeFallback vs Strict) for formatting operations.
+    /// </summary>
+    public HumanNumbersErrorMode DefaultErrorMode { get => _coreOptions.ErrorMode; set => _coreOptions.ErrorMode = value; }
+
+
+    /// <summary>
     /// Advanced configuration for the core HumanNumbers library.
     /// </summary>
     public HumanNumberFormatOptions CoreOptions { get => _coreOptions; set => _coreOptions = value; }
@@ -50,6 +56,16 @@ public class HumanNumbersOptions
     /// The name of the default formatting policy.
     /// </summary>
     public string DefaultPolicyName { get; set; } = "Default";
+
+    /// <summary>
+    /// Registers a named formatting policy globally.
+    /// </summary>
+    /// <param name="name">The name of the policy (e.g., "Dashboard").</param>
+    /// <param name="options">The formatting options for this policy.</param>
+    public void AddPolicy(string name, HumanNumberFormatOptions options)
+    {
+        HumanNumber.Configure(config => config.AddPolicy(name, options));
+    }
 }
 
 /// <summary>

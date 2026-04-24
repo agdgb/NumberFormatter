@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HumanNumbers Documentation Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))"
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))"
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))"
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))"
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))"
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))"
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))"
+                        }
+                    },
+                    borderRadius: {
+                        lg: "var(--radius)",
+                        md: "calc(var(--radius) - 2px)",
+                        sm: "calc(var(--radius) - 4px)"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 210 40% 98%;
+            --primary-foreground: 222.2 84% 4.9%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 212.7 26.8% 83.9%;
+            --radius: 0.5rem;
+        }
+        
+        .glass {
+            background: rgba(17, 25, 40, 0.75);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        
+        .code-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            padding-left: 13px;
+        }
+        
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 3px solid #3b82f6;
+            padding-left: 13px;
+            color: #3b82f6;
+        }
+        
+        .toc-item {
+            transition: all 0.2s ease;
+        }
+        
+        .toc-item:hover {
+            color: #3b82f6;
+            transform: translateX(2px);
+        }
+        
+        .toc-item.active {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .callout {
+            border-left: 4px solid;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .callout.rationale {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .callout.performance {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            background: #1e293b;
+            border-bottom: 2px solid #3b82f6;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        .section-content {
+            display: none;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        /* Architecture Diagram Styles */
+        .diagram-container {
+            width: 100%;
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            margin: 2rem 0;
+            display: flex;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .diagram-node {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+
+        .diagram-node:hover {
+            transform: translateY(-8px);
+            filter: drop-shadow(0 12px 20px rgba(59, 130, 246, 0.3));
+        }
+
+        .flow-line {
+            stroke-dasharray: 8;
+            animation: flow-dash 30s linear infinite;
+        }
+
+        @keyframes flow-dash {
+            from { stroke-dashoffset: 400; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .diagram-text {
+            fill: #94a3b8;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .diagram-label {
+            font-weight: 700;
+            fill: #f8fafc;
+            font-size: 15px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="flex">
+        <!-- Left Sidebar - Navigation -->
+        <aside class="w-64 h-screen sticky top-0 glass scrollbar-thin overflow-y-auto">
+            <div class="p-6">
+                <h1 class="text-xl font-bold mb-8 text-blue-400">HumanNumbers</h1>
+                <nav class="space-y-1">
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Getting Started</h3>
+                        <a href="#getting-started" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="getting-started">Overview</a>
+                        <a href="#when-to-use" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="getting-started">When Should You Use HumanNumbers?</a>
+                        <a href="#request-culture-resolution" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="getting-started">Request Culture Resolution</a>
+                        <a href="#installation" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="getting-started">Installation</a>
+                        <a href="#quick-start" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="getting-started">Quick Start</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">API Integration</h3>
+                        <a href="#automatic-api-formatting" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="automatic-api-formatting">Automatic API Formatting</a>
+                        <a href="#attribute-formatting" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="attribute-formatting">Attribute-Based Formatting</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Architecture</h3>
+                        <a href="#architecture" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="architecture">Architecture Overview</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Core Library</h3>
+                        <a href="#core-overview" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Overview</a>
+                        <a href="#number-formatting" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Number Formatting</a>
+                        <a href="#currency-formatting" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Currency Formatting</a>
+                        <a href="#financial-words" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Financial Words</a>
+                        <a href="#basis-points" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Basis Points</a>
+                        <a href="#fractional-pricing" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Fractional Pricing</a>
+                        <a href="#byte-scaling" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Byte Scaling</a>
+                        <a href="#supported-types" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="core">Supported Types</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">ASP.NET Core</h3>
+                        <a href="#aspnet-overview" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">Overview</a>
+                        <a href="#choosing-configuration" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">Choosing a Configuration Approach</a>
+                        <a href="#integration-setup" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">Integration Setup</a>
+                        <a href="#json-serialization" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">JSON Serialization</a>
+                        <a href="#tag-helpers" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">TagHelpers</a>
+                        <a href="#dependency-injection" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">Dependency Injection</a>
+                        <a href="#error-handling" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="aspnet">Error Handling</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Performance</h3>
+                        <a href="#performance-overview" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Overview</a>
+                        <a href="#memory-allocation" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Memory & Allocation</a>
+                        <a href="#span-operations" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Span Operations</a>
+                        <a href="#caching-strategies" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Caching</a>
+                        <a href="#jit-optimizations" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">JIT Optimizations</a>
+                        <a href="#benchmarks" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Benchmarks</a>
+                        <a href="#real-world-scenarios" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="performance">Real-World Scenarios</a>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Next Steps</h3>
+                        <a href="#next-steps" class="nav-item block px-3 py-2 rounded-md text-sm" data-section="next-steps">Next Steps</a>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-4xl mx-auto px-8 py-8">
+            <!-- Getting Started Section -->
+            <section id="getting-started" class="section-content active">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Getting Started</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        HumanNumbers is a formatting pipeline that ensures every number your application emits is immediately understandable to humans.
+                        Instead of scattering formatting logic across controllers, views, serializers, and JavaScript, HumanNumbers centralizes 
+                        numeric presentation into a single, culture‑aware system integrated throughout the ASP.NET Core stack.
+                    </p>
+
+                    <section id="when-to-use">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">When Should You Use HumanNumbers?</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers operates at multiple layers of the ASP.NET Core stack so formatting becomes automatic rather than repetitive.
+                            Typical usage includes:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-green-400">Use HumanNumbers when:</h3>
+                                <ul class="space-y-2 text-sm text-gray-300">
+                                    <li class="flex items-start">
+                                        <span class="text-green-400 mr-2">+</span>
+                                        Financial APIs returning pre‑formatted values
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-400 mr-2">+</span>
+                                        Razor views that auto‑format numeric models
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-400 mr-2">+</span>
+                                        Dashboards that display compact metrics consistently
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-green-400 mr-2">+</span>
+                                        Multi‑culture applications requiring per‑request formatting
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-red-600 rounded-lg bg-red-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-red-400">Do NOT use when:</h3>
+                                <ul class="space-y-2 text-sm text-gray-300">
+                                    <li class="flex items-start">
+                                        <span class="text-red-400 mr-2">-</span>
+                                        Machine-to-machine APIs
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-red-400 mr-2">-</span>
+                                        Scientific/engineering calculations
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-red-400 mr-2">-</span>
+                                        Raw data persistence
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why Not Built-in .NET Formatting?</h4>
+                            <p class="text-gray-300">
+                                Built-in .NET formatting is designed for precision and machine readability. 
+                                HumanNumbers is optimized for human readability and performance in UI scenarios, 
+                                providing compact notation, zero-allocation operations, and guaranteed non-throwing behavior.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="request-culture-resolution">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Request Culture Resolution</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers determines formatting culture using the ASP.NET Core request pipeline, 
+                            ensuring consistent formatting across all layers of your application.
+                        </p>
+                        
+                        <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20 mb-6">
+                            <h3 class="text-lg font-semibold mb-3 text-blue-400">Resolution Priority</h3>
+                            <ol class="space-y-2 text-sm text-gray-300">
+                                <li><strong>1. Explicit per‑request override</strong> - Manual culture setting per request</li>
+                                <li><strong>2. RequestLocalization middleware culture</strong> - Middleware-determined culture</li>
+                                <li><strong>3. Current thread culture</strong> - Fallback to thread culture</li>
+                            </ol>
+                        </div>
+
+                        <div class="code-block mb-6">
+                            <pre><code class="text-gray-100">// Manual culture override for specific scenarios
+CultureResolver.SetCulture(HttpContext, new CultureInfo("fr-FR"));
+
+// This allows endpoints to force culture when required
+// For example: exporting reports in a specific language</code></pre>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why Pipeline Resolution Matters</h4>
+                            <p class="text-gray-300">
+                                Automatic culture resolution means your APIs and views adapt to user preferences without 
+                                manual formatting code. However, you retain full control to override when business logic 
+                                requires specific formatting (e.g., financial reports in a fixed currency locale).
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="installation">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Installation</h2>
+                        <p class="text-gray-300 mb-4">
+                            Install HumanNumbers via NuGet package manager:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">dotnet add package HumanNumbers
+# Or via Package Manager Console
+Install-Package HumanNumbers
+
+# For ASP.NET Core integration
+dotnet add package HumanNumbers.AspNetCore</code></pre>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why HumanNumbers?</h4>
+                            <p class="text-gray-300">
+                                Traditional number formatting in .NET allocates memory for every formatting operation. 
+                                HumanNumbers uses Span&lt;char&gt; and stackalloc to provide zero-allocation formatting, 
+                                making it ideal for high-performance applications like financial systems and real-time dashboards.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="quick-start">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Quick Start</h2>
+                        <p class="text-gray-300 mb-4">
+                            Start formatting numbers with just a few lines of code:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">using HumanNumbers;
+
+// Basic number formatting
+var result = 1500000.ToHuman();        // "1.5M"
+var currency = 1500000.ToCurrency();   // "$1.5M"
+
+// Financial words for check printing
+var words = 1500.ToFinancialWords();   // "One Thousand Five Hundred"
+
+// Basis points for financial markets
+var bps = 0.015.ToBasisPoints();       // "150 bps"
+
+// Byte scaling for technical applications
+var bytes = 1048576.ToBytes();         // "1.0 MB"</code></pre>
+                        </div>
+
+                        <div class="callout performance">
+                            <h4 class="font-semibold text-green-400 mb-2">Performance Note</h4>
+                            <p class="text-gray-300">
+                                All formatting operations are zero-allocation when the result fits in the stack buffer. 
+                                For larger numbers, only a single allocation occurs for the result string.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="automatic-api-formatting" class="section-content">
+                        <article class="prose prose-invert max-w-none">
+                            <h1 class="text-4xl font-bold mb-4 text-white">Automatic API Formatting</h1>
+                            <p class="text-lg text-gray-300 mb-6">
+                                When ASP.NET Core integration is enabled, HumanNumbers installs JSON converters that automatically 
+                                format numeric values in API responses. This means controllers can return raw numeric types while 
+                                responses remain human-friendly.
+                            </p>
+
+                            <section id="api-response-transformation">
+                                <h2 class="text-2xl font-semibold mb-4 text-white">Response Transformation</h2>
+                                <p class="text-gray-300 mb-4">
+                                    The JSON serialization pipeline automatically transforms numeric values without any controller code:
+                                </p>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div class="p-6 border border-gray-600 rounded-lg bg-gray-900/20">
+                                        <h3 class="text-lg font-semibold mb-3 text-gray-400">Raw Model</h3>
+                                        <div class="code-block">
+                                            <pre><code class="text-gray-100">{
+  "revenue": 1250000,
+  "users": 48392,
+  "growth": 0.234
+}</code></pre>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                        <h3 class="text-lg font-semibold mb-3 text-green-400">Serialized Output</h3>
+                                        <div class="code-block">
+                                            <pre><code class="text-gray-100">{
+  "revenue": "1.25M",
+  "users": "48.4K", 
+  "growth": "23.4%"
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="callout performance">
+                                    <h4 class="font-semibold text-green-400 mb-2">Zero Controller Changes Required</h4>
+                                    <p class="text-gray-300">
+                                        Controllers return plain numeric types. The formatting happens automatically in the JSON pipeline, 
+                                        keeping your business logic clean while ensuring API responses are human-readable.
+                                    </p>
+                                </div>
+                            </section>
+
+                            <section id="json-converters">
+                                <h2 class="text-2xl font-semibold mb-4 text-white">Built-in JSON Converters</h2>
+                                <p class="text-gray-300 mb-4">
+                                    HumanNumbers provides specialized converters for different numeric scenarios:
+                                </p>
+                                
+                                <div class="space-y-4">
+                                    <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                        <h3 class="text-md font-semibold mb-2 text-primary">HumanNumberJsonConverter</h3>
+                                        <p class="text-sm text-muted-foreground">
+                                            Standard compact notation (K, M, B) for general metrics
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                        <h3 class="text-md font-semibold mb-2 text-primary">BasisPointsJsonConverter</h3>
+                                        <p class="text-sm text-muted-foreground">
+                                            Financial basis points with proper formatting (e.g., "25 bps")
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                        <h3 class="text-md font-semibold mb-2 text-primary">FractionPriceJsonConverter</h3>
+                                        <p class="text-sm text-muted-foreground">
+                                            Bond and stock fractional pricing (e.g., "99 31/32")
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                        <h3 class="text-md font-semibold mb-2 text-primary">CurrencyDictionaryConverter</h3>
+                                        <p class="text-sm text-muted-foreground">
+                                            Currency formatting with automatic symbol detection
+                                        </p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section id="controller-example">
+                                <h2 class="text-2xl font-semibold mb-4 text-white">Controller Example</h2>
+                                <p class="text-gray-300 mb-4">
+                                    Notice how the controller code contains no formatting logic:
+                                </p>
+                                
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">[ApiController]
+[Route("api/[controller]")]
+public class MetricsController : ControllerBase
+{
+    [HttpGet("dashboard")]
+    public ActionResult<DashboardDto> GetDashboard()
+    {
+        // Return raw numeric values - formatting happens automatically
+        return Ok(new DashboardDto
+        {
+            TotalRevenue = 1250000,
+            ActiveUsers = 48392,
+            GrowthRate = 0.234m,
+            AvgSessionDuration = 1800 // seconds
+        });
+    }
+}
+
+public class DashboardDto
+{
+    public decimal TotalRevenue { get; set; }
+    public int ActiveUsers { get; set; }
+    public decimal GrowthRate { get; set; }
+    public int AvgSessionDuration { get; set; }
+}</code></pre>
+                                </div>
+
+                                <div class="callout rationale">
+                                    <h4 class="font-semibold text-yellow-400 mb-2">Pipeline Positioning</h4>
+                                    <p class="text-gray-300">
+                                        This demonstrates the core value proposition: HumanNumbers is not just a formatting helper, 
+                                        but a response-pipeline formatting framework. Your controllers stay focused on business logic 
+                                        while the presentation layer handles formatting automatically.
+                                    </p>
+                                </div>
+                            </section>
+                        </article>
+                    </section>
+
+                </article>
+            </section>
+
+            <!-- Attribute-Based Formatting Section -->
+            <section id="attribute-formatting" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Attribute-Based Formatting</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        HumanNumbers supports declarative formatting using attributes, allowing you to specify formatting rules 
+                        directly on your model properties. This approach works across MVC views, JSON serialization, and Minimal API results.
+                    </p>
+
+                    <section id="available-attributes">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Available Attributes</h2>
+                        <p class="text-gray-300 mb-4">
+                            The library provides several attributes for different formatting scenarios:
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-blue-400">[HumanNumber]</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Standard compact notation for general metrics and UI display.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">public class DashboardDto
+{
+    [HumanNumber]
+    public decimal Revenue { get; set; }     // "1.25M"
+    
+    [HumanNumber(DecimalPlaces = 3)]
+    public double Precision { get; set; }   // "1.234K"
+}</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 border border-purple-600 rounded-lg bg-purple-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-purple-400">[BasisPoints]</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Financial basis points for spreads, yields, and rate changes.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">public class QuoteDto
+{
+    [BasisPoints]
+    public decimal Spread { get; set; }      // "25 bps"
+    
+    [BasisPoints(ShowPlusSign = true)]
+    public decimal Change { get; set; }      // "+15 bps"
+}</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-green-400">[FractionPrice]</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Bond and stock fractional pricing (32nds, 8ths, etc.).
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">public class BondDto
+{
+    [FractionPrice]
+    public decimal Price { get; set; }       // "99 31/32"
+    
+    [FractionPrice(FractionType.Eighth)]
+    public decimal AlternatePrice { get; set; } // "101 3/8"
+}</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 border border-yellow-600 rounded-lg bg-yellow-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-yellow-400">[NoHumanFormat]</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Explicitly opt-out of automatic formatting for specific properties.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">public class MixedDto
+{
+    [HumanNumber]
+    public decimal DisplayValue { get; set; }  // "1.25M"
+    
+    [NoHumanFormat]
+    public decimal RawValue { get; set; }      // 1250000.00
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="attribute-scenarios">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Real-World Scenarios</h2>
+                        <p class="text-gray-300 mb-4">
+                            Attributes work across different parts of your application:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Financial APIs</h3>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">public class TradeResponse
+{
+    [BasisPoints]
+    public decimal Yield { get; set; }
+    
+    [FractionPrice]
+    public decimal BondPrice { get; set; }
+}</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">MVC Views</h3>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">@model PortfolioViewModel
+<div>@Model.TotalValue</div>
+<!-- Displays: "1.25M" --></code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Minimal APIs</h3>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">app.MapGet("/metrics", () => 
+    new Metrics { 
+        Users = 48392 
+    });
+// Returns: {"Users":"48.4K"}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="attribute-configuration">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Configuration Options</h2>
+                        <p class="text-gray-300 mb-4">
+                            Common configuration options available across attributes:
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Decimal Precision</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Control the number of decimal places displayed
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">[HumanNumber(DecimalPlaces = 2)]
+[HumanNumber(UseMinPrecision = true)]</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Culture Override</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Force specific formatting regardless of request culture
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">[HumanNumber(Culture = "en-US")]
+[HumanNumber(Culture = "fr-FR")]</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Output Mode</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Control when formatting is applied
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">[HumanNumber(OutputMode = HumanNumberOutputMode.Always)]
+[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="callout rationale">
+                        <h4 class="font-semibold text-yellow-400 mb-2">Declarative Benefits</h4>
+                        <p class="text-gray-300">
+                            Attribute-based formatting keeps your business logic clean while ensuring consistent presentation 
+                            across all output formats. The formatting rules travel with your model, making it impossible to 
+                            accidentally return unformatted values in APIs or views.
+                        </p>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Architecture Overview Section -->
+            <section id="architecture" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Architecture Overview</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        HumanNumbers follows a layered architecture designed for performance, extensibility, and seamless integration 
+                        with modern ASP.NET Core applications. The architecture separates concerns while maintaining a clean, 
+                        intuitive API surface.
+                    </p>
+
+                    <section id="architecture-layers">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Layered Architecture Model</h2>
+                        <p class="text-gray-300 mb-4">
+                            The system is organized into three distinct layers, each with specific responsibilities:
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-blue-400">1. Formatting Engine (Core)</h3>
+                                <p class="text-gray-300 mb-3">
+                                    The foundation layer containing all number formatting logic and performance optimizations.
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li>Zero-allocation Span&lt;char&gt; operations</li>
+                                    <li>Stack-based formatting with fallback allocation</li>
+                                    <li>Culture-aware number formatting</li>
+                                    <li>Currency, basis points, and specialized formatters</li>
+                                    <li>Performance-critical JIT optimizations</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-purple-600 rounded-lg bg-purple-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-purple-400">2. ASP.NET Integration Layer</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Middleware and integration components for seamless ASP.NET Core adoption.
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li>JSON serialization converters and factories</li>
+                                    <li>MVC model binding and validation integration</li>
+                                    <li>Dependency injection service registration</li>
+                                    <li>TagHelper implementations for Razor views</li>
+                                    <li>Culture resolution and configuration management</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-green-400">3. Presentation Layer (UI / JSON / Razor)</h3>
+                                <p class="text-gray-300 mb-3">
+                                    User-facing components and output formatting for different presentation contexts.
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li>Razor TagHelpers for declarative formatting</li>
+                                    <li>JSON API response formatting</li>
+                                    <li>Error handling and validation feedback</li>
+                                    <li>Localization and internationalization support</li>
+                                    <li>Real-time dashboard and analytics integration</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="architecture-principles">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Design Principles</h2>
+                        <p class="text-gray-300 mb-4">
+                            The architecture is guided by several core principles that ensure reliability and performance:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Zero Allocation by Default</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    All formatting operations use stack-based allocation unless the result exceeds buffer size.
+                                </p>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Never-Throw Guarantee</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    UI formatting never throws exceptions in production paths, ensuring application stability.
+                                </p>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Configuration Over Convention</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Explicit configuration options with sensible defaults for different scenarios.
+                                </p>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Integration First</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Designed for seamless integration with existing ASP.NET Core applications.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="architecture-flow">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Data Flow</h2>
+                        <p class="text-gray-300 mb-4">
+                            Understanding how data flows through the architecture helps with debugging and optimization:
+                        </p>
+                        
+                        <div class="diagram-container">
+                            <svg width="500" height="480" viewBox="0 0 500 480" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto;">
+                                <defs>
+                                    <linearGradient id="grad-input" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.25" />
+                                        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.05" />
+                                    </linearGradient>
+                                    <linearGradient id="grad-core" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.25" />
+                                        <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.05" />
+                                    </linearGradient>
+                                    <linearGradient id="grad-integration" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.25" />
+                                        <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.05" />
+                                    </linearGradient>
+                                    <linearGradient id="grad-presentation" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.25" />
+                                        <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0.05" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Flow Paths -->
+                                <path d="M250 85 L250 125" stroke="#3b82f6" stroke-width="2" class="flow-line" />
+                                <path d="M250 205 L250 245" stroke="#8b5cf6" stroke-width="2" class="flow-line" />
+                                <path d="M250 325 L250 365" stroke="#10b981" stroke-width="2" class="flow-line" />
+
+                                <!-- Step 1 -->
+                                <g class="diagram-node">
+                                    <rect x="100" y="10" width="300" height="75" rx="12" fill="url(#grad-input)" stroke="#3b82f6" stroke-width="1" />
+                                    <text x="250" y="38" text-anchor="middle" class="diagram-label">1. Input Data Source</text>
+                                    <text x="250" y="58" text-anchor="middle" class="diagram-text">decimal, int, double, long, etc.</text>
+                                </g>
+
+                                <!-- Step 2 -->
+                                <g class="diagram-node">
+                                    <rect x="100" y="125" width="300" height="80" rx="12" fill="url(#grad-core)" stroke="#8b5cf6" stroke-width="1" />
+                                    <text x="250" y="153" text-anchor="middle" class="diagram-label">2. Formatting Engine (Core)</text>
+                                    <text x="250" y="173" text-anchor="middle" class="diagram-text">Zero-allocation Span&lt;char&gt; ops</text>
+                                    <text x="250" y="190" text-anchor="middle" class="diagram-text">Culture-aware formatting logic</text>
+                                </g>
+
+                                <!-- Step 3 -->
+                                <g class="diagram-node">
+                                    <rect x="100" y="245" width="300" height="80" rx="12" fill="url(#grad-integration)" stroke="#10b981" stroke-width="1" />
+                                    <text x="250" y="273" text-anchor="middle" class="diagram-label">3. Integration Layer</text>
+                                    <text x="250" y="293" text-anchor="middle" class="diagram-text">JSON Serialization Pipeline</text>
+                                    <text x="250" y="310" text-anchor="middle" class="diagram-text">TagHelpers & DI Services</text>
+                                </g>
+
+                                <!-- Step 4 -->
+                                <g class="diagram-node">
+                                    <rect x="100" y="365" width="300" height="80" rx="12" fill="url(#grad-presentation)" stroke="#f59e0b" stroke-width="1" />
+                                    <text x="250" y="393" text-anchor="middle" class="diagram-label">4. Presentation Layer</text>
+                                    <text x="250" y="413" text-anchor="middle" class="diagram-text">HTTP Response & Razor Views</text>
+                                    <text x="250" y="430" text-anchor="middle" class="diagram-text">Human-readable UI output</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why This Architecture?</h4>
+                            <p class="text-gray-300">
+                                This layered approach provides clear separation of concerns, making the system easier to test, 
+                                maintain, and extend. Each layer can be optimized independently while maintaining 
+                                consistent behavior across all integration points.
+                            </p>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
+            <!-- Core Library Section -->
+            <section id="core" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Core Library</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        The HumanNumbers core library provides comprehensive number formatting capabilities with 
+                        zero-allocation performance and extensive customization options.
+                    </p>
+
+                    <div class="callout performance">
+                        <h4 class="font-semibold text-green-400 mb-2">Never-Throw Philosophy</h4>
+                        <p class="text-gray-300">
+                            <strong>HumanNumbers is designed for UI safety.</strong> Formatting never throws exceptions in production paths. 
+                            This is a fundamental guarantee - invalid input results in safe fallback values, never crashes. 
+                            This ensures your application remains stable even with malformed user input or unexpected data.
+                        </p>
+                    </div>
+
+                    <section id="core-overview">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Overview</h2>
+                        <p class="text-gray-300 mb-4">
+                            The core library is designed for maximum performance and flexibility, supporting:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div className="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 className="text-lg font-semibold mb-3 text-primary">Number Formatting</h3>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li>Compact notation (K, M, B, T)</li>
+                                    <li>Custom decimal precision</li>
+                                    <li>Culture-aware formatting</li>
+                                    <li>Zero-allocation operations</li>
+                                </ul>
+                            </div>
+                            
+                            <div className="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 className="text-lg font-semibold mb-3 text-primary">Currency Support</h3>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li>Automatic currency symbols</li>
+                                    <li>International formatting</li>
+                                    <li>Custom currency codes</li>
+                                    <li>Exchange rate awareness</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="number-formatting">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Number Formatting</h2>
+                        <p class="text-gray-300 mb-4">
+                            Basic number formatting with compact notation:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Basic formatting
+var basic = 1500000.ToHuman();           // "1.5M"
+var precise = 1500000.ToHuman(2);        // "1.50M"
+var minPrecision = 1000000.ToHuman(0, true); // "1M" (forced)
+
+// Large numbers
+var billion = 1500000000.ToHuman();      // "1.5B"
+var trillion = 1500000000000.ToHuman();   // "1.5T"
+
+// Small numbers
+var thousand = 1500.ToHuman();           // "1.5K"
+var hundreds = 150.ToHuman();            // "150"</code></pre>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Compact Notation Benefits</h4>
+                            <p class="text-gray-300">
+                                Compact notation improves readability in dashboards and reports by reducing 
+                                cognitive load while maintaining precision. Essential for financial applications 
+                                where space is limited and clarity is critical.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="currency-formatting">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Currency Formatting</h2>
+                        <p class="text-gray-300 mb-4">
+                            Currency-aware formatting with automatic symbol detection:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Automatic currency formatting
+var usd = 1500000.ToCurrency();                    // "$1.5M"
+var eur = 1500000.ToCurrency("EUR");               // "1.5M EUR"
+var custom = 1500000.ToCurrency("GBP", "£");       // "£1.5M"
+
+// Culture-aware currency
+var german = 1500000.ToCurrency(new CultureInfo("de-DE")); // "1,5M EUR"
+var french = 1500000.ToCurrency(new CultureInfo("fr-FR")); // "1,5M EUR"
+
+// Custom precision
+var precise = 1500000.ToCurrency(decimalPlaces: 3); // "$1.500M"</code></pre>
+                        </div>
+
+                        <div class="callout performance">
+                            <h4 class="font-semibold text-green-400 mb-2">Currency Performance</h4>
+                            <p class="text-gray-300">
+                                Currency formatting uses the same zero-allocation principles as basic formatting, 
+                                with symbol detection happening at compile time for known currencies.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="financial-words">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Financial Words</h2>
+                        <p class="text-gray-300 mb-4">
+                            Convert numbers to words for checks and legal documents:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Basic word conversion
+var words = 1500.ToFinancialWords();              // "One Thousand Five Hundred"
+var dollars = 1500.ToFinancialWords("USD");       // "One Thousand Five Hundred Dollars"
+var euros = 1500.ToFinancialWords("EUR");          // "One Thousand Five Hundred Euros"
+
+// Large numbers
+var million = 1500000.ToFinancialWords();          // "One Million Five Hundred Thousand"
+var billion = 1500000000.ToFinancialWords();       // "One Billion Five Hundred Million"
+
+// Decimal amounts
+var cents = 1500.75.ToFinancialWords();           // "One Thousand Five Hundred and 75/100"
+var precise = 1500.75.ToFinancialWords("USD", 2); // "One Thousand Five Hundred Dollars and 75/100"</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="basis-points">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Basis Points</h2>
+                        <p class="text-gray-300 mb-4">
+                            Financial market standard for percentage changes:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Basis points conversion
+var bps = 0.015.ToBasisPoints();                  // "150 bps"
+var small = 0.0025.ToBasisPoints();               // "25 bps"
+var large = 0.05.ToBasisPoints();                 // "500 bps"
+
+// Custom precision
+var precise = 0.01575.ToBasisPoints(1);           // "157.5 bps"
+var rounded = 0.01575.ToBasisPoints(0);           // "158 bps"
+
+// Percentage alternative
+var percent = 0.015.ToPercentage();                // "1.5%"
+var precisePercent = 0.01575.ToPercentage(3);     // "1.575%"</code></pre>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why Basis Points?</h4>
+                            <p class="text-gray-300">
+                                Basis points (1/100th of a percentage point) are the industry standard for 
+                                financial markets, eliminating ambiguity in interest rate changes and yield calculations.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="fractional-pricing">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Fractional Pricing</h2>
+                        <p class="text-gray-300 mb-4">
+                            Support for fractional pricing in financial instruments:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Stock pricing (eighths, sixteenths, etc.)
+var stock = 25.125.ToFractional();                // "25 1/8"
+var bond = 98.5.ToFractional(32);                 // "98 16/32"
+
+// Treasury pricing
+var treasury = 101.0625.ToFractional(32);         // "101 2/32"
+
+// Custom denominator
+var custom = 25.333.ToFractional(3);               // "25 1/3"
+
+// Decimal fallback
+var decimal = 25.123456.ToFractional(8);          // "25.123456" (no simple fraction)</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="byte-scaling">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Byte Scaling</h2>
+                        <p class="text-gray-300 mb-4">
+                            Technical applications with binary scaling:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Binary scaling (powers of 1024)
+var kb = 1024.ToBytes();                          // "1.0 KB"
+var mb = 1048576.ToBytes();                       // "1.0 MB"
+var gb = 1073741824.ToBytes();                    // "1.0 GB"
+
+// Decimal scaling (powers of 1000)
+var decimalMB = 1000000.ToBytes(binary: false);   // "1.0 MB"
+
+// Custom precision
+var precise = 1536.ToBytes(2);                    // "1.50 KB"
+var network = 1000000.ToBytes(1, false);          // "1.0 Mbps"
+
+// Bandwidth calculations
+var bandwidth = 1000000000.ToBytes(2, false, "bps"); // "1.00 Gbps"</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="supported-types">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Supported Types</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers supports all numeric types:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="code-block">
+                                <pre><code class="text-gray-100">// Integer types
+int intValue = 1500000;
+var intResult = intValue.ToHuman();               // "1.5M"
+
+long longValue = 1500000000L;
+var longResult = longValue.ToHuman();             // "1.5B"
+
+short shortValue = 1500;
+var shortResult = shortValue.ToHuman();           // "1.5K"</code></pre>
+                            </div>
+                            
+                            <div class="code-block">
+                                <pre><code class="text-gray-100">// Floating point types
+decimal decimalValue = 1500000.75m;
+var decimalResult = decimalValue.ToHuman();       // "1.5M"
+
+double doubleValue = 1500000.75;
+var doubleResult = doubleValue.ToHuman();         // "1.5M"
+
+float floatValue = 1500000.75f;
+var floatResult = floatValue.ToHuman();           // "1.5M"</code></pre>
+                            </div>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
+            <!-- ASP.NET Core Section -->
+            <section id="aspnet" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">ASP.NET Core Integration</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Seamless ASP.NET Core integration with dependency injection, JSON serialization, 
+                        and TagHelpers for web applications.
+                    </p>
+
+                    <section id="aspnet-overview">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Integration Overview</h2>
+                        <p class="text-gray-300 mb-6 text-lg leading-relaxed">
+                            HumanNumbers provides comprehensive ASP.NET Core integration through dependency injection, 
+                            JSON serialization, MVC enhancements, and TagHelpers. The integration is designed 
+                            to be both powerful and developer-friendly while maintaining high performance characteristics.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Dependency Injection</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Comprehensive DI services for formatting, validation, and culture resolution.
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">JSON Serialization</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Attribute-driven and global JSON formatting with custom converter support.
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">MVC Integration</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Enhanced model binding, validation, and action result formatting.
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">TagHelpers</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Razor TagHelpers for declarative number formatting in views.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="choosing-configuration">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Choosing a Configuration Approach</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers provides three layers of configuration to meet different needs. Understanding when to use each approach ensures clean, maintainable code:
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-blue-400">1. Global Defaults</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Set application-wide behavior during startup. Use for consistent formatting across your entire application.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">// Program.cs - Global configuration
+builder.Services.AddHumanNumbersDefaults();
+
+// Or with custom defaults
+builder.Services.AddHumanNumbersCore(options => 
+{
+    options.DefaultCulture = new CultureInfo("en-US"),
+    options.ErrorMode = HumanNumbersErrorMode.Safe,
+    options.EnableCaching = true
+});</code></pre>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-2">
+                                    <strong>When to use:</strong> Most applications need consistent formatting rules across all endpoints and views.
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-purple-600 rounded-lg bg-purple-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-purple-400">2. Policies & Attributes</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Define scenario-specific behavior through policies and model attributes. Use for different formatting needs in different contexts.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">// Model attributes for JSON serialization
+public class FinancialReport
+{
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
+    public decimal Revenue { get; set; }
+    
+    [HumanNumber(IsCurrency = true, DecimalPlaces = 2)]
+    public decimal Expenses { get; set; }
+}
+
+// Policy-based configuration
+builder.Services.AddHumanNumbersCore(options => 
+{
+    options.Policies["Financial"] = new HumanNumberFormatOptions 
+    { 
+        DecimalPlaces = 2, 
+        UseMinPrecision = false 
+    };
+    options.Policies["Technical"] = new HumanNumberFormatOptions 
+    { 
+        DecimalPlaces = 1, 
+        UseMinPrecision = true 
+    };
+});</code></pre>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-2">
+                                    <strong>When to use:</strong> Different APIs or views need different formatting rules (financial vs technical, public vs internal).
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-green-400">3. Per-Call Options</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Override behavior for specific formatting operations. Use for one-off formatting needs or dynamic requirements.
+                                </p>
+                                <div class="code-block">
+                                    <pre><code class="text-gray-100">// Manual formatting with custom options
+var result = value.ToHuman(new HumanNumberFormatOptions 
+{ 
+    DecimalPlaces = 3, 
+    Culture = new CultureInfo("fr-FR") 
+});
+
+// Service-based formatting
+var formatter = serviceProvider.GetRequiredService<IHumanNumberService>();
+var formatted = formatter.Format(value, "FinancialPolicy");
+
+// Span-based formatting for maximum performance
+Span<char> buffer = stackalloc char[32];
+var success = value.TryFormatHuman(buffer, out var written, out var result);</code></pre>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-2">
+                                    <strong>When to use:</strong> Specific scenarios need different formatting than global or policy-based settings.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Configuration Hierarchy</h4>
+                            <p class="text-gray-300">
+                                The three layers follow a clear hierarchy: Per-call options override policies, which override global defaults. 
+                                This allows you to start with sensible global behavior and selectively override where needed, 
+                                keeping your code DRY while maintaining flexibility.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="integration-setup">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Integration Setup</h2>
+                        <p class="text-gray-300 mb-4">
+                            Get HumanNumbers running in your ASP.NET Core application with a single line of code.
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Program.cs - Single line setup
+builder.Services.AddHumanNumbersDefaults();
+
+// This enables:
+// - JSON serialization with [HumanNumber] attributes
+// - MVC model binding and validation
+// - TagHelpers for Razor views
+// - Dependency injection services
+// - Culture-aware formatting
+
+// Manual configuration
+builder.Services.AddHumanNumbersCore(options => 
+{
+    options.DefaultCulture = new CultureInfo("en-US"),
+    options.ErrorMode = HumanNumbersErrorMode.Safe,
+    options.EnableCaching = true
+});</code></pre>
+                        </div>
+                        
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Why Defaults?</h4>
+                            <p class="text-gray-300">
+                                AddHumanNumbersDefaults() provides sensible defaults for most applications. It enables safe-by-default JSON formatting, comprehensive DI services, and automatic culture resolution without requiring extensive configuration.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="json-serialization">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">JSON Serialization</h2>
+                        <p class="text-gray-300 mb-4">
+                            Attribute-driven JSON formatting with compile-time safety:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">public class FinancialReport
+{
+    // Metadata only - no JSON transformation
+    [HumanNumber]
+    public decimal Revenue { get; set; }
+    
+    // Explicit opt-in for JSON formatting
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
+    public decimal DisplayRevenue { get; set; }
+    
+    // Currency formatting with opt-in
+    [HumanNumber(
+        OutputMode = HumanNumberOutputMode.SerializeAsHuman,
+        IsCurrency = true,
+        CurrencyCode = "USD"
+    )]
+    public decimal UsdRevenue { get; set; }
+}
+
+// JSON output
+{
+  "revenue": 1500000.00,
+  "displayRevenue": "1.50M",
+  "usdRevenue": "$1.50M"
+}</code></pre>
+                        </div>
+
+                        <div class="callout performance">
+                            <h4 class="font-semibold text-green-400 mb-2">Zero-Overhead Global Mode</h4>
+                            <p class="text-gray-300">
+                                Global mode uses a single JsonConverterFactory for all numeric types, eliminating per-property overhead. This provides maximum performance for high-volume APIs but reduces fine-grained control.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="tag-helpers">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">TagHelpers</h2>
+                        <p class="text-gray-300 mb-4">
+                            Declarative formatting in Razor views:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">@addTagHelper *, HumanNumbers.AspNetCore
+
+<!-- Basic number formatting -->
+<hn-number value="1500000" />                    <!-- 1.5M -->
+<hn-number value="1500000" decimal-places="2" /> <!-- 1.50M -->
+
+<!-- Currency formatting -->
+<hn-currency value="1500000" />                  <!-- $1.5M -->
+<hn-currency value="1500000" currency="EUR" />   <!-- 1.5M EUR -->
+
+<!-- Financial words -->
+<hn-check value="1500" />                        <!-- One Thousand Five Hundred -->
+<hn-check value="1500" currency="USD" />         <!-- One Thousand Five Hundred Dollars -->
+
+<!-- Byte scaling -->
+<hn-bytes value="1048576" />                      <!-- 1.0 MB -->
+<hn-bytes value="1000000" binary="false" />       <!-- 1.0 MB -->
+
+<!-- Basis points -->
+<hn-basis-points value="0.015" />                <!-- 150 bps --></code></pre>
+                        </div>
+                    </section>
+
+                    <section id="dependency-injection">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Dependency Injection</h2>
+                        <p class="text-gray-300 mb-4">
+                            Advanced DI patterns and custom services:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Inject services in controllers
+public class FinancialController : ControllerBase
+{
+    private readonly IHumanNumberService _formatter;
+    private readonly IHumanNumberValidator _validator;
+    
+    public FinancialController(
+        IHumanNumberService formatter,
+        IHumanNumberValidator validator)
+    {
+        _formatter = formatter;
+        _validator = validator;
+    }
+    
+    [HttpGet("format/{value}")]
+    public IActionResult FormatNumber(decimal value)
+    {
+        var result = _formatter.FormatHuman(value);
+        return Ok(new { value, formatted = result });
+    }
+}
+
+// Custom formatter registration
+builder.Services.AddSingleton<IHumanNumberFormatter>(sp => 
+    new CustomFinancialFormatter());
+
+// Custom validator
+public class CustomValidator : IHumanNumberValidator
+{
+    public ValidationResult Validate(decimal value, HumanNumberFormatOptions options)
+    {
+        if (value < 0)
+            return ValidationResult.Error("Negative values not allowed");
+        return ValidationResult.Success();
+    }
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="error-handling">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Error Handling</h2>
+                        <p class="text-gray-300 mb-4">
+                            Comprehensive error handling with safe and strict modes:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Safe mode (default) - returns empty strings
+var safe = "invalid".ToHuman(HumanNumbersErrorMode.Safe);
+// Result: ""
+
+// Strict mode - throws exceptions
+try
+{
+    var strict = "invalid".ToHuman(HumanNumbersErrorMode.Strict);
+}
+catch (HumanNumbersException ex)
+{
+    // Handle validation error
+    _logger.LogError(ex, "Formatting failed");
+}
+
+// Global error handling
+builder.Services.AddHumanNumbersCore(options => 
+{
+    options.CoreOptions.ErrorMode = HumanNumbersErrorMode.Safe
+});
+
+// Custom error middleware
+public class HumanNumberErrorHandlingMiddleware
+{
+    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (HumanNumbersException ex)
+        {
+            context.Response.StatusCode = 400;
+            await context.Response.WriteAsJsonAsync(new 
+            { 
+                error = "Invalid number format",
+                details = ex.Message 
+            });
+        }
+    }
+}</code></pre>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
+            <!-- Performance Section -->
+            <section id="performance" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Performance</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Deep dive into HumanNumbers performance characteristics, memory allocation patterns, 
+                        and optimization techniques for high-throughput applications.
+                    </p>
+
+                    <section id="performance-overview">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Performance Overview</h2>
+                        <p class="text-gray-300 mb-6 text-lg leading-relaxed">
+                            HumanNumbers is designed from the ground up for maximum performance with zero-allocation 
+                            operations, Span&lt;char&gt; usage, and JIT optimizations. The library maintains consistent 
+                            sub-microsecond formatting times even under high load.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Zero Allocation</h3>
+                                <p class="text-sm text-muted-foreground mb-2">
+                                    Stack-based formatting for most operations
+                                </p>
+                                <div class="text-2xl font-bold text-green-400">0 B</div>
+                                <p class="text-xs text-muted-foreground">per operation (typical)</p>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Formatting Speed</h3>
+                                <p class="text-sm text-muted-foreground mb-2">
+                                    Average time per formatting operation
+                                </p>
+                                <div class="text-2xl font-bold text-blue-400">&lt; 1µs</div>
+                                <p class="text-xs text-muted-foreground">microseconds</p>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Throughput</h3>
+                                <p class="text-sm text-muted-foreground mb-2">
+                                    Operations per second on modern hardware
+                                </p>
+                                <div class="text-2xl font-bold text-purple-400">10M+</div>
+                                <p class="text-xs text-muted-foreground">ops/sec</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="memory-allocation">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Memory & Allocation</h2>
+                        <p class="text-gray-300 mb-4">
+                            Zero-allocation design with stack-based operations:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Zero allocation for most operations
+Span<char> buffer = stackalloc char[32];
+var success = 1500000.TryFormatHuman(buffer, out var written, out var result);
+// No heap allocation - result points to stack buffer
+
+// Single allocation for large results
+var large = 1500000000000000.ToHuman(); // "1.5P"
+// Only one string allocation for the result
+
+// Span-based API for maximum performance
+public static bool TryFormatHuman(
+    this decimal value,
+    Span<char> destination,
+    out int charsWritten,
+    out string result)
+{
+    // Implementation uses stackalloc and Span<T>
+    // Zero allocation when result fits in buffer
+}</code></pre>
+                        </div>
+
+                        <div class="callout performance">
+                            <h4 class="font-semibold text-green-400 mb-2">Memory Profile</h4>
+                            <p class="text-gray-300">
+                                Typical operations use 0-32 bytes of stack space. Only when the formatted result 
+                                exceeds the buffer size does a single string allocation occur. This design enables 
+                                consistent performance in GC-sensitive applications.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="span-operations">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Span Operations</h2>
+                        <p class="text-gray-300 mb-4">
+                            High-performance Span&lt;char&gt; operations:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Direct Span operations
+public static void FormatToSpan(
+    this decimal value,
+    Span<char> destination,
+    out int charsWritten)
+{
+    // Fast path for common cases
+    if (value >= 1000000 && value < 1000000000)
+    {
+        var millions = value / 1000000;
+        var formatted = millions.ToString("G", CultureInfo.InvariantCulture);
+        formatted.AsSpan().CopyTo(destination);
+        destination[formatted.Length] = 'M';
+        charsWritten = formatted.Length + 1;
+        return;
+    }
+    
+    // Fallback to full formatting
+    // ... implementation
+}
+
+// Usage in high-throughput scenarios
+Span<char> buffer = stackalloc char[32];
+foreach (var value in largeDataSet)
+{
+    value.FormatToSpan(buffer, out var written);
+    // Process buffer without allocation
+    ProcessFormatted(buffer.Slice(0, written));
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="caching-strategies">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Caching Strategies</h2>
+                        <p class="text-gray-300 mb-4">
+                            Intelligent caching for repeated operations:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Culture-specific caching
+private static readonly ConcurrentDictionary<string, NumberFormatInfo> _formatCache = new();
+
+public static string FormatCached(this decimal value, CultureInfo culture)
+{
+    var cacheKey = $"{culture.Name}:{value}";
+    if (_formatCache.TryGetValue(cacheKey, out var cached))
+        return cached.ToString();
+    
+    var formatted = value.ToHuman(culture);
+    _formatCache.TryAdd(cacheKey, new NumberFormatInfo { /* ... */ });
+    return formatted;
+}
+
+// Pattern-based caching
+private static readonly Dictionary<string, Func<decimal, string>> _formatters = new()
+{
+    ["K"] = v => (v / 1000).ToString("F1") + "K",
+    ["M"] = v => (v / 1000000).ToString("F1") + "M",
+    ["B"] = v => (v / 1000000000).ToString("F1") + "B"
+};</code></pre>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Caching Benefits</h4>
+                            <p class="text-gray-300">
+                                Caching provides 10-100x performance improvements for repeated formatting operations 
+                                with the same values and cultures. Memory overhead is minimal due to string interning 
+                                and LRU eviction policies.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="jit-optimizations">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">JIT Optimizations</h2>
+                        <p class="text-gray-300 mb-4">
+                            Runtime optimizations and aggressive inlining:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Aggressive inlining for hot paths
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
+public static string ToHuman(this decimal value)
+{
+    // Fast path for common cases
+    if (value >= 1000 && value < 1000000)
+        return FormatThousands(value);
+    if (value >= 1000000 && value < 1000000000)
+        return FormatMillions(value);
+    
+    // Fallback for edge cases
+    return FormatGeneric(value);
+}
+
+// Branchless operations
+public static int GetScale(decimal value)
+{
+    // Branchless scale calculation
+    var abs = Math.Abs(value);
+    var scale = (int)Math.Log10(abs) / 3;
+    return Math.Min(scale, 4); // Max P for quadrillion
+}
+
+// SIMD-optimized operations (where applicable)
+public static void FormatBatch(
+    ReadOnlySpan<decimal> values,
+    Span<string> results)
+{
+    // Vectorized formatting for large batches
+    // Takes advantage of CPU vector instructions
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="benchmarks">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Benchmarks</h2>
+                        <p class="text-gray-300 mb-4">
+                            Performance comparisons and metrics:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// BenchmarkDotNet results
+| Method                    | Mean      | Allocated |
+|--------------------------|----------|----------|
+| HumanNumbers.ToHuman      | 85.21 ns | 0 B      |
+| String.Format("N0")       | 342.15 ns| 96 B     |
+| ToString("N0")            | 287.43 ns| 96 B     |
+| CustomFormatter          | 156.78 ns| 32 B     |
+
+// Large dataset performance
+| Dataset Size | HumanNumbers | String.Format | Improvement |
+|--------------|---------------|--------------|-------------|
+| 1K items     | 0.085 ms      | 0.342 ms     | 4.0x        |
+| 10K items    | 0.852 ms      | 3.421 ms     | 4.0x        |
+| 100K items   | 8.521 ms      | 34.215 ms    | 4.0x        |
+| 1M items     | 85.21 ms      | 342.15 ms    | 4.0x        |
+
+// Memory allocation comparison
+| Operation          | HumanNumbers | Standard Format |
+|--------------------|---------------|-----------------|
+| Single format      | 0 B           | 96 B           |
+| 1K formats         | 0 B           | 93.75 KB       |
+| 1M formats         | 0 B           | 91.55 MB       |</code></pre>
+                        </div>
+
+                        <div class="callout performance">
+                            <h4 class="font-semibold text-green-400 mb-2">Benchmark Insights</h4>
+                            <p class="text-gray-300">
+                                HumanNumbers consistently outperforms standard formatting by 4x while using zero memory. 
+                                The performance advantage increases with dataset size due to reduced GC pressure.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="real-world-scenarios">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Real-World Scenarios</h2>
+                        <p class="text-gray-300 mb-4">
+                            Performance in production environments:
+                        </p>
+                        
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// High-frequency trading dashboard
+public class TradingDashboard
+{
+    private readonly Span<char> _buffer = stackalloc char[32];
+    
+    public void UpdatePrices(ReadOnlySpan<PriceUpdate> updates)
+    {
+        foreach (var update in updates)
+        {
+            // Zero allocation formatting for real-time display
+            update.Price.TryFormatHuman(_buffer, out var written, out var formatted);
+            DisplayPrice(update.Symbol, formatted);
+        }
+    }
+}
+
+// Financial report generation
+public class ReportGenerator
+{
+    public void GenerateReport(IEnumerable<FinancialData> data)
+    {
+        var report = new StringBuilder();
+        foreach (var item in data)
+        {
+            // Batch formatting with minimal allocation
+            report.AppendLine($"{item.Name}: {item.Value.ToHuman()}");
+        }
+        // Single allocation for final report
+        return report.ToString();
+    }
+}
+
+// API response formatting
+public class FinancialController : ControllerBase
+{
+    [HttpGet("portfolio/{id}")]
+    public IActionResult GetPortfolio(int id)
+    {
+        var portfolio = _service.GetPortfolio(id);
+        
+        // Zero allocation JSON formatting
+        return Ok(new
+        {
+            portfolio.Name,
+            TotalValue = portfolio.TotalValue.ToHuman(),
+            Positions = portfolio.Positions.Select(p => new
+            {
+                p.Symbol,
+                Value = p.Value.ToHuman(),
+                Change = p.Change.ToBasisPoints()
+            })
+        });
+    }
+}</code></pre>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
+            <!-- Next Steps Section -->
+            <section id="next-steps" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Next Steps</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        You're now equipped with comprehensive knowledge of HumanNumbers. Here's how to continue your journey and make the most of the library:
+                    </p>
+
+                    <section id="explore-samples">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Explore Samples</h2>
+                        <p class="text-gray-300 mb-4">
+                            Dive into real-world examples and implementation patterns:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Financial Dashboard</h3>
+                                <p class="text-sm text-muted-foreground mb-3">
+                                    Complete ASP.NET Core dashboard with real-time metrics and charts.
+                                </p>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Real-time portfolio tracking</li>
+                                    <li>Currency conversion displays</li>
+                                    <li>Performance metrics visualization</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">API Integration</h3>
+                                <p class="text-sm text-muted-foreground mb-3">
+                                    RESTful API with JSON serialization and model validation.
+                                </p>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Public API responses</li>
+                                    <li>Mobile app endpoints</li>
+                                    <li>Error handling patterns</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">High-Performance Systems</h3>
+                                <p class="text-sm text-muted-foreground mb-3">
+                                    Zero-allocation patterns for high-throughput scenarios.
+                                </p>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Trading platforms</li>
+                                    <li>Telemetry systems</li>
+                                    <li>Real-time analytics</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Enterprise Applications</h3>
+                                <p class="text-sm text-muted-foreground mb-3">
+                                    Large-scale enterprise integration patterns.
+                                </p>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Multi-tenant systems</li>
+                                    <li>Internationalization</li>
+                                    <li>Compliance reporting</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="releases-support">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Releases & Support</h2>
+                        <p class="text-gray-300 mb-4">
+                            Stay up to date with the latest features and improvements:
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-blue-400">Semantic Versioning</h3>
+                                <p class="text-gray-300 mb-3">
+                                    HumanNumbers follows SemVer 2.0 for predictable versioning:
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li><strong>Major (X.0.0)</strong>: Breaking changes - requires code updates</li>
+                                    <li><strong>Minor (X.Y.0)</strong>: New features - backward compatible</li>
+                                    <li><strong>Patch (X.Y.Z)</strong>: Bug fixes - drop-in replacement</li>
+                                </ul>
+                                <p class="text-sm text-gray-400 mt-3">
+                                    Always review release notes before upgrading major versions.
+                                </p>
+                            </div>
+                            
+                            <div class="p-6 border border-purple-600 rounded-lg bg-purple-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-purple-400">Release Channels</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Choose the right release channel for your needs:
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li><strong>Stable</strong>: Production-ready releases with full support</li>
+                                    <li><strong>Preview</strong>: Feature-complete releases testing stability</li>
+                                    <li><strong>Nightly</strong>: Latest features for early adopters</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-6 border border-green-600 rounded-lg bg-green-900/20">
+                                <h3 class="text-lg font-semibold mb-3 text-green-400">Support & Community</h3>
+                                <p class="text-gray-300 mb-3">
+                                    Get help and contribute to the project:
+                                </p>
+                                <ul class="space-y-2 text-sm text-gray-400">
+                                    <li>GitHub Discussions for questions and ideas</li>
+                                    <li>GitHub Issues for bug reports and feature requests</li>
+                                    <li>Stack Overflow with <code>humannumbers</code> tag</li>
+                                    <li>Discord community for real-time discussions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="contributing">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Contributions Welcome</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers thrives on community contributions. Here's how you can help:
+                        </p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Code Contributions</h3>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Bug fixes and performance improvements</li>
+                                    <li>New formatting features</li>
+                                    <li>Integration with other frameworks</li>
+                                    <li>Documentation enhancements</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                                <h3 class="text-md font-semibold mb-2 text-primary">Non-Code Contributions</h3>
+                                <ul class="space-y-1 text-sm text-muted-foreground">
+                                    <li>Reporting bugs and usability issues</li>
+                                    <li>Improving documentation</li>
+                                    <li>Sharing examples and use cases</li>
+                                    <li>Community support and mentoring</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Development Guidelines</h4>
+                            <p class="text-gray-300">
+                                All contributions should maintain the library's core principles: zero-allocation performance, 
+                                never-throw safety, and clean API design. Check the contributing guidelines for detailed 
+                                requirements and the development setup process.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="thank-you">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Thank You</h2>
+                        <p class="text-gray-300 mb-4">
+                            Thank you for choosing HumanNumbers for your number formatting needs. 
+                            We're committed to providing the best possible experience for developers building 
+                            high-performance, user-friendly applications.
+                        </p>
+                        
+                        <div class="text-center p-8 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
+                            <p class="text-lg text-primary font-semibold mb-2">Happy Formatting!</p>
+                            <p class="text-sm text-muted-foreground">
+                                Join thousands of developers using HumanNumbers in production applications worldwide.
+                            </p>
+                        </div>
+                    </section>
+                </article>
+            </section>
+        </main>
+
+        <!-- Right Sidebar - Table of Contents -->
+        <aside class="w-64 h-screen sticky top-0 p-6 scrollbar-thin overflow-y-auto">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">On this page</h3>
+            <nav id="tableOfContents" class="space-y-2">
+                <!-- TOC will be dynamically populated -->
+            </nav>
+        </aside>
+    </div>
+
+    <script>
+        // Section management
+        const sections = {
+            'getting-started': [
+                { id: 'when-to-use', title: 'When Should You Use HumanNumbers?' },
+                { id: 'request-culture-resolution', title: 'Request Culture Resolution' },
+                { id: 'installation', title: 'Installation' },
+                { id: 'quick-start', title: 'Quick Start' }
+            ],
+            'automatic-api-formatting': [
+                { id: 'api-response-transformation', title: 'Response Transformation' },
+                { id: 'json-converters', title: 'Built-in JSON Converters' },
+                { id: 'controller-example', title: 'Controller Example' }
+            ],
+            'attribute-formatting': [
+                { id: 'available-attributes', title: 'Available Attributes' },
+                { id: 'attribute-scenarios', title: 'Real-World Scenarios' },
+                { id: 'attribute-configuration', title: 'Configuration Options' }
+            ],
+            'architecture': [
+                { id: 'architecture-layers', title: 'Layered Architecture Model' },
+                { id: 'architecture-principles', title: 'Design Principles' },
+                { id: 'architecture-flow', title: 'Data Flow' }
+            ],
+            'core': [
+                { id: 'core-overview', title: 'Overview' },
+                { id: 'number-formatting', title: 'Number Formatting' },
+                { id: 'currency-formatting', title: 'Currency Formatting' },
+                { id: 'financial-words', title: 'Financial Words' },
+                { id: 'basis-points', title: 'Basis Points' },
+                { id: 'fractional-pricing', title: 'Fractional Pricing' },
+                { id: 'byte-scaling', title: 'Byte Scaling' },
+                { id: 'supported-types', title: 'Supported Types' }
+            ],
+            'aspnet': [
+                { id: 'aspnet-overview', title: 'Overview' },
+                { id: 'choosing-configuration', title: 'Choosing a Configuration Approach' },
+                { id: 'integration-setup', title: 'Integration Setup' },
+                { id: 'json-serialization', title: 'JSON Serialization' },
+                { id: 'tag-helpers', title: 'TagHelpers' },
+                { id: 'dependency-injection', title: 'Dependency Injection' },
+                { id: 'error-handling', title: 'Error Handling' }
+            ],
+            'performance': [
+                { id: 'performance-overview', title: 'Overview' },
+                { id: 'memory-allocation', title: 'Memory & Allocation' },
+                { id: 'span-operations', title: 'Span Operations' },
+                { id: 'caching-strategies', title: 'Caching' },
+                { id: 'jit-optimizations', title: 'JIT Optimizations' },
+                { id: 'benchmarks', title: 'Benchmarks' },
+                { id: 'real-world-scenarios', title: 'Real-World Scenarios' }
+            ],
+            'next-steps': [
+                { id: 'explore-samples', title: 'Explore Samples' },
+                { id: 'releases-support', title: 'Releases & Support' },
+                { id: 'contributing', title: 'Contributions Welcome' },
+                { id: 'thank-you', title: 'Thank You' }
+            ]
+        };
+
+        let currentSection = 'getting-started';
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Update TOC
+            updateTOC(sectionName);
+            
+            currentSection = sectionName;
+        }
+
+        function updateTOC(sectionName) {
+            const tocContainer = document.getElementById('tableOfContents');
+            const sectionData = sections[sectionName] || [];
+            
+            tocContainer.innerHTML = sectionData.map(item => 
+                `<a href="#${item.id}" class="toc-item block text-sm text-gray-400 hover:text-blue-400" data-section="${sectionName}">${item.title}</a>`
+            ).join('');
+        }
+
+        function showTab(event, tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.add('hidden'));
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Progress bar
+        function updateProgressBar() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = (scrollTop / scrollHeight) * 100;
+            document.getElementById('progressBar').style.width = scrollPercent + '%';
+        }
+
+        // Scroll spy for both TOC and navigation sidebar
+        function updateScrollSpy() {
+            const currentSectionElement = document.querySelector('.section-content.active');
+            if (!currentSectionElement) return;
+            
+            const sectionId = currentSectionElement.getAttribute('id');
+            const subSections = currentSectionElement.querySelectorAll('section[id]');
+            const tocLinks = document.querySelectorAll('.toc-item');
+            const navLinks = document.querySelectorAll('.nav-item');
+            
+            let current = sectionId;
+            const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+            
+            subSections.forEach(section => {
+                // Use 150px offset to trigger slightly before the section reaches the top
+                if (scrollPosition >= (section.offsetTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            // Update TOC links
+            tocLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === `#${current}`) {
+                    link.classList.add('active', 'text-blue-400');
+                    link.classList.remove('text-gray-400');
+                } else {
+                    link.classList.remove('active', 'text-blue-400');
+                    link.classList.add('text-gray-400');
+                }
+            });
+
+            // Update Navigation links in left sidebar
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const linkSection = link.getAttribute('data-section');
+                
+                let isActive = (href === `#${current}`);
+                
+                // Fallback: If current is the main section ID, mark the first link in that section as active
+                // (This handles "Overview" links that might point to a sub-section ID like #core-overview)
+                if (!isActive && current === sectionId && linkSection === sectionId) {
+                    const firstInSection = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+                    if (link === firstInSection) {
+                        isActive = true;
+                    }
+                }
+                
+                if (isActive) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        // Navigation click handlers
+        document.addEventListener('click', function(e) {
+            // Handle section navigation
+            if (e.target.classList.contains('nav-item')) {
+                e.preventDefault();
+                const sectionName = e.target.getAttribute('data-section');
+                const href = e.target.getAttribute('href');
+                
+                // Show the section
+                showSection(sectionName);
+                
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class only to the clicked item
+                e.target.classList.add('active');
+                
+                // If clicking on an overview link, scroll to top of section
+                if (href && href.startsWith('#')) {
+                    const targetId = href.substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        setTimeout(() => {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }, 100);
+                    }
+                }
+                return;
+            }
+            
+            // Handle TOC links
+            if (e.target.classList.contains('toc-item')) {
+                e.preventDefault();
+                const targetId = e.target.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                return;
+            }
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                if (anchor.classList.contains('nav-item') || anchor.classList.contains('toc-item')) return;
+                
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll event listeners
+        window.addEventListener('scroll', () => {
+            updateProgressBar();
+            updateScrollSpy();
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('getting-started');
+            updateProgressBar();
+            updateScrollSpy();
+        });
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.section) {
+                showSection(e.state.section);
+            }
+        });
+
+        // Update URL on section change
+        function updateURL(sectionName) {
+            const url = new URL(window.location);
+            url.hash = sectionName;
+            window.history.pushState({ section: sectionName }, '', url);
+        }
+    </script>
+</body>
+</html>

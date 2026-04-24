@@ -34,38 +34,68 @@ namespace HumanNumbers.Financial
         }
 
         /// <summary>
+        /// Attempts to convert a decimal to a fractional string used in Treasury/Bond markets (e.g. 10.03125 -> "10 1/32").
+        /// </summary>
+        public static bool TryToHumanFraction(
+            this decimal value, 
+            out string result,
+            int denominator, 
+            MidpointRounding rounding = MidpointRounding.ToEven)
+        {
+            try
+            {
+                if (denominator <= 0)
+                {
+                    result = string.Empty;
+                    return false;
+                }
+
+                var isNegative = value < 0;
+                var absValue = Math.Abs(value);
+
+                var integral = Math.Truncate(absValue);
+                var decimalPart = absValue - integral;
+
+                // Convert the decimal part to the closest fraction of the denominator
+                var fractionNumerator = Math.Round(decimalPart * denominator, 0, rounding);
+
+                // If the rounding pushes the fraction numerator to equal the denominator (e.g. 32/32)
+                if (fractionNumerator >= denominator)
+                {
+                    integral += 1;
+                    fractionNumerator = 0;
+                }
+
+                var sign = isNegative ? "-" : "";
+
+                if (fractionNumerator == 0)
+                {
+                    result = $"{sign}{integral}";
+                }
+                else
+                {
+                    result = $"{sign}{integral} {fractionNumerator}/{denominator}";
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
+                result = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Converts a decimal to a fractional string used in Treasury/Bond markets (e.g. 10.03125 -> "10 1/32").
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string ToFractionString(this decimal value, int denominator, MidpointRounding rounding = MidpointRounding.ToEven)
+        public static string ToHumanFraction(this decimal value, int denominator, MidpointRounding rounding = MidpointRounding.ToEven)
         {
-            if (denominator <= 0)
-                throw new ArgumentOutOfRangeException(nameof(denominator), "Denominator must be greater than zero.");
-
-            var isNegative = value < 0;
-            var absValue = Math.Abs(value);
-
-            var integral = Math.Truncate(absValue);
-            var decimalPart = absValue - integral;
-
-            // Convert the decimal part to the closest fraction of the denominator
-            var fractionNumerator = Math.Round(decimalPart * denominator, 0, rounding);
-
-            // If the rounding pushes the fraction numerator to equal the denominator (e.g. 32/32)
-            if (fractionNumerator >= denominator)
-            {
-                integral += 1;
-                fractionNumerator = 0;
-            }
-
-            var sign = isNegative ? "-" : "";
-
-            if (fractionNumerator == 0)
-            {
-                return $"{sign}{integral}";
-            }
-
-            return $"{sign}{integral} {fractionNumerator}/{denominator}";
+            if (TryToHumanFraction(value, out var result, denominator, rounding)) return result;
+            if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format fraction for value {value}");
+            return value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -130,38 +160,5 @@ namespace HumanNumbers.Financial
 
             return false;
         }
-    }
-}
-
-namespace NumberFormatter.Financial
-{
-    using System;
-
-    /// <summary>
-    /// Obsolete alias for <see cref="HumanNumbers.Financial.FinancialRounding"/>.
-    /// </summary>
-    [Obsolete("Use HumanNumbers.Financial.FinancialRounding instead. This alias will be removed in a future version.")]
-    public static class FinancialRounding
-    {
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.FinancialRounding.RoundToTick"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.FinancialRounding.RoundToTick instead.")]
-        public static decimal RoundToTick(this decimal value, decimal tickSize, TickRoundingMode mode = TickRoundingMode.Nearest)
-            => HumanNumbers.Financial.FinancialRounding.RoundToTick(value, tickSize, (HumanNumbers.Financial.TickRoundingMode)mode);
-
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.FinancialRounding.ToFractionString"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.FinancialRounding.ToFractionString instead.")]
-        public static string ToFractionString(this decimal value, int denominator, MidpointRounding rounding = MidpointRounding.ToEven)
-            => HumanNumbers.Financial.FinancialRounding.ToFractionString(value, denominator, rounding);
-
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.FinancialRounding.TryParseFraction"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.FinancialRounding.TryParseFraction instead.")]
-        public static bool TryParseFraction(string? input, out decimal result)
-            => HumanNumbers.Financial.FinancialRounding.TryParseFraction(input, out result);
     }
 }

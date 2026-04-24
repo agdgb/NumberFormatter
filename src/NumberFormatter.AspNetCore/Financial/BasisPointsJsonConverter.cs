@@ -79,7 +79,7 @@ public sealed class BasisPointsJsonConverter : JsonConverter<decimal>
     {
         if (_options.WriteAsString)
         {
-            var stringValue = value.ToBpsString(_options.Decimals, _options.Rounding);
+            var stringValue = value.ToHumanBps(_options.Decimals, _options.Rounding);
             writer.WriteStringValue(stringValue);
         }
         else

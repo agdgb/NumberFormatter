@@ -1,5 +1,5 @@
 using System.Text.Json;
-using NumberFormatter.AspNetCore.Financial;
+using HumanNumbers.AspNetCore.Financial;
 using Xunit;
 
 namespace NumberFormatter.Tests;

@@ -23,6 +23,11 @@ namespace HumanNumbers.Formatting
         public Action<Exception>? OnFormattingError { get; set; }
 
         /// <summary>
+        /// Controls how formatting errors are handled (default: <see cref="HumanNumbersErrorMode.SafeFallback"/>).
+        /// </summary>
+        public HumanNumbersErrorMode ErrorMode { get; set; } = HumanNumbersErrorMode.SafeFallback;
+
+        /// <summary>
         /// Number of decimal places in output (default: <c>2</c>).
         /// </summary>
         /// <example>1234.567 → "1.23K" (2 places) vs "1.235K" (3 places)</example>
@@ -70,7 +75,12 @@ namespace HumanNumbers.Formatting
             }
         }
 
-        internal MagnitudeSuffix[]? CachedCustomSuffixes { get; private set; }
+        /// <summary>
+        /// Gets or sets the manually defined magnitude suffixes. 
+        /// Use this to override standard 3-digit scaling (e.g., for Chinese 10,000-based scaling).
+        /// Setting <see cref="CustomSuffixes"/> will automatically populate this collection.
+        /// </summary>
+        public MagnitudeSuffix[]? CachedCustomSuffixes { get; set; }
 
         /// <summary>
         /// Force suffix display for all values (default: <see langword="false"/>).
@@ -106,6 +116,8 @@ namespace NumberFormatter
     {
         private HumanNumbers.Formatting.HumanNumberFormatOptions _options = new();
 
+        /// <summary>Error handling mode.</summary>
+        public HumanNumbers.HumanNumbersErrorMode ErrorMode { get => _options.ErrorMode; set => _options.ErrorMode = value; }
         /// <summary>Number of decimal places.</summary>
         public int DecimalPlaces { get => _options.DecimalPlaces; set => _options.DecimalPlaces = value; }
         /// <summary>Show plus sign for positive numbers.</summary>

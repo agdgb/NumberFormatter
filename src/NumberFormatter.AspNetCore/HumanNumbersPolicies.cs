@@ -66,6 +66,23 @@ public static class HumanNumbersPolicies
     }
 
     /// <summary>
+    /// Strict policy for financial applications (throws on formatting errors instead of falling back).
+    /// </summary>
+    public class StrictFinancialPolicy : IHumanNumbersPolicy
+    {
+        /// <inheritdoc/>
+        public string Name => "StrictFinancial";
+        /// <inheritdoc/>
+        public HumanNumberFormatOptions GetOptions() => new()
+        {
+            DecimalPlaces = 2,
+            Threshold = 1000m,
+            ErrorMode = HumanNumbersErrorMode.Strict
+        };
+    }
+
+
+    /// <summary>
     /// Policy for public APIs (efficient short formatting).
     /// </summary>
     public class PublicApiPolicy : IHumanNumbersPolicy

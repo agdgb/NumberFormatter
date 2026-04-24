@@ -136,9 +136,20 @@ public class HumanNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
         string formatted;
         if (_isCurrency)
         {
-            formatted = !string.IsNullOrEmpty(_currencyCode)
-                ? value.ToHumanCurrency(_currencyCode, _decimalPlaces)
-                : value.ToHumanCurrency(_decimalPlaces);
+            if (string.IsNullOrEmpty(_currencyCode))
+            {
+                // P2 Cleanup: Handle incomplete currency configuration
+                if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict)
+                {
+                    throw new InvalidOperationException("CurrencyCode must be provided when IsCurrency is true in Strict mode.");
+                }
+
+                formatted = value.ToHumanCurrency(_decimalPlaces);
+            }
+            else
+            {
+                formatted = value.ToHumanCurrency(_currencyCode, _decimalPlaces);
+            }
         }
         else
         {
@@ -189,56 +200,6 @@ public class HumanNumberNullableJsonConverter<T> : JsonConverter<T?> where T : s
     }
 }
 
-/// <summary>
-/// Attribute to apply human-readable number formatting to properties during JSON serialization.
-/// </summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-public class HumanNumberFormatAttribute : JsonConverterAttribute
-{
-    private readonly int _decimalPlaces;
-    private readonly bool _isCurrency;
-    private readonly string? _currencyCode;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HumanNumberFormatAttribute"/> class.
-    /// </summary>
-    /// <param name="decimalPlaces">The number of decimal places.</param>
-    /// <param name="isCurrency">Whether to format as currency.</param>
-    /// <param name="currencyCode">The currency code.</param>
-    public HumanNumberFormatAttribute(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
-    {
-        _decimalPlaces = decimalPlaces;
-        _isCurrency = isCurrency;
-        _currencyCode = currencyCode;
-    }
-
-    /// <inheritdoc />
-    public override JsonConverter? CreateConverter(Type typeToConvert)
-    {
-        var underlyingType = Nullable.GetUnderlyingType(typeToConvert);
-        bool isNullable = underlyingType != null;
-        Type actualType = underlyingType ?? typeToConvert;
-
-        if (isNullable)
-        {
-            var converterType = typeof(HumanNumberNullableJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                _decimalPlaces,
-                _isCurrency,
-                _currencyCode)!;
-        }
-        else
-        {
-            var converterType = typeof(HumanNumberJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                _decimalPlaces,
-                _isCurrency,
-                _currencyCode)!;
-        }
-    }
-}
 
 /// <summary>
 /// A JSON converter that bypasses HumanNumbers formatting and writes the numeric value normally.

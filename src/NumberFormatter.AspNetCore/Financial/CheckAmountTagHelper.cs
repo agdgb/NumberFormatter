@@ -32,7 +32,7 @@ public class HumanCheckAmountTagHelper : TagHelper
     {
         output.TagName = "span";
 
-        var words = Value.ToCheckWords(MajorCurrency, MajorCurrencySingular);
+        var words = Value.ToHumanWords(MajorCurrency, MajorCurrencySingular);
 
         output.Content.SetContent(words);
     }

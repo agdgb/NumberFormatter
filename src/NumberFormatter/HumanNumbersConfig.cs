@@ -32,4 +32,52 @@ public class HumanNumbersConfig
     /// Gets or sets the global default formatting options.
     /// </summary>
     public HumanNumberFormatOptions GlobalOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the global error handling mode. This is a shortcut for <see cref="GlobalOptions"/> ErrorMode.
+    /// </summary>
+    public HumanNumbersErrorMode ErrorMode
+    {
+        get => GlobalOptions.ErrorMode;
+        set
+        {
+            var options = GlobalOptions;
+            options.ErrorMode = value;
+            GlobalOptions = options;
+        }
+    }
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, HumanNumberFormatOptions> _policies = new(System.StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Registers a named formatting policy.
+    /// </summary>
+    public void AddPolicy(string name, HumanNumberFormatOptions options)
+    {
+        _policies[name] = options;
+    }
+
+    /// <summary>
+    /// Gets a registered formatting policy by name. Returns false if not found.
+    /// </summary>
+    public bool TryGetPolicy(string name, out HumanNumberFormatOptions options)
+    {
+        return _policies.TryGetValue(name, out options);
+    }
+
+    /// <summary>
+    /// Gets the names of all currently registered formatting policies.
+    /// </summary>
+    public System.Collections.Generic.IEnumerable<string> GetPolicyNames()
+    {
+        return _policies.Keys;
+    }
+
+    /// <summary>
+    /// Gets all registered policies and their configurations.
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyDictionary<string, HumanNumberFormatOptions> GetPolicies()
+    {
+        return _policies;
+    }
 }

@@ -16,19 +16,6 @@ namespace HumanNumbers
     {
         private static readonly MagnitudeSuffix[] DefaultSuffixes = StandardSuffixSets.Default;
         private static readonly ConcurrentDictionary<string, NumberFormatInfo> FormatCache = new();
-        private static readonly ConcurrentDictionary<string, string> CurrencySymbolCache = new();
-        private static readonly ConcurrentDictionary<string, RegionInfo> RegionCache = new();
-
-        private static readonly Dictionary<string, string> CurrencyToRegion = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["USD"] = "US", ["EUR"] = "FR", ["GBP"] = "GB", ["JPY"] = "JP",
-            ["CAD"] = "CA", ["AUD"] = "AU", ["CHF"] = "CH", ["CNY"] = "CN",
-            ["SEK"] = "SE", ["NZD"] = "NZ", ["MXN"] = "MX", ["SGD"] = "SG",
-            ["HKD"] = "HK", ["NOK"] = "NO", ["KRW"] = "KR", ["TRY"] = "TR",
-            ["INR"] = "IN", ["RUB"] = "RU", ["BRL"] = "BR", ["ZAR"] = "ZA",
-            ["DKK"] = "DK", ["PLN"] = "PL", ["TWD"] = "TW", ["THB"] = "TH",
-            ["MYR"] = "MY"
-        };
         
         // Suffix multipliers used for parsing
         private static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
@@ -52,6 +39,108 @@ namespace HumanNumbers
             configure?.Invoke(HumanNumbersConfig.Instance);
         }
 
+        #region Fluent API
+
+        /// <summary>
+        /// Begins a fluent formatting pipeline for the specified value.
+        /// </summary>
+        public static FormattingContext Format(decimal value) => new FormattingContext(value);
+
+        /// <summary>
+        /// Context for fluent formatting.
+        /// </summary>
+        public readonly struct FormattingContext
+        {
+            private readonly decimal _value;
+            private readonly HumanNumberFormatOptions? _options;
+            private readonly CultureInfo? _culture;
+
+            internal FormattingContext(decimal value, HumanNumberFormatOptions? options = null, CultureInfo? culture = null)
+            {
+                _value = value;
+                _options = options;
+                _culture = culture;
+            }
+
+            /// <summary>
+            /// Applies specific formatting options to the context.
+            /// </summary>
+            public FormattingContext UsingOptions(HumanNumberFormatOptions options)
+            {
+                return new FormattingContext(_value, options, _culture);
+            }
+
+            /// <summary>
+            /// Applies a specific culture to the formatting context.
+            /// </summary>
+            public FormattingContext UsingCulture(CultureInfo culture)
+            {
+                return new FormattingContext(_value, _options, culture);
+            }
+
+            /// <summary>
+            /// Applies a predefined named policy to the formatting context.
+            /// </summary>
+            public FormattingContext UsingPolicy(string policyName)
+            {
+                if (HumanNumbersConfig.Instance.TryGetPolicy(policyName, out var options))
+                {
+                    return new FormattingContext(_value, options, _culture);
+                }
+                return this; // Fallback to default if policy not found
+            }
+
+            /// <summary>
+            /// Executes the formatting and returns a human-readable string.
+            /// </summary>
+            public string ToHuman()
+            {
+                var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
+                if (!HumanNumber.TryFormatNumber(_value, options, _culture, out var result))
+                {
+                    if (options.ErrorMode == HumanNumbersErrorMode.Strict)
+                        throw new FormatException($"Failed to format value {_value} to human readable format.");
+                    return _value.ToString(CultureInfo.InvariantCulture); // Safe fallback
+                }
+                return result;
+            }
+
+            /// <summary>
+            /// Executes the formatting as a currency and returns a human-readable string.
+            /// </summary>
+            public string ToHumanCurrency(string? currencyCode = null)
+            {
+                var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
+                
+                if (!string.IsNullOrEmpty(currencyCode))
+                {
+                    options.CurrencySymbol = GetCurrencySymbol(currencyCode);
+                }
+                else if (_culture != null && _culture.Name != "")
+                {
+                    options.CurrencySymbol = _culture.NumberFormat.CurrencySymbol;
+                }
+                else if (options.CurrencySymbol == null)
+                {
+                    var activeCulture = _culture ?? CultureInfo.CurrentCulture;
+                    if (activeCulture.Name != "")
+                        options.CurrencySymbol = activeCulture.NumberFormat.CurrencySymbol;
+                    else
+                        options.CurrencySymbol = new CultureInfo("en-US").NumberFormat.CurrencySymbol;
+                }
+
+                if (!HumanNumber.TryFormatNumber(_value, options, _culture, out var result))
+                {
+                    if (options.ErrorMode == HumanNumbersErrorMode.Strict)
+                        throw new FormatException($"Failed to format currency value {_value} to human readable format.");
+                    return _value.ToString(CultureInfo.InvariantCulture); // Safe fallback
+                }
+                return result;
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Formats a number to a human-readable string (e.g., 1.23M, 5.68B)
         /// </summary>
@@ -65,7 +154,38 @@ namespace HumanNumbers
             { 
                 DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces 
             };
-            return FormatNumber(value, options, culture);
+            
+            if (TryFormatNumber(value, options, culture, out var result)) return result;
+            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format value {value}");
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Attempts to format a number to a human-readable string.
+        /// </summary>
+        public static bool TryToHuman(
+            this decimal value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null)
+        {
+            var options = HumanNumbersConfig.Instance.GlobalOptions with 
+            { 
+                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces 
+            };
+            return TryFormatNumber(value, options, culture, out result);
+        }
+
+        /// <summary>
+        /// Attempts to format a number to a human-readable string with custom options.
+        /// </summary>
+        public static bool TryToHuman(
+            this decimal value,
+            HumanNumberFormatOptions options,
+            out string result,
+            CultureInfo? culture = null)
+        {
+            return TryFormatNumber(value, options, culture, out result);
         }
 
         /// <summary>
@@ -76,7 +196,29 @@ namespace HumanNumbers
             HumanNumberFormatOptions options,
             CultureInfo? culture = null)
         {
-            return FormatNumber(value, options, culture);
+            if (TryFormatNumber(value, options, culture, out var result)) return result;
+            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format value {value}");
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Attempts to format a number as currency in short form.
+        /// </summary>
+        public static bool TryToHumanCurrency(
+            this decimal value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null)
+        {
+            culture ??= CultureInfo.CurrentCulture;
+            if (culture.Name == "") culture = new CultureInfo("en-US");
+
+            var options = HumanNumbersConfig.Instance.GlobalOptions with
+            {
+                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces,
+                CurrencySymbol = culture.NumberFormat.CurrencySymbol
+            };
+            return TryFormatNumber(value, options, culture, out result);
         }
 
         /// <summary>
@@ -87,21 +229,29 @@ namespace HumanNumbers
             int? decimalPlaces = null,
             CultureInfo? culture = null)
         {
-            culture ??= CultureInfo.CurrentCulture;
-            
-            // If we are in InvariantCulture, we should probably default to en-US for currency formatting
-            // to avoid the generic currency symbol '¤'.
-            if (culture.Name == "") 
-            {
-                culture = new CultureInfo("en-US");
-            }
+            if (TryToHumanCurrency(value, out var result, decimalPlaces, culture)) return result;
+            var options = HumanNumbersConfig.Instance.GlobalOptions;
+            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format currency value {value}");
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
 
+        /// <summary>
+        /// Attempts to format a number as currency with explicit currency code.
+        /// </summary>
+        public static bool TryToHumanCurrency(
+            this decimal value,
+            string currencyCode,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null)
+        {
+            var symbol = GetCurrencySymbol(currencyCode);
             var options = HumanNumbersConfig.Instance.GlobalOptions with
             {
                 DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces,
-                CurrencySymbol = culture.NumberFormat.CurrencySymbol
+                CurrencySymbol = symbol
             };
-            return FormatNumber(value, options, culture);
+            return TryFormatNumber(value, options, culture, out result);
         }
 
         /// <summary>
@@ -113,13 +263,40 @@ namespace HumanNumbers
             int? decimalPlaces = null,
             CultureInfo? culture = null)
         {
-            var symbol = GetCurrencySymbol(currencyCode);
-            var options = HumanNumbersConfig.Instance.GlobalOptions with
+            if (TryToHumanCurrency(value, currencyCode, out var result, decimalPlaces, culture)) return result;
+            var options = HumanNumbersConfig.Instance.GlobalOptions;
+            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format currency value {value}");
+            return value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Attempts to format any numeric type to a human-readable string.
+        /// </summary>
+#if NET7_0_OR_GREATER
+        public static bool TryToHuman<T>(
+            this T value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : INumber<T>
+#else
+        public static bool TryToHuman<T>(
+            this T value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : struct
+#endif
+        {
+            try
             {
-                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces,
-                CurrencySymbol = symbol
-            };
-            return FormatNumber(value, options, culture);
+                var decimalValue = Convert.ToDecimal(value);
+                return TryToHuman(decimalValue, out result, decimalPlaces, culture);
+            }
+            catch (Exception ex)
+            {
+                HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
+                result = value.ToString() ?? string.Empty;
+                return false;
+            }
         }
 
         /// <summary>
@@ -138,15 +315,38 @@ namespace HumanNumbers
             CultureInfo? culture = null) where T : struct
 #endif
         {
+            if (TryToHuman(value, out var result, decimalPlaces, culture)) return result;
+            if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format generic value {value}");
+            return value.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to format any numeric type as currency.
+        /// </summary>
+#if NET7_0_OR_GREATER
+        public static bool TryToHumanCurrency<T>(
+            this T value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : INumber<T>
+#else
+        public static bool TryToHumanCurrency<T>(
+            this T value,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : struct
+#endif
+        {
             try
             {
                 var decimalValue = Convert.ToDecimal(value);
-                return ToHuman(decimalValue, decimalPlaces, culture);
+                return TryToHumanCurrency(decimalValue, out result, decimalPlaces, culture);
             }
             catch (Exception ex)
             {
                 HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
-                return value.ToString() ?? string.Empty;
+                result = value.ToString() ?? string.Empty;
+                return false;
             }
         }
 
@@ -166,15 +366,40 @@ namespace HumanNumbers
             CultureInfo? culture = null) where T : struct
 #endif
         {
+            if (TryToHumanCurrency(value, out var result, decimalPlaces, culture)) return result;
+            if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format generic currency value {value}");
+            return value.ToString() ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to format any numeric type as currency with explicit currency code.
+        /// </summary>
+#if NET7_0_OR_GREATER
+        public static bool TryToHumanCurrency<T>(
+            this T value,
+            string currencyCode,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : INumber<T>
+#else
+        public static bool TryToHumanCurrency<T>(
+            this T value,
+            string currencyCode,
+            out string result,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null) where T : struct
+#endif
+        {
             try
             {
                 var decimalValue = Convert.ToDecimal(value);
-                return ToHumanCurrency(decimalValue, decimalPlaces, culture);
+                return TryToHumanCurrency(decimalValue, currencyCode, out result, decimalPlaces, culture);
             }
             catch (Exception ex)
             {
                 HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
-                return value.ToString() ?? string.Empty;
+                result = value.ToString() ?? string.Empty;
+                return false;
             }
         }
 
@@ -196,16 +421,9 @@ namespace HumanNumbers
             CultureInfo? culture = null) where T : struct
 #endif
         {
-            try
-            {
-                var decimalValue = Convert.ToDecimal(value);
-                return ToHumanCurrency(decimalValue, currencyCode, decimalPlaces, culture);
-            }
-            catch (Exception ex)
-            {
-                HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
-                return value.ToString() ?? string.Empty;
-            }
+            if (TryToHumanCurrency(value, currencyCode, out var result, decimalPlaces, culture)) return result;
+            if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format generic currency value {value}");
+            return value.ToString() ?? string.Empty;
         }
 
         /// <summary>
@@ -485,54 +703,67 @@ namespace HumanNumbers
         #region Core Formatting Logic
 
         /// <summary>
-        /// Core formatting logic for short number conversion.
+        /// Core formatting logic for short number conversion inside a Try pattern.
         /// </summary>
-        private static string FormatNumber(
+        internal static bool TryFormatNumber(
             decimal value,
             HumanNumberFormatOptions options,
-            CultureInfo? culture)
+            CultureInfo? culture,
+            out string result)
         {
-            culture ??= CultureInfo.CurrentCulture;
-            var numberFormat = GetNumberFormatInfo(culture);
-
-            // Handle zero
-            if (value == 0 && !options.AlwaysShowSuffix)
+            try
             {
-                return options.CurrencySymbol != null
-                    ? FormatCurrencyNumber(0, "", options, numberFormat)
-                    : "0";
+                culture ??= CultureInfo.CurrentCulture;
+                var numberFormat = GetNumberFormatInfo(culture);
+
+                // Handle zero
+                if (value == 0 && !options.AlwaysShowSuffix)
+                {
+                    result = options.CurrencySymbol != null
+                        ? FormatCurrencyNumber(0, "", options, numberFormat)
+                        : "0";
+                    return true;
+                }
+
+                var isNegative = value < 0;
+                var absValue = Math.Abs(value);
+
+                // Get appropriate suffix
+                var suffixes = options.CachedCustomSuffixes ?? DefaultSuffixes;
+
+                var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold, options.AlwaysShowSuffix);
+
+                // Format the number - keep as decimal to preserve precision
+                var scaledValue = absValue / divisor;
+                var roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
+
+                // Build the formatted number part
+                var formattedNumber = roundedValue.ToString($"F{options.DecimalPlaces}", numberFormat);
+
+                // Apply currency if needed
+                if (options.CurrencySymbol != null)
+                {
+                    result = FormatCurrencyNumber(roundedValue, suffix, options, numberFormat);
+                }
+                else
+                {
+                    result = options.ShowPlusSign && !isNegative && value > 0
+                        ? $"+{formattedNumber}{suffix}"
+                        : $"{formattedNumber}{suffix}";
+                }
+
+                // Handle negative numbers
+                if (isNegative) 
+                    result = FormatNegativeNumber(result, options, numberFormat);
+
+                return true;
             }
-
-            var isNegative = value < 0;
-            var absValue = Math.Abs(value);
-
-            // Get appropriate suffix
-            var suffixes = options.CachedCustomSuffixes ?? DefaultSuffixes;
-
-            var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold, options.AlwaysShowSuffix);
-
-            // Format the number
-            var scaledValue = absValue / divisor;
-            var roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
-
-            // Build the formatted number part
-            var formattedNumber = roundedValue.ToString($"F{options.DecimalPlaces}", numberFormat);
-
-            // Apply currency if needed
-            string result;
-            if (options.CurrencySymbol != null)
+            catch (Exception ex)
             {
-                result = FormatCurrencyNumber(roundedValue, suffix, options, numberFormat);
+                options.OnFormattingError?.Invoke(ex);
+                result = value.ToString(CultureInfo.InvariantCulture); // safe fallback
+                return false;
             }
-            else
-            {
-                result = options.ShowPlusSign && !isNegative && value > 0
-                    ? $"+{formattedNumber}{suffix}"
-                    : $"{formattedNumber}{suffix}";
-            }
-
-            // Handle negative numbers
-            return isNegative ? FormatNegativeNumber(result, options, numberFormat) : result;
         }
 
         private static string FormatCurrencyNumber(
@@ -601,7 +832,11 @@ namespace HumanNumbers
 
         #region Helpers
 
-        internal static MagnitudeSuffix[] CreateCustomSuffixes(string[] suffixes)
+        /// <summary>
+        /// Creates a collection of magnitude suffixes from an ordered array of strings.
+        /// Useful for building custom scaling rules (e.g., 10k-based systems).
+        /// </summary>
+        public static MagnitudeSuffix[] CreateCustomSuffixes(string[] suffixes)
         {
             var result = new List<MagnitudeSuffix>();
             var multiplier = 1m;
@@ -626,26 +861,7 @@ namespace HumanNumbers
 
         private static string GetCurrencySymbol(string currencyCode)
         {
-            if (string.IsNullOrWhiteSpace(currencyCode)) return string.Empty;
-            currencyCode = currencyCode.ToUpperInvariant();
-
-            return CurrencySymbolCache.GetOrAdd(currencyCode, code =>
-            {
-                if (CurrencyToRegion.TryGetValue(code, out var regionName))
-                {
-                    try
-                    {
-                        var ri = RegionCache.GetOrAdd(regionName, name => new RegionInfo(name));
-                        var symbol = ri.CurrencySymbol;
-                        if (symbol == "￥") symbol = "¥";
-                        return symbol;
-                    }
-                    catch { }
-                }
-
-                // If specialized mapping fails, fallback safely to the code itself to prevent crashes.
-                return code;
-            });
+            return CurrencyRegistry.GetSymbol(currencyCode);
         }
 
         #endregion

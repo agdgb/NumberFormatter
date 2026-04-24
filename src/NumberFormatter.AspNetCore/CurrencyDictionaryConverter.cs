@@ -1,10 +1,10 @@
-using NumberFormatter;
+using HumanNumbers;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-namespace NumberFormatter.AspNetCore;
+namespace HumanNumbers.AspNetCore;
 
 /// <summary>
 /// JSON converter for serializing a dictionary of decimal values into structured currency strings.
@@ -70,7 +70,7 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
             writer.WritePropertyName(kvp.Key);
             // Determine currency based on key (custom mapping)
             string currencyCode = MapKeyToCurrencyCode(kvp.Key);
-            string formatted = kvp.Value.ToShortCurrencyString(currencyCode, _decimalPlaces);
+            string formatted = kvp.Value.ToHumanCurrency(currencyCode, decimalPlaces: _decimalPlaces);
             writer.WriteStringValue(formatted);
         }
         writer.WriteEndObject();
@@ -91,7 +91,7 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
 
     private decimal ParseFormattedNumber(string value)
     {
-        if (NumberFormatter.TryParse(value, out var parsedValue))
+        if (HumanNumber.TryParse(value, out var parsedValue))
         {
             return parsedValue;
         }

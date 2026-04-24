@@ -1,11 +1,11 @@
-using System.Globalization;
-using NumberFormatter;
+﻿using System.Globalization;
+using HumanNumbers;
 using HumanNumbers.Currencies;
 using HumanNumbers.Formatting;
 
-namespace NumberFormatter.Tests;
+namespace HumanNumber.Tests;
 
-public class NumberFormatterTests
+public class HumanNumberTests
 {
     [Fact]
     public void ToShortString_WithThousands_ReturnsK()
@@ -14,7 +14,7 @@ public class NumberFormatterTests
         var value = 1234.56m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23K", result);
@@ -27,7 +27,7 @@ public class NumberFormatterTests
         var value = 1234567.89m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23M", result);
@@ -40,7 +40,7 @@ public class NumberFormatterTests
         var value = 1234567890.12m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23B", result);
@@ -53,7 +53,7 @@ public class NumberFormatterTests
         var value = 1234567890123.45m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23T", result);
@@ -66,7 +66,7 @@ public class NumberFormatterTests
         var value = -1234.56m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("-1.23K", result);
@@ -79,7 +79,7 @@ public class NumberFormatterTests
         var value = 0m;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("0", result);
@@ -92,7 +92,7 @@ public class NumberFormatterTests
         var value = 1234.5678m;
 
         // Act
-        var result = value.ToShortString(3);
+        var result = value.ToHuman(3);
 
         // Assert
         Assert.Equal("1.235K", result);
@@ -105,7 +105,7 @@ public class NumberFormatterTests
         var value = 1234567.89m;
 
         // Act
-        var result = value.ToShortCurrencyString(currencyCode: "USD");
+        var result = value.ToHumanCurrency(currencyCode: "USD");
 
         // Assert
         Assert.Equal("$1.23M", result);
@@ -118,7 +118,7 @@ public class NumberFormatterTests
         var value = 1234567.89m;
 
         // Act
-        var result = value.ToShortCurrencyString(currencyCode: "ETB");
+        var result = value.ToHumanCurrency(currencyCode: "ETB");
 
         // Assert
         Assert.Equal("Br1.23M", result);
@@ -132,7 +132,7 @@ public class NumberFormatterTests
         var germanCulture = new CultureInfo("de-DE");
 
         // Act
-        var result = value.ToShortString(2, germanCulture);
+        var result = value.ToHuman(2, germanCulture);
 
         // Assert
         Assert.Equal("1,23K", result);
@@ -143,14 +143,14 @@ public class NumberFormatterTests
     {
         // Arrange
         var value = 1234.56m;
-        var options = new ShortNumberFormatOptions
+        var options = new HumanNumberFormatOptions
         {
             DecimalPlaces = 1,
             ShowPlusSign = true
         };
 
         // Act
-        var result = value.ToShortString(options);
+        var result = value.ToHuman(options);
 
         // Assert
         Assert.Equal("+1.2K", result);
@@ -161,14 +161,14 @@ public class NumberFormatterTests
     {
         // Arrange
         var value = -1234.56m;
-        var options = new ShortNumberFormatOptions
+        var options = new HumanNumberFormatOptions
         {
             CurrencySymbol = "$",
             NegativePattern = "(n)"
         };
 
         // Act
-        var result = value.ToShortString(options);
+        var result = value.ToHuman(options);
 
         // Assert
         Assert.Equal("($1.23K)", result);
@@ -179,17 +179,17 @@ public class NumberFormatterTests
     {
         // Arrange
         var value = 1234.56m;
-        var options = new ShortNumberFormatOptions
+        var options = new HumanNumberFormatOptions
         {
-            CurrencySymbol = "€",
+            CurrencySymbol = "â‚¬",
             CurrencyPosition = CurrencyPosition.After
         };
 
         // Act
-        var result = value.ToShortString(options);
+        var result = value.ToHuman(options);
 
         // Assert
-        Assert.Equal("1.23K€", result);
+        Assert.Equal("1.23Kâ‚¬", result);
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class NumberFormatterTests
         int value = 1234567;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23M", result);
@@ -212,7 +212,7 @@ public class NumberFormatterTests
         long value = 1234567890;
 
         // Act
-        var result = value.ToShortString();
+        var result = value.ToHuman();
 
         // Assert
         Assert.Equal("1.23B", result);
@@ -225,7 +225,7 @@ public class NumberFormatterTests
         var value = 0.00123m;
 
         // Act
-        var result = value.ToShortString(3);
+        var result = value.ToHuman(3);
 
         // Assert
         Assert.Equal("0.001", result);
@@ -236,13 +236,13 @@ public class NumberFormatterTests
     {
         // Arrange
         var value = 1234567m;
-        var options = new ShortNumberFormatOptions
+        var options = new HumanNumberFormatOptions
         {
             CustomSuffixes = new[] { "", "Thousand", "Million", "Billion" }
         };
 
         // Act
-        var result = value.ToShortString(options);
+        var result = value.ToHuman(options);
 
         // Assert
         Assert.Equal("1.23Million", result);

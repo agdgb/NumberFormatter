@@ -1,5 +1,5 @@
 using System;
-using NumberFormatter.Financial;
+using HumanNumbers.Financial;
 using Xunit;
 
 namespace NumberFormatter.Tests;
@@ -19,7 +19,7 @@ public class FinancialTests
     [InlineData(999.99, "Nine Hundred Ninety-Nine Dollars and 99/100")]
     public void ToCheckWords_FormatsCorrectly(decimal value, string expected)
     {
-        var result = value.ToCheckWords();
+        var result = value.ToHumanWords("Dollars", "Dollar");
         Assert.Equal(expected, result);
     }
 
@@ -27,7 +27,7 @@ public class FinancialTests
     [InlineData(10.50, "Ten Euros and 50/100")]
     public void ToCheckWords_WithCustomCurrency_FormatsCorrectly(decimal value, string expected)
     {
-        var result = value.ToCheckWords("Euros", "Euro");
+        var result = value.ToHumanWords("Euros", "Euro");
         Assert.Equal(expected, result);
     }
     
@@ -40,7 +40,7 @@ public class FinancialTests
     [InlineData(1.996, "Two")] // Tests Math.Round to 2 decimal places before processing
     public void ToWords_FormatsCorrectly(decimal value, string expected)
     {
-        var result = value.ToWords();
+        var result = value.ToHumanWords();
         Assert.Equal(expected, result);
     }
 
@@ -64,7 +64,7 @@ public class FinancialTests
     [InlineData(0.012555, 1, "125.6 bps")] // AwayFromZero midpoint rounding
     public void ToBpsString_FormatsCorrectly(decimal value, int decimals, string expected)
     {
-        Assert.Equal(expected, value.ToBpsString(decimals));
+        Assert.Equal(expected, value.ToHumanBps(decimals));
     }
 
     [Theory]
@@ -112,7 +112,7 @@ public class FinancialTests
     [InlineData(10.0, 32, "10")]
     public void ToFractionString_FormatsCorrectly(decimal value, int denominator, string expected)
     {
-        Assert.Equal(expected, value.ToFractionString(denominator));
+        Assert.Equal(expected, value.ToHumanFraction(denominator));
     }
 
     [Theory]

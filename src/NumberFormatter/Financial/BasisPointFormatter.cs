@@ -22,18 +22,42 @@ namespace HumanNumbers.Financial
         }
 
         /// <summary>
+        /// Attempts to format a decimal to a Basis Points string (e.g., 0.0125m becomes "125 bps").
+        /// </summary>
+        public static bool TryToHumanBps(
+            this decimal value,
+            out string result,
+            int decimals = 0, 
+            MidpointRounding rounding = MidpointRounding.AwayFromZero,
+            IFormatProvider? provider = null)
+        {
+            try
+            {
+                var bps = value * BpsMultiplier;
+                var roundedBps = Math.Round(bps, decimals, rounding);
+                result = $"{roundedBps.ToString($"F{decimals}", provider)} bps";
+                return true;
+            }
+            catch (Exception ex)
+            {
+                HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
+                result = value.ToString(provider ?? CultureInfo.InvariantCulture);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Converts a decimal to a Basis Points string (e.g., 0.0125m becomes "125 bps").
         /// </summary>
-        public static string ToBpsString(
+        public static string ToHumanBps(
             this decimal value, 
             int decimals = 0, 
             MidpointRounding rounding = MidpointRounding.AwayFromZero,
             IFormatProvider? provider = null)
         {
-            var bps = value * BpsMultiplier;
-            var roundedBps = Math.Round(bps, decimals, rounding);
-            
-            return $"{roundedBps.ToString($"F{decimals}", provider)} bps";
+            if (TryToHumanBps(value, out var result, decimals, rounding, provider)) return result;
+            if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format Basis Points for value {value}");
+            return value.ToString(provider ?? CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -60,35 +84,5 @@ namespace HumanNumbers.Financial
 
             return false;
         }
-    }
-}
-
-namespace NumberFormatter.Financial
-{
-    /// <summary>
-    /// Obsolete alias for <see cref="HumanNumbers.Financial.BasisPointFormatter"/>.
-    /// </summary>
-    [Obsolete("Use HumanNumbers.Financial.BasisPointFormatter instead. This alias will be removed in a future version.")]
-    public static class BasisPointFormatter
-    {
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.BasisPointFormatter.ToBps"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.BasisPointFormatter.ToBps instead.")]
-        public static decimal ToBps(this decimal value) => HumanNumbers.Financial.BasisPointFormatter.ToBps(value);
-
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.BasisPointFormatter.ToBpsString"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.BasisPointFormatter.ToBpsString instead.")]
-        public static string ToBpsString(this decimal value, int decimals = 0, MidpointRounding rounding = MidpointRounding.AwayFromZero, IFormatProvider? provider = null) 
-            => HumanNumbers.Financial.BasisPointFormatter.ToBpsString(value, decimals, rounding, provider);
-
-        /// <summary>
-        /// Obsolete. Use <see cref="HumanNumbers.Financial.BasisPointFormatter.TryParseBps"/> instead.
-        /// </summary>
-        [Obsolete("Use HumanNumbers.Financial.BasisPointFormatter.TryParseBps instead.")]
-        public static bool TryParseBps(string? input, out decimal result, IFormatProvider? provider = null)
-            => HumanNumbers.Financial.BasisPointFormatter.TryParseBps(input, out result, provider);
     }
 }
