@@ -11,14 +11,11 @@ namespace HumanNumbers.Financial
     public static class WordsFormatter
     {
         /// <summary>
-        /// Converts a number to its spelled-out words (e.g., 1234.56 -> "One Thousand Two Hundred Thirty-Four and 56/100").
+        /// Attempts to convert a number to its spelled-out words (e.g., 1234.56 -> "One Thousand...").
+        /// Optionally includes check-style currency formats (e.g., "... Dollars and 56/100").
         /// Only formats up to 2 decimal places in the fractional part (common in finance).
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        /// <summary>
-        /// Attempts to convert a number to its spelled-out words (e.g., 1234.56 -> "One Thousand...").
-        /// Optionally includes check-style currency formats (e.g., "... Dollars and 56/100").
-        /// </summary>
         public static bool TryToHumanWords(
             this decimal value,
             out string result,

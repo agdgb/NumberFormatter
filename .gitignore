@@ -365,3 +365,13 @@ FodyWeavers.xsd
 /.vscode/launch.json
 /.vscode/tasks.json
 /nuget.config
+/scratch
+/site
+/docs
+/HumanNumbers.Benchmarks
+/HumanNumbers.Core.Tests
+/HumanNumbers.Mvc.Tests
+/human_numbers_docs_audit_rewrite.md
+/
+/docs/FullDocumentation.md
+/site/complete-docs.html

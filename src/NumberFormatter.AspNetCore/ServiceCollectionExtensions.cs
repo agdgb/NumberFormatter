@@ -21,6 +21,14 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddHumanNumbersCore(this IServiceCollection services, Action<HumanNumbersOptions>? configure = null)
     {
+        // Eagerly invoke the configure action so policy registrations (AddPolicy → HumanNumber.Configure)
+        // happen immediately against HumanNumbersConfig.Instance, not lazily when IOptions is first resolved.
+        if (configure != null)
+        {
+            var eagerOptions = new HumanNumbersOptions();
+            configure(eagerOptions);
+        }
+
         services.AddOptions<HumanNumbersOptions>()
             .Configure(configure ?? (_ => { }))
             .PostConfigure<IServiceProvider>((options, sp) =>
@@ -69,16 +77,22 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddHumanNumbersJson(this IServiceCollection services)
     {
-        services.AddOptions<JsonOptions>()
-            .Configure<HumanNumbersOptions>((options, hnOptions) =>
+        void ConfigureJsonOptions(System.Text.Json.JsonSerializerOptions jsonOptions)
+        {
+            var resolver = jsonOptions.TypeInfoResolver as DefaultJsonTypeInfoResolver ?? new DefaultJsonTypeInfoResolver();
+            if (!resolver.Modifiers.Contains(CreateHumanNumberModifier))
             {
-                // Core goal: Zero Interference. 
-                // The TypeInfo modifier is the ONLY mechanism here. It only activates for
-                // properties explicitly opted-in via [HumanNumber(OutputMode = SerializeAsHuman)].
-                var resolver = options.JsonSerializerOptions.TypeInfoResolver as DefaultJsonTypeInfoResolver ?? new DefaultJsonTypeInfoResolver();
                 resolver.Modifiers.Add(CreateHumanNumberModifier);
-                options.JsonSerializerOptions.TypeInfoResolver = resolver;
-            });
+            }
+            jsonOptions.TypeInfoResolver = resolver;
+        }
+
+        services.AddOptions<Microsoft.AspNetCore.Mvc.JsonOptions>()
+            .Configure(options => ConfigureJsonOptions(options.JsonSerializerOptions));
+
+        services.AddOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>()
+            .Configure(options => ConfigureJsonOptions(options.SerializerOptions));
+
         return services;
     }
 
@@ -90,11 +104,19 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddHumanNumbersJsonGlobal(this IServiceCollection services)
     {
         services.AddHumanNumbersJson(); // Include attribute-driven opt-in
-        services.AddOptions<JsonOptions>()
+        
+        services.AddOptions<Microsoft.AspNetCore.Mvc.JsonOptions>()
             .Configure<HumanNumbersOptions>((options, hnOptions) =>
             {
                 options.JsonSerializerOptions.Converters.Add(new HumanNumberJsonConverterFactory(hnOptions.DefaultDecimalPlaces));
             });
+
+        services.AddOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>()
+            .Configure<HumanNumbersOptions>((options, hnOptions) =>
+            {
+                options.SerializerOptions.Converters.Add(new HumanNumberJsonConverterFactory(hnOptions.DefaultDecimalPlaces));
+            });
+
         return services;
     }
 
@@ -108,20 +130,22 @@ public static class ServiceCollectionExtensions
             // If a custom converter is already specified (via [JsonConverter]), we respect it and skip.
             if (property.CustomConverter != null) continue;
 
-            // Scoped detection: only look for [HumanNumber] on numeric types we support.
-            if (!IsNumericType(property.PropertyType)) continue;
-
+            // Scoped detection: look for [HumanNumber] on supported numeric types or collections thereof.
             var attribute = property.AttributeProvider?.GetCustomAttributes(typeof(HumanNumberAttribute), inherit: true)
                 .FirstOrDefault() as HumanNumberAttribute;
 
-            if (attribute == null || attribute.OutputMode != HumanNumberOutputMode.SerializeAsHuman)
+            if (attribute == null)
             {
                 // This is TRUE ZERO INTERFERENCE. If it's not opted-in, we do nothing.
                 continue;
             }
 
             // Architecture: Metadata -> Pipeline Augmentation
-            property.CustomConverter = attribute.CreateConverter(property.PropertyType);
+            var converter = attribute.CreateConverter(property.PropertyType);
+            if (converter != null)
+            {
+                property.CustomConverter = converter;
+            }
         }
     }
 

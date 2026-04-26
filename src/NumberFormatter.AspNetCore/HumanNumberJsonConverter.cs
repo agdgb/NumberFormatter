@@ -1,8 +1,9 @@
+using HumanNumbers;
+using HumanNumbers.Formatting;
 using System.Globalization;
-using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using HumanNumbers;
+using System.Numerics;
 
 namespace HumanNumbers.AspNetCore.Serialization;
 
@@ -11,46 +12,34 @@ namespace HumanNumbers.AspNetCore.Serialization;
 /// </summary>
 public class HumanNumberJsonConverterFactory : JsonConverterFactory
 {
-    private readonly int _defaultDecimalPlaces;
-    private readonly bool _defaultIsCurrency;
-    private readonly string? _defaultCurrencyCode;
+    private readonly HumanNumberFormatOptions _options;
+    private readonly HumanNumberOutputMode _mode;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HumanNumberJsonConverterFactory"/> class.
-    /// </summary>
-    /// <param name="defaultDecimalPlaces">The default number of decimal places to include.</param>
-    /// <param name="defaultIsCurrency">Whether to format as currency by default.</param>
-    /// <param name="defaultCurrencyCode">The default currency code.</param>
-    public HumanNumberJsonConverterFactory(
-        int defaultDecimalPlaces = 2,
-        bool defaultIsCurrency = false,
-        string? defaultCurrencyCode = null)
+    /// <summary>Initializes the factory with the given <see cref="HumanNumberFormatOptions"/>.</summary>
+    public HumanNumberJsonConverterFactory(HumanNumberFormatOptions options, HumanNumberOutputMode mode = HumanNumberOutputMode.SerializeAsHuman)
     {
-        _defaultDecimalPlaces = defaultDecimalPlaces;
-        _defaultIsCurrency = defaultIsCurrency;
-        _defaultCurrencyCode = defaultCurrencyCode;
+        _options = options;
+        _mode = mode;
+    }
+
+    /// <summary>Initializes the factory with a default decimal places setting.</summary>
+    public HumanNumberJsonConverterFactory(int defaultDecimalPlaces = 2)
+    {
+        _options = new HumanNumberFormatOptions { DecimalPlaces = defaultDecimalPlaces };
+        _mode = HumanNumberOutputMode.SerializeAsHuman;
     }
 
     /// <inheritdoc />
-    public override bool CanConvert(Type typeToConvert)
-    {
-        return IsNumericType(typeToConvert);
-    }
+    public override bool CanConvert(Type typeToConvert) => IsNumericType(typeToConvert);
 
     private static bool IsNumericType(Type type)
     {
         var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-
-        return underlyingType == typeof(decimal) ||
-               underlyingType == typeof(double) ||
-               underlyingType == typeof(float) ||
-               underlyingType == typeof(int) ||
-               underlyingType == typeof(long) ||
-               underlyingType == typeof(short) ||
-               underlyingType == typeof(byte) ||
-               underlyingType == typeof(uint) ||
-               underlyingType == typeof(ulong) ||
-               underlyingType == typeof(ushort) ||
+        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
+               underlyingType == typeof(float) || underlyingType == typeof(int) ||
+               underlyingType == typeof(long) || underlyingType == typeof(short) ||
+               underlyingType == typeof(byte) || underlyingType == typeof(uint) ||
+               underlyingType == typeof(ulong) || underlyingType == typeof(ushort) ||
                underlyingType == typeof(sbyte);
     }
 
@@ -64,47 +53,27 @@ public class HumanNumberJsonConverterFactory : JsonConverterFactory
         if (isNullable)
         {
             var converterType = typeof(HumanNumberNullableJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                _defaultDecimalPlaces,
-                _defaultIsCurrency,
-                _defaultCurrencyCode)!;
+            return (JsonConverter)Activator.CreateInstance(converterType, _options, _mode)!;
         }
         else
         {
             var converterType = typeof(HumanNumberJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                _defaultDecimalPlaces,
-                _defaultIsCurrency,
-                _defaultCurrencyCode)!;
+            return (JsonConverter)Activator.CreateInstance(converterType, _options, _mode)!;
         }
     }
 }
 
-/// <summary>
-/// Generic JSON converter for human-readable number formatting.
-/// </summary>
+/// <summary>JSON converter that serializes a numeric value as a human-readable string and deserializes back.</summary>
 public class HumanNumberJsonConverter<T> : JsonConverter<T> where T : struct, INumber<T>
 {
-    private readonly int _decimalPlaces;
-    private readonly bool _isCurrency;
-    private readonly string? _currencyCode;
+    private readonly HumanNumberFormatOptions _options;
+    private readonly HumanNumberOutputMode _mode;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HumanNumberJsonConverter{T}"/> class.
-    /// </summary>
-    /// <param name="decimalPlaces">The number of decimal places.</param>
-    /// <param name="isCurrency">Whether to format as currency.</param>
-    /// <param name="currencyCode">The currency code.</param>
-    public HumanNumberJsonConverter(
-        int decimalPlaces = 2,
-        bool isCurrency = false,
-        string? currencyCode = null)
+    /// <summary>Initializes the converter with the given options.</summary>
+    public HumanNumberJsonConverter(HumanNumberFormatOptions options, HumanNumberOutputMode mode = HumanNumberOutputMode.SerializeAsHuman)
     {
-        _decimalPlaces = decimalPlaces;
-        _isCurrency = isCurrency;
-        _currencyCode = currencyCode;
+        _options = options;
+        _mode = mode;
     }
 
     /// <inheritdoc />
@@ -113,90 +82,60 @@ public class HumanNumberJsonConverter<T> : JsonConverter<T> where T : struct, IN
         if (reader.TokenType == JsonTokenType.String)
         {
             var stringValue = reader.GetString();
-            if (string.IsNullOrWhiteSpace(stringValue))
-                return T.Zero;
-
-            if (HumanNumber.TryParse(stringValue, out var parsedValue))
-            {
-                return T.CreateChecked(parsedValue);
-            }
+            if (string.IsNullOrWhiteSpace(stringValue)) return T.Zero;
+            if (HumanNumber.TryParse(stringValue, out var parsedValue)) return T.CreateChecked(parsedValue);
         }
 
-        if (reader.TokenType == JsonTokenType.Number)
-        {
-            return T.CreateChecked(reader.GetDecimal());
-        }
-
+        if (reader.TokenType == JsonTokenType.Number) return T.CreateChecked(reader.GetDecimal());
         return T.Zero;
     }
 
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
-        string formatted;
-        if (_isCurrency)
-        {
-            if (string.IsNullOrEmpty(_currencyCode))
-            {
-                // P2 Cleanup: Handle incomplete currency configuration
-                if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict)
-                {
-                    throw new InvalidOperationException("CurrencyCode must be provided when IsCurrency is true in Strict mode.");
-                }
+        var decimalValue = decimal.CreateChecked(value);
 
-                formatted = value.ToHumanCurrency(_decimalPlaces);
-            }
-            else
-            {
-                formatted = value.ToHumanCurrency(_currencyCode, _decimalPlaces);
-            }
+        if (_mode == HumanNumberOutputMode.FormatOnly)
+        {
+            writer.WriteNumberValue(decimalValue);
+            return;
+        }
+
+        string formatted;
+
+        if (_options.CurrencySymbol != null)
+        {
+            formatted = decimalValue.ToHumanCurrency(_options);
         }
         else
         {
-            formatted = value.ToHuman(_decimalPlaces);
+            formatted = decimalValue.ToHuman(_options);
         }
 
         writer.WriteStringValue(formatted);
     }
 }
 
-/// <summary>
-/// JSON converter for nullable numeric types using human-readable formatting.
-/// </summary>
+/// <summary>JSON converter that handles nullable numeric values, delegating to <see cref="HumanNumberJsonConverter{T}"/>.</summary>
 public class HumanNumberNullableJsonConverter<T> : JsonConverter<T?> where T : struct, INumber<T>
 {
     private readonly HumanNumberJsonConverter<T> _innerConverter;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="HumanNumberNullableJsonConverter{T}"/> class.
-    /// </summary>
-    /// <param name="decimalPlaces">The number of decimal places.</param>
-    /// <param name="isCurrency">Whether to format as currency.</param>
-    /// <param name="currencyCode">The currency code.</param>
-    public HumanNumberNullableJsonConverter(int decimalPlaces = 2, bool isCurrency = false, string? currencyCode = null)
+    /// <summary>Initializes the converter with the given options.</summary>
+    public HumanNumberNullableJsonConverter(HumanNumberFormatOptions options, HumanNumberOutputMode mode = HumanNumberOutputMode.SerializeAsHuman)
     {
-        _innerConverter = new HumanNumberJsonConverter<T>(decimalPlaces, isCurrency, currencyCode);
+        _innerConverter = new HumanNumberJsonConverter<T>(options, mode);
     }
 
     /// <inheritdoc />
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TokenType == JsonTokenType.Null)
-            return null;
-
-        return _innerConverter.Read(ref reader, typeof(T), options);
-    }
+    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType == JsonTokenType.Null ? null : _innerConverter.Read(ref reader, typeof(T), options);
 
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
     {
-        if (value is null)
-        {
-            writer.WriteNullValue();
-            return;
-        }
-
-        _innerConverter.Write(writer, value.Value, options);
+        if (value is null) writer.WriteNullValue();
+        else _innerConverter.Write(writer, value.Value, options);
     }
 }
 
@@ -231,5 +170,42 @@ public class NumericPassthroughNullableConverter<T> : JsonConverter<T?> where T 
     {
         if (value is null) writer.WriteNullValue();
         else _inner.Write(writer, value.Value, options);
+    }
+}
+
+/// <summary>
+/// A JSON converter that serializes a collection of numeric values as human-readable strings.
+/// </summary>
+public class HumanNumberCollectionConverter<T, TCollection> : JsonConverter<TCollection>
+    where T : struct, INumber<T>
+    where TCollection : IEnumerable<T>
+{
+    private readonly HumanNumberFormatOptions _options;
+
+    /// <summary>Initializes the converter with the given options.</summary>
+    public HumanNumberCollectionConverter(HumanNumberFormatOptions options)
+    {
+        _options = options;
+    }
+
+    /// <inheritdoc />
+    public override TCollection? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotSupportedException("Deserializing human-formatted collections is not supported.");
+    }
+
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        foreach (var item in value)
+        {
+            var decimalValue = decimal.CreateChecked(item);
+            string formatted = _options.CurrencySymbol != null 
+                ? decimalValue.ToHumanCurrency(_options) 
+                : decimalValue.ToHuman(_options);
+            writer.WriteStringValue(formatted);
+        }
+        writer.WriteEndArray();
     }
 }

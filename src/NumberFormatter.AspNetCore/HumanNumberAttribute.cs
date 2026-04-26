@@ -72,24 +72,79 @@ public class HumanNumberAttribute : Attribute
         bool isNullable = underlyingType != null;
         Type actualType = underlyingType ?? typeToConvert;
 
-        if (isNullable)
+        var options = new HumanNumbers.Formatting.HumanNumberFormatOptions();
+        
+        if (!string.IsNullOrEmpty(PolicyName))
         {
-            var converterType = typeof(HumanNumberNullableJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                DecimalPlaces,
-                IsCurrency,
-                CurrencyCode)!;
+            options.UsingPolicy(PolicyName);
         }
         else
         {
-            var converterType = typeof(HumanNumberJsonConverter<>).MakeGenericType(actualType);
-            return (JsonConverter)Activator.CreateInstance(
-                converterType,
-                DecimalPlaces,
-                IsCurrency,
-                CurrencyCode)!;
+            options.DecimalPlaces = DecimalPlaces;
         }
+
+        if (IsCurrency)
+        {
+            options.CurrencySymbol = !string.IsNullOrEmpty(CurrencyCode) 
+                ? HumanNumbers.Currencies.CurrencyRegistry.GetSymbol(CurrencyCode) 
+                : "$";
+        }
+
+        if (isNullable)
+        {
+            var converterType = typeof(HumanNumberNullableJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(converterType, options, OutputMode)!;
+        }
+        else if (IsNumericType(actualType))
+        {
+            var converterType = typeof(HumanNumberJsonConverter<>).MakeGenericType(actualType);
+            return (JsonConverter)Activator.CreateInstance(converterType, options, OutputMode)!;
+        }
+        else if (TryGetCollectionElementType(typeToConvert, out var elementType))
+        {
+            var converterType = typeof(HumanNumberCollectionConverter<,>).MakeGenericType(elementType, typeToConvert);
+            return (JsonConverter)Activator.CreateInstance(converterType, options)!;
+        }
+
+        return null;
+    }
+
+    private static bool IsNumericType(Type type)
+    {
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
+               underlyingType == typeof(float) || underlyingType == typeof(int) ||
+               underlyingType == typeof(long) || underlyingType == typeof(short) ||
+               underlyingType == typeof(byte) || underlyingType == typeof(uint) ||
+               underlyingType == typeof(ulong) || underlyingType == typeof(ushort) ||
+               underlyingType == typeof(sbyte);
+    }
+
+    private static bool TryGetCollectionElementType(Type type, out Type elementType)
+    {
+        elementType = null!;
+        if (type.IsArray)
+        {
+            elementType = type.GetElementType()!;
+            return IsNumericType(elementType);
+        }
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.IEnumerable<>))
+        {
+            elementType = type.GetGenericArguments()[0];
+            return IsNumericType(elementType);
+        }
+
+        var enumerableType = type.GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(System.Collections.Generic.IEnumerable<>));
+
+        if (enumerableType != null)
+        {
+            elementType = enumerableType.GetGenericArguments()[0];
+            return IsNumericType(elementType);
+        }
+
+        return false;
     }
 }
 

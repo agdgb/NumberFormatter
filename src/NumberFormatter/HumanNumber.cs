@@ -91,6 +91,17 @@ namespace HumanNumbers
             }
 
             /// <summary>
+            /// Switches to strict numeric precision where suffixes are only promoted 
+            /// when the absolute value exactly reaches the next magnitude.
+            /// </summary>
+            public FormattingContext Strict()
+            {
+                var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
+                options.PromotionThreshold = 1.0m;
+                return new FormattingContext(_value, options, _culture);
+            }
+
+            /// <summary>
             /// Executes the formatting and returns a human-readable string.
             /// </summary>
             public string ToHuman()
@@ -219,6 +230,19 @@ namespace HumanNumbers
                 CurrencySymbol = culture.NumberFormat.CurrencySymbol
             };
             return TryFormatNumber(value, options, culture, out result);
+        }
+
+        /// <summary>
+        /// Formats a number as currency using specified options.
+        /// </summary>
+        public static string ToHumanCurrency(
+            this decimal value,
+            HumanNumberFormatOptions options,
+            CultureInfo? culture = null)
+        {
+            if (TryFormatNumber(value, options, culture, out var result)) return result;
+            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format currency value {value}");
+            return value.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -614,7 +638,7 @@ namespace HumanNumbers
         /// </summary>
         public static bool TryParse(string? value, out decimal result)
         {
-            return TryParse(value, CultureInfo.InvariantCulture, out result);
+            return TryParse(value, CultureInfo.CurrentCulture, out result);
         }
 
         /// <summary>
@@ -713,7 +737,7 @@ namespace HumanNumbers
         {
             try
             {
-                culture ??= CultureInfo.CurrentCulture;
+                culture ??= options.Culture ?? CultureInfo.CurrentCulture;
                 var numberFormat = GetNumberFormatInfo(culture);
 
                 // Handle zero

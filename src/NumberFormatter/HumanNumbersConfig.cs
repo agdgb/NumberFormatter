@@ -9,6 +9,12 @@ public class HumanNumbersConfig
 {
     private static HumanNumbersConfig _instance = new();
 
+    private HumanNumbersConfig()
+    {
+        // Register default system policies
+        AddPolicy("Strict", new HumanNumberFormatOptions { PromotionThreshold = 1.0m });
+    }
+
     /// <summary>
     /// Gets the singleton configuration instance.
     /// </summary>

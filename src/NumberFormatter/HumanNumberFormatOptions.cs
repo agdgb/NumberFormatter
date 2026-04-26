@@ -14,8 +14,13 @@ namespace HumanNumbers.Formatting
     /// Defaults produce standard short formatting like "1.23M" or "$1.23K".
     /// Supports culture-aware formatting via <see cref="HumanNumber"/> methods.
     /// </remarks>
-    public record struct HumanNumberFormatOptions()
+    public record HumanNumberFormatOptions
     {
+        /// <summary>
+        /// The culture to use for formatting (default: <see langword="null"/> → uses <see cref="System.Globalization.CultureInfo.CurrentCulture"/>).
+        /// </summary>
+        public System.Globalization.CultureInfo? Culture { get; set; }
+
         /// <summary>
         /// An optional action triggered when a generic parsing or casting exception occurs.
         /// This enables centralized error logging (e.g., Sentry) without crashing the API output.
@@ -108,6 +113,56 @@ namespace HumanNumbers.Formatting
         /// </summary>
         /// <example><c>true</c>: 12 → "12"; <c>false</c>: 12 → "12.00"</example>
         public bool SuppressDefaultDecimals { get; set; } = true;
+
+        /// <summary>
+        /// Gets a preset for strict numeric precision where suffixes are only promoted 
+        /// when the absolute value exactly reaches the next magnitude.
+        /// </summary>
+        public static HumanNumberFormatOptions StrictPreset => new() { PromotionThreshold = 1.0m };
+
+        // Fluent helpers for ASP.NET Core delegates
+
+        /// <summary>Enables strict promotion mode — suffix only advances when the value exactly reaches the next magnitude.</summary>
+        public HumanNumberFormatOptions Strict()
+        {
+            PromotionThreshold = 1.0m;
+            return this;
+        }
+
+        /// <summary>Sets the currency symbol by ISO code (e.g. <c>"USD"</c> → <c>"$"</c>).</summary>
+        public HumanNumberFormatOptions WithCurrency(string currencyCode)
+        {
+            CurrencySymbol = CurrencyRegistry.GetSymbol(currencyCode);
+            return this;
+        }
+
+        /// <summary>Applies the named policy registered via <see cref="HumanNumbersConfig.AddPolicy"/>.</summary>
+        public HumanNumberFormatOptions UsingPolicy(string policyName)
+        {
+            if (HumanNumbersConfig.Instance.TryGetPolicy(policyName, out var options))
+            {
+                // Copy values from policy
+                this.DecimalPlaces = options.DecimalPlaces;
+                this.PromotionThreshold = options.PromotionThreshold;
+                this.Threshold = options.Threshold;
+                this.AlwaysShowSuffix = options.AlwaysShowSuffix;
+                this.Culture = options.Culture;
+                this.CurrencySymbol = options.CurrencySymbol;
+                this.CachedCustomSuffixes = options.CachedCustomSuffixes;
+                this.CurrencyPosition = options.CurrencyPosition;
+                this.NegativePattern = options.NegativePattern;
+                this.ShowPlusSign = options.ShowPlusSign;
+            }
+            return this;
+        }
+
+        /// <summary>Applies the culture and its currency symbol to these options.</summary>
+        public HumanNumberFormatOptions WithCulture(System.Globalization.CultureInfo culture)
+        {
+            this.Culture = culture;
+            this.CurrencySymbol = culture.NumberFormat.CurrencySymbol;
+            return this;
+        }
     }
 }
 

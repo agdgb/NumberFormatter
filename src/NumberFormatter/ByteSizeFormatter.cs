@@ -141,7 +141,7 @@ namespace HumanNumbers.Bytes
                 }
 
                 int place = Convert.ToInt32(Math.Floor(Math.Log(absBytes, divisor)));
-                
+
                 // Ensure place is within array bounds (Math.Clamp is not available in netstandard2.0)
                 place = Math.Max(0, Math.Min(place, suffixes.Length - 1));
 
@@ -156,11 +156,11 @@ namespace HumanNumbers.Bytes
                 }
 
                 string sign = bytes < 0 ? culture.NumberFormat.NegativeSign : "";
-                
+
                 // Suppress decimals if it's the base unit (B) and is a whole number
                 int precision = (place == 0 && num == Math.Truncate(num)) ? 0 : decimalPlaces;
                 string formatString = $"F{precision}";
-                
+
                 result = $"{sign}{num.ToString(formatString, culture)} {suffixes[place]}";
                 return true;
             }
