@@ -66,26 +66,35 @@ By default, we prioritize **readability**. If a number rounds up to the next thr
 - **Fractions**: `1.5m.ToHumanFraction(32); // "1 16/32"`
 - **Roman**: `2024.ToRoman(); // "MMXXIV"`
 
-### 🌐 Internationalization: Custom Words (I18n)
+---
 
-For non-English support in financial word-formatting, implement the `IWordsProvider` interface:
+## 🌍 Internationalization & Global Support
+
+**HumanNumbers** is built on top of the native .NET `CultureInfo` system, meaning it automatically respects global numbering rules, separators, and currency symbols out of the box.
+
+### Verified Global Outputs (Examples)
+
+| Culture | Scaled Human | Currency Format | Non-Scaled Grouping | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **ar-SA** (Arabic) | `1٫25M` | `ر.س.‏ 1٫25M` | `1٬000٬000` | Uses unique Arabic separators. |
+| **hi-IN** (Hindi) | `1.25M` | `₹1.25M` | `10,00,000` | **Lakh/Crore** grouping (10,00,000). |
+| **fr-FR** (French) | `1,25M` | `1,25M €` | `1 000 000` | Space separator and trailing currency. |
+| **de-DE** (German) | `1,25M` | `1,25M €` | `1.000.000` | Comma decimal and dot grouping. |
+| **am-ET** (Amharic) | `1.25M` | `Br1.25M` | `1,000,000` | Custom Ethiopian currency symbol. |
+
+### Custom Words (Financial I18n)
+For non-English support in financial word-formatting (Check Writing), implement the `IWordsProvider` interface:
 
 ```csharp
 public class SpanishWordsProvider : IWordsProvider
 {
     public string NegativeWord => "Negativo";
     public string ConjunctionWord => "con";
-    
-    public string ToWords(decimal value) 
-    {
-        // Implementation for Spanish numbers...
-        return "Mil Doscientos"; 
-    }
+    public string ToWords(decimal value) => "Mil Doscientos"; 
 }
 
 // Usage
-var spanish = new SpanishWordsProvider();
-1200m.ToHumanWords(provider: spanish); // "Mil Doscientos"
+1200m.ToHumanWords(provider: new SpanishWordsProvider()); // "Mil Doscientos"
 ```
 
 ---
@@ -220,6 +229,31 @@ app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000 })
 - **Governance First**: Use the `Policy` system to define "Brand Guidelines" for numbers once, then apply them everywhere.
 - **Allocation Aware**: We leverage `Span<char>` and `ISpanFormattable` to ensure that adding "humanity" to your data doesn't sink your GC performance.
 - **Contract Safety**: Your API types remain `decimal`. We only change the *representation* during the final serialization step.
+
+---
+
+---
+
+## 🔄 Migration from `NumberFormatter`
+
+`HumanNumbers` is the official successor to the legacy `NumberFormatter` package. It features a modernized API, significantly improved performance (via `Span<char>`), and a unified policy system.
+
+### Key Changes
+- **Namespace**: `NumberFormatter` → `HumanNumbers`
+- **Method Renaming**:
+  - `ToShortString()` → `ToHuman()`
+  - `ToShortCurrencyString()` → `ToHumanCurrency()`
+- **Binary Compatibility**: A legacy shim is provided in the `NumberFormatter` namespace (marked as `[Obsolete]`) to help with a zero-friction transition.
+
+```csharp
+// Legacy (NumberFormatter)
+using NumberFormatter;
+1500.ToShortString(); 
+
+// Modern (HumanNumbers)
+using HumanNumbers;
+1500.ToHuman();
+```
 
 ---
 

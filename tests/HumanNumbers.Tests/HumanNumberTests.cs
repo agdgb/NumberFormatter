@@ -247,4 +247,38 @@ public class HumanNumberTests
         // Assert
         Assert.Equal("1.23Million", result);
     }
+
+    [Fact]
+    public void Should_Handle_Negative_And_Edge_Case_Numbers()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        // Standard negative scaling
+        Assert.Contains("-1.50M", (-1500000m).ToHuman(2, culture));
+        
+        // Extreme values
+        Assert.False(string.IsNullOrWhiteSpace(decimal.MinValue.ToHuman(2, culture)));
+
+        // Zero and Tiny values
+        Assert.Equal("0", 0m.ToHuman(2, culture));
+        // 0.0001 with 2 decimal places rounds to 0. With default suppression, it's "0"
+        Assert.Equal("0", 0.0001m.ToHuman(2, culture)); 
+    }
+
+    [Fact]
+    public void Should_Maintain_RoundTrip_Consistency_With_Scaling()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+        // Use values that don't lose precision when scaled to 2 decimal places
+        var values = new[] { 1500m, 1500000m, 1500000000m };
+
+        foreach (var val in values)
+        {
+            var formatted = val.ToHuman(2, culture);
+            var success = HumanNumber.TryParse(formatted, culture, out var parsed);
+
+            Assert.True(success, $"Failed to parse scaled value '{formatted}'");
+            Assert.Equal(val, parsed);
+        }
+    }
 }
