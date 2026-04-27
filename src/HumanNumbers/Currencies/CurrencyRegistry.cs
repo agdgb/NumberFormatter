@@ -11,7 +11,7 @@ namespace HumanNumbers.Currencies;
 public static class CurrencyRegistry
 {
     private static readonly ConcurrentDictionary<string, string> SymbolCache = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly ConcurrentDictionary<string, RegionInfo> RegionCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, RegionInfo?> RegionCache = new(StringComparer.OrdinalIgnoreCase);
     
     // Core fallback map for symbols not easily discovered by CultureInfo
     private static readonly ConcurrentDictionary<string, string> FallbackSymbolMap = new(StringComparer.OrdinalIgnoreCase)

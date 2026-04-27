@@ -125,7 +125,7 @@ namespace HumanNumbers
                 
                 if (!string.IsNullOrEmpty(currencyCode))
                 {
-                    options.CurrencySymbol = GetCurrencySymbol(currencyCode);
+                    options.CurrencySymbol = GetCurrencySymbol(currencyCode!);
                 }
                 else if (_culture != null && _culture.Name != "")
                 {
@@ -161,14 +161,18 @@ namespace HumanNumbers
             int? decimalPlaces = null,
             CultureInfo? culture = null)
         {
-            var options = HumanNumbersConfig.Instance.GlobalOptions with 
-            { 
-                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces 
-            };
-            
-            if (TryFormatNumber(value, options, culture, out var result)) return result;
-            if (options.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format value {value}");
-            return value.ToString(CultureInfo.InvariantCulture);
+            var globalOptions = HumanNumbersConfig.Instance.GlobalOptions;
+            if (decimalPlaces == null || decimalPlaces == globalOptions.DecimalPlaces)
+            {
+                if (TryFormatNumber(value, globalOptions, culture, out var result)) return result;
+            }
+            else
+            {
+                var options = globalOptions with { DecimalPlaces = decimalPlaces.Value };
+                if (TryFormatNumber(value, options, culture, out var result)) return result;
+            }
+
+            return value.ToString(culture ?? CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -180,10 +184,13 @@ namespace HumanNumbers
             int? decimalPlaces = null,
             CultureInfo? culture = null)
         {
-            var options = HumanNumbersConfig.Instance.GlobalOptions with 
-            { 
-                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces 
-            };
+            var globalOptions = HumanNumbersConfig.Instance.GlobalOptions;
+            if (decimalPlaces == null || decimalPlaces == globalOptions.DecimalPlaces)
+            {
+                return TryFormatNumber(value, globalOptions, culture, out result);
+            }
+            
+            var options = globalOptions with { DecimalPlaces = decimalPlaces.Value };
             return TryFormatNumber(value, options, culture, out result);
         }
 
@@ -198,6 +205,57 @@ namespace HumanNumbers
         {
             return TryFormatNumber(value, options, culture, out result);
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Formats a number into a character span.
+        /// </summary>
+        public static bool ToHuman(
+            this decimal value,
+            Span<char> destination,
+            out int charsWritten,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null)
+        {
+            return TryFormat(value, destination, out charsWritten, decimalPlaces, culture);
+        }
+
+        /// <summary>
+        /// Attempts to format a number into a character span.
+        /// </summary>
+        public static bool TryFormat(
+            this decimal value,
+            Span<char> destination,
+            out int charsWritten,
+            int? decimalPlaces = null,
+            CultureInfo? culture = null)
+        {
+            var globalOptions = HumanNumbersConfig.Instance.GlobalOptions;
+            
+            // Critical check: avoid record cloning if possible
+            if (!decimalPlaces.HasValue || decimalPlaces.Value == globalOptions.DecimalPlaces)
+            {
+                return TryFormatNumber(value, globalOptions, culture, destination, out charsWritten);
+            }
+
+            // Fallback for custom precision
+            var options = globalOptions with { DecimalPlaces = decimalPlaces.Value };
+            return TryFormatNumber(value, options, culture, destination, out charsWritten);
+        }
+
+        /// <summary>
+        /// Attempts to format a number into a character span with custom options.
+        /// </summary>
+        public static bool TryFormat(
+            this decimal value,
+            Span<char> destination,
+            out int charsWritten,
+            HumanNumberFormatOptions options,
+            CultureInfo? culture = null)
+        {
+            return TryFormatNumber(value, options, culture, destination, out charsWritten);
+        }
+#endif
 
         /// <summary>
         /// Formats a number to a human-readable string with custom options
@@ -224,10 +282,18 @@ namespace HumanNumbers
             culture ??= CultureInfo.CurrentCulture;
             if (culture.Name == "") culture = new CultureInfo("en-US");
 
-            var options = HumanNumbersConfig.Instance.GlobalOptions with
+            var globalOptions = HumanNumbersConfig.Instance.GlobalOptions;
+            var symbol = culture.NumberFormat.CurrencySymbol;
+
+            if ((decimalPlaces == null || decimalPlaces == globalOptions.DecimalPlaces) && symbol == globalOptions.CurrencySymbol)
             {
-                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces,
-                CurrencySymbol = culture.NumberFormat.CurrencySymbol
+                return TryFormatNumber(value, globalOptions, culture, out result);
+            }
+
+            var options = globalOptions with
+            {
+                DecimalPlaces = decimalPlaces ?? globalOptions.DecimalPlaces,
+                CurrencySymbol = symbol
             };
             return TryFormatNumber(value, options, culture, out result);
         }
@@ -270,9 +336,16 @@ namespace HumanNumbers
             CultureInfo? culture = null)
         {
             var symbol = GetCurrencySymbol(currencyCode);
-            var options = HumanNumbersConfig.Instance.GlobalOptions with
+            var globalOptions = HumanNumbersConfig.Instance.GlobalOptions;
+
+            if ((decimalPlaces == null || decimalPlaces == globalOptions.DecimalPlaces) && symbol == globalOptions.CurrencySymbol)
             {
-                DecimalPlaces = decimalPlaces ?? HumanNumbersConfig.Instance.GlobalOptions.DecimalPlaces,
+                return TryFormatNumber(value, globalOptions, culture, out result);
+            }
+
+            var options = globalOptions with
+            {
+                DecimalPlaces = decimalPlaces ?? globalOptions.DecimalPlaces,
                 CurrencySymbol = symbol
             };
             return TryFormatNumber(value, options, culture, out result);
@@ -681,12 +754,15 @@ namespace HumanNumbers
             }
             suffixPart = suffixPart.Slice(0, suffixEnd);
 
+#if !NETSTANDARD2_0
+            if (decimal.TryParse(numberPart, NumberStyles.Any, culture, out var number))
+#else
             if (decimal.TryParse(numberPart.ToString(), NumberStyles.Any, culture, out var number))
+#endif
             {
                 if (suffixPart.Length > 0)
                 {
-                    var suffixStr = suffixPart.ToString();
-                    if (SuffixMultipliers.TryGetValue(suffixStr, out var multiplier))
+                    if (TryGetMultiplier(suffixPart, out var multiplier))
                     {
                         result = number * multiplier;
                         return true;
@@ -701,6 +777,30 @@ namespace HumanNumbers
 
             // Fallback: Try parsing the whole string natively
             return decimal.TryParse(value, NumberStyles.Any, culture, out result);
+        }
+
+        private static bool TryGetMultiplier(ReadOnlySpan<char> suffix, out decimal multiplier)
+        {
+            multiplier = 1;
+            if (suffix.Length == 0) return true;
+
+            // Common short suffixes
+            if (suffix.Length == 1)
+            {
+                char c = char.ToUpperInvariant(suffix[0]);
+                switch (c)
+                {
+                    case 'K': multiplier = 1_000m; return true;
+                    case 'M': multiplier = 1_000_000m; return true;
+                    case 'B': multiplier = 1_000_000_000m; return true;
+                    case 'T': multiplier = 1_000_000_000_000m; return true;
+                    case 'P': multiplier = 1_000_000_000_000_000m; return true;
+                    case 'E': multiplier = 1_000_000_000_000_000_000m; return true;
+                }
+            }
+
+            // Fallback to dictionary for custom/longer suffixes
+            return SuffixMultipliers.TryGetValue(suffix.ToString(), out multiplier);
         }
 
         /// <summary>
@@ -735,12 +835,25 @@ namespace HumanNumbers
             CultureInfo? culture,
             out string result)
         {
+#if !NETSTANDARD2_0
+            // Optimized path for modern .NET using stack-allocated buffer
+            Span<char> buffer = stackalloc char[128];
+            if (TryFormatNumber(value, options, culture, buffer, out var charsWritten))
+            {
+                result = new string(buffer.Slice(0, charsWritten));
+                return true;
+            }
+            
+            options.OnFormattingError?.Invoke(new FormatException("Failed to format into buffer."));
+            result = value.ToString(culture ?? CultureInfo.InvariantCulture);
+            return false;
+#else
+            // Legacy path for .NET Standard 2.0
             try
             {
                 culture ??= options.Culture ?? CultureInfo.CurrentCulture;
                 var numberFormat = GetNumberFormatInfo(culture);
 
-                // Handle zero
                 if (value == 0 && !options.AlwaysShowSuffix)
                 {
                     result = options.CurrencySymbol != null
@@ -751,41 +864,29 @@ namespace HumanNumbers
 
                 var isNegative = value < 0;
                 var absValue = Math.Abs(value);
-
-                // Get appropriate suffix
                 var suffixes = options.CachedCustomSuffixes ?? DefaultSuffixes;
-
                 var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold, options.AlwaysShowSuffix);
 
-                // Format the number - keep as decimal to preserve precision
                 var scaledValue = absValue / divisor;
                 var roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
 
-                // Re-evaluate if rounding pushed us to a higher threshold
-                // We use a factor of 1.0 here because we only want to promote if the ROUNDED value
-                // actually hits or exceeds the next threshold.
                 while (divisor > 0)
                 {
                     var reconstructedValue = roundedValue * divisor;
                     var (newDivisor, newSuffix) = GetSuffixAndDivisor(reconstructedValue, suffixes, options.Threshold, 1.0m, options.AlwaysShowSuffix);
-                    
                     if (newDivisor <= divisor) break;
-
                     divisor = newDivisor;
                     suffix = newSuffix;
                     scaledValue = absValue / divisor;
                     roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
                 }
 
-                // Build the formatted number part
-                // Suppress decimals if not scaled and is a whole number (if option enabled)
                 var precision = (options.SuppressDefaultDecimals && divisor == 1m && string.IsNullOrEmpty(suffix) && roundedValue == Math.Truncate(roundedValue))
                     ? 0
                     : options.DecimalPlaces;
 
                 var formattedNumber = roundedValue.ToString($"F{precision}", numberFormat);
 
-                // Apply currency if needed
                 if (options.CurrencySymbol != null)
                 {
                     result = FormatCurrencyNumber(roundedValue, suffix, options, numberFormat);
@@ -797,7 +898,6 @@ namespace HumanNumbers
                         : $"{formattedNumber}{suffix}";
                 }
 
-                // Handle negative numbers
                 if (isNegative) 
                     result = FormatNegativeNumber(result, options, numberFormat);
 
@@ -806,10 +906,244 @@ namespace HumanNumbers
             catch (Exception ex)
             {
                 options.OnFormattingError?.Invoke(ex);
-                result = value.ToString(CultureInfo.InvariantCulture); // safe fallback
+                result = value.ToString(CultureInfo.InvariantCulture);
                 return false;
             }
+#endif
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Zero-allocation core formatting logic writing directly to a span.
+        /// </summary>
+        internal static bool TryFormatNumber(
+            decimal value,
+            HumanNumberFormatOptions options,
+            CultureInfo? culture,
+            Span<char> destination,
+            out int charsWritten)
+        {
+            charsWritten = 0;
+            try
+            {
+                culture ??= options.Culture ?? CultureInfo.CurrentCulture;
+                var numberFormat = GetNumberFormatInfo(culture);
+
+                if (value == 0 && !options.AlwaysShowSuffix)
+                {
+                    if (options.CurrencySymbol != null)
+                    {
+                        return TryFormatCurrency(0, ReadOnlySpan<char>.Empty, options, numberFormat, destination, out charsWritten);
+                    }
+                    if (destination.Length > 0)
+                    {
+                        destination[0] = '0';
+                        charsWritten = 1;
+                        return true;
+                    }
+                    return false;
+                }
+
+                var isNegative = value < 0;
+                var absValue = Math.Abs(value);
+                var suffixes = options.CachedCustomSuffixes ?? DefaultSuffixes;
+
+                var (divisor, suffix) = GetSuffixAndDivisor(absValue, suffixes, options.Threshold, options.PromotionThreshold, options.AlwaysShowSuffix);
+                var scaledValue = absValue / divisor;
+                var roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
+
+                // Magnitude promotion check
+                while (divisor > 0)
+                {
+                    var reconstructedValue = roundedValue * divisor;
+                    var (newDivisor, newSuffix) = GetSuffixAndDivisor(reconstructedValue, suffixes, options.Threshold, 1.0m, options.AlwaysShowSuffix);
+                    if (newDivisor <= divisor) break;
+                    divisor = newDivisor;
+                    suffix = newSuffix;
+                    scaledValue = absValue / divisor;
+                    roundedValue = Math.Round(scaledValue, options.DecimalPlaces, MidpointRounding.AwayFromZero);
+                }
+
+                var precision = (options.SuppressDefaultDecimals && divisor == 1m && string.IsNullOrEmpty(suffix) && roundedValue == Math.Truncate(roundedValue))
+                    ? 0
+                    : options.DecimalPlaces;
+
+                // Build parts without allocations
+                if (options.CurrencySymbol != null)
+                {
+                    return TryFormatCurrency(roundedValue, suffix.AsSpan(), options, numberFormat, destination, out charsWritten, isNegative);
+                }
+                else
+                {
+                    return TryFormatGeneric(roundedValue, precision, suffix.AsSpan(), options, numberFormat, destination, out charsWritten, isNegative);
+                }
+            }
+            catch (Exception ex)
+            {
+                options.OnFormattingError?.Invoke(ex);
+                return value.TryFormat(destination, out charsWritten, default, CultureInfo.InvariantCulture);
+            }
+        }
+
+        private static bool TryFormatGeneric(
+            decimal roundedValue,
+            int precision,
+            ReadOnlySpan<char> suffix,
+            HumanNumberFormatOptions options,
+            NumberFormatInfo numberFormat,
+            Span<char> destination,
+            out int charsWritten,
+            bool isNegative)
+        {
+            charsWritten = 0;
+            var pos = 0;
+
+            // 1. Sign
+            if (isNegative)
+            {
+                if (options.NegativePattern == "-n")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = '-';
+                }
+                else if (options.NegativePattern == "(n)")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = '(';
+                }
+            }
+            else if (options.ShowPlusSign && roundedValue > 0)
+            {
+                if (pos >= destination.Length) return false;
+                destination[pos++] = '+';
+            }
+
+            // 2. Number
+            Span<char> format = stackalloc char[8];
+            "F".AsSpan().CopyTo(format);
+            precision.TryFormat(format.Slice(1), out var fLen);
+            var formatSpan = format.Slice(0, 1 + fLen);
+
+            if (!roundedValue.TryFormat(destination.Slice(pos), out var numWritten, formatSpan, numberFormat))
+                return false;
+            
+            pos += numWritten;
+
+            // 3. Suffix
+            if (!suffix.IsEmpty)
+            {
+                if (pos + suffix.Length > destination.Length) return false;
+                suffix.CopyTo(destination.Slice(pos));
+                pos += suffix.Length;
+            }
+
+            // 4. Closing decorators
+            if (isNegative)
+            {
+                if (options.NegativePattern == "(n)")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = ')';
+                }
+                else if (options.NegativePattern == "n-")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = '-';
+                }
+            }
+
+            charsWritten = pos;
+            return true;
+        }
+
+        private static bool TryFormatCurrency(
+            decimal roundedValue,
+            ReadOnlySpan<char> suffix,
+            HumanNumberFormatOptions options,
+            NumberFormatInfo numberFormat,
+            Span<char> destination,
+            out int charsWritten,
+            bool isNegative = false)
+        {
+            charsWritten = 0;
+            var pos = 0;
+            var symbol = (options.CurrencySymbol ?? numberFormat.CurrencySymbol).AsSpan();
+
+            // Handle negative patterns for currency
+            if (isNegative && options.NegativePattern == "(n)")
+            {
+                if (pos >= destination.Length) return false;
+                destination[pos++] = '(';
+            }
+            else if (isNegative && options.NegativePattern == "-n")
+            {
+                if (pos >= destination.Length) return false;
+                destination[pos++] = '-';
+            }
+
+            // Position: Before
+            if (options.CurrencyPosition == CurrencyPosition.Before || options.CurrencyPosition == CurrencyPosition.BeforeWithSpace)
+            {
+                if (pos + symbol.Length > destination.Length) return false;
+                symbol.CopyTo(destination.Slice(pos));
+                pos += symbol.Length;
+
+                if (options.CurrencyPosition == CurrencyPosition.BeforeWithSpace)
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = ' ';
+                }
+            }
+
+            // Number
+            Span<char> format = stackalloc char[8];
+            "F".AsSpan().CopyTo(format);
+            options.DecimalPlaces.TryFormat(format.Slice(1), out var fLen);
+            
+            if (!roundedValue.TryFormat(destination.Slice(pos), out var numWritten, format.Slice(0, 1 + fLen), numberFormat))
+                return false;
+            pos += numWritten;
+
+            // Suffix
+            if (!suffix.IsEmpty)
+            {
+                if (pos + suffix.Length > destination.Length) return false;
+                suffix.CopyTo(destination.Slice(pos));
+                pos += suffix.Length;
+            }
+
+            // Position: After
+            if (options.CurrencyPosition == CurrencyPosition.After || options.CurrencyPosition == CurrencyPosition.AfterWithSpace)
+            {
+                if (options.CurrencyPosition == CurrencyPosition.AfterWithSpace)
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = ' ';
+                }
+
+                if (pos + symbol.Length > destination.Length) return false;
+                symbol.CopyTo(destination.Slice(pos));
+                pos += symbol.Length;
+            }
+
+            if (isNegative)
+            {
+                if (options.NegativePattern == "(n)")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = ')';
+                }
+                else if (options.NegativePattern == "n-")
+                {
+                    if (pos >= destination.Length) return false;
+                    destination[pos++] = '-';
+                }
+            }
+
+            charsWritten = pos;
+            return true;
+        }
+#endif
 
         private static string FormatCurrencyNumber(
             decimal value,

@@ -2,7 +2,7 @@ using System;
 using HumanNumbers.Financial;
 using Xunit;
 
-namespace NumberFormatter.Tests;
+namespace HumanNumbers.Tests;
 
 public class FinancialTests
 {

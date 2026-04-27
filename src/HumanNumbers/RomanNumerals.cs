@@ -29,10 +29,16 @@ namespace HumanNumbers.Roman
         /// <summary>
         /// Converts an integer between 1 and 3999 to a Roman numeral.
         /// </summary>
-        /// <param name="number">The integer to convert.</param>
-        /// <returns>A string representing the Roman numeral.</returns>
         public static string ToRoman(this int number)
         {
+#if !NETSTANDARD2_0
+            Span<char> buffer = stackalloc char[16]; // Max roman length for 3999 is 15 (MMMCMXCIX)
+            if (TryFormat(number, buffer, out var charsWritten))
+            {
+                return new string(buffer.Slice(0, charsWritten));
+            }
+            throw new ArgumentOutOfRangeException(nameof(number), "Value must be between 1 and 3999.");
+#else
             if (number < 1 || number > 3999)
                 throw new ArgumentOutOfRangeException(nameof(number), "Value must be between 1 and 3999.");
 
@@ -46,6 +52,31 @@ namespace HumanNumbers.Roman
                 }
             }
             return sb.ToString();
+#endif
+        }
+
+        /// <summary>
+        /// Attempts to format an integer as a Roman numeral into a span.
+        /// </summary>
+        public static bool TryFormat(this int number, Span<char> destination, out int charsWritten)
+        {
+            charsWritten = 0;
+            if (number < 1 || number > 3999) return false;
+
+            var pos = 0;
+            foreach (var (value, symbol) in Symbols)
+            {
+                while (number >= value)
+                {
+                    if (pos + symbol.Length > destination.Length) return false;
+                    symbol.AsSpan().CopyTo(destination.Slice(pos));
+                    pos += symbol.Length;
+                    number -= value;
+                }
+            }
+
+            charsWritten = pos;
+            return true;
         }
 
         /// <summary>

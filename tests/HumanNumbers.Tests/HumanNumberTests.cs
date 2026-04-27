@@ -1,9 +1,9 @@
-﻿using System.Globalization;
+using System.Globalization;
 using HumanNumbers;
 using HumanNumbers.Currencies;
 using HumanNumbers.Formatting;
 
-namespace HumanNumber.Tests;
+namespace HumanNumbers.Tests;
 
 public class HumanNumberTests
 {

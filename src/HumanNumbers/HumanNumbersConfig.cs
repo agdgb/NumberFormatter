@@ -66,7 +66,7 @@ public class HumanNumbersConfig
     /// <summary>
     /// Gets a registered formatting policy by name. Returns false if not found.
     /// </summary>
-    public bool TryGetPolicy(string name, out HumanNumberFormatOptions options)
+    public bool TryGetPolicy(string name, out HumanNumberFormatOptions? options)
     {
         return _policies.TryGetValue(name, out options);
     }

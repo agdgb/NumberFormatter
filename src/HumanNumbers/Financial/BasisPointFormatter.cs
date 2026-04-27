@@ -31,6 +31,16 @@ namespace HumanNumbers.Financial
             MidpointRounding rounding = MidpointRounding.AwayFromZero,
             IFormatProvider? provider = null)
         {
+#if !NETSTANDARD2_0
+            Span<char> buffer = stackalloc char[64];
+            if (TryFormatBps(value, buffer, out var charsWritten, decimals, rounding, provider))
+            {
+                result = new string(buffer.Slice(0, charsWritten));
+                return true;
+            }
+            result = value.ToString(provider ?? CultureInfo.InvariantCulture);
+            return false;
+#else
             try
             {
                 var bps = value * BpsMultiplier;
@@ -44,6 +54,7 @@ namespace HumanNumbers.Financial
                 result = value.ToString(provider ?? CultureInfo.InvariantCulture);
                 return false;
             }
+#endif
         }
 
         /// <summary>
@@ -59,6 +70,45 @@ namespace HumanNumbers.Financial
             if (HumanNumbersConfig.Instance.GlobalOptions.ErrorMode == HumanNumbersErrorMode.Strict) throw new FormatException($"Failed to format Basis Points for value {value}");
             return value.ToString(provider ?? CultureInfo.InvariantCulture);
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Attempts to format a decimal to a Basis Points span.
+        /// </summary>
+        public static bool TryFormatBps(
+            this decimal value,
+            Span<char> destination,
+            out int charsWritten,
+            int decimals = 0,
+            MidpointRounding rounding = MidpointRounding.AwayFromZero,
+            IFormatProvider? provider = null)
+        {
+            charsWritten = 0;
+            try
+            {
+                var bps = value * BpsMultiplier;
+                var roundedBps = Math.Round(bps, decimals, rounding);
+
+                Span<char> format = stackalloc char[8];
+                "F".AsSpan().CopyTo(format);
+                decimals.TryFormat(format.Slice(1), out var fLen);
+
+                if (!roundedBps.TryFormat(destination, out var numWritten, format.Slice(0, 1 + fLen), provider))
+                    return false;
+                
+                int pos = numWritten;
+                var suffix = " bps".AsSpan();
+                if (pos + suffix.Length > destination.Length) return false;
+                suffix.CopyTo(destination.Slice(pos));
+                charsWritten = pos + suffix.Length;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+#endif
 
         /// <summary>
         /// Parses a Basis Points string back into a decimal.
@@ -76,7 +126,11 @@ namespace HumanNumbers.Financial
             }
 
             var style = NumberStyles.Number | NumberStyles.AllowDecimalPoint;
+#if !NETSTANDARD2_0
+            if (decimal.TryParse(span, style, provider ?? CultureInfo.InvariantCulture, out var parsedBps))
+#else
             if (decimal.TryParse(span.ToString(), style, provider ?? CultureInfo.InvariantCulture, out var parsedBps))
+#endif
             {
                 result = parsedBps / BpsMultiplier;
                 return true;

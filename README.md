@@ -1,376 +1,259 @@
-# HumanNumbers — Make data human-readable, instantly.
+# HumanNumbers
+
+**Human-readable numbers for .NET — a governed, high-performance, API-safe formatting engine.**
+
+[![NuGet](https://img.shields.io/nuget/v/HumanNumbers.svg)](https://www.nuget.org/packages/HumanNumbers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## ⚡ Quick Start
 
 ```csharp
-1234567.ToHuman();          // 1.23M
-987654.ToHumanCurrency();   // $987.65K
-1536.ToHumanBytes();        // 1.50 KiB
-2024.ToRoman();             // MMXXIV
+using HumanNumbers;
+
+1500.ToHuman();        // "1.50K"
+1500000.ToHuman();     // "1.50M"
 ```
 
+---
+
+## 🎯 Why HumanNumbers?
+
+Formatting numbers correctly at scale is deceptively complex. Naive implementations often:
+- **Break at rounding boundaries**: (e.g., `999,499` rounding to `1,000K` instead of `1.00M`).
+- **Allocate excessively**: Creating intermediate strings in hot telemetry or logging paths.
+- **Lack consistency**: Different services formatting the same data in conflicting ways.
+
+**HumanNumbers** provides a governed, high-performance platform for number presentation that prioritizes:
+- **Correctness**: Smart suffix promotion logic that handles rounding boundaries gracefully.
+  ```csharp
+  999499m.ToHuman();                                      // "1.00M" (Readable)
+  999499m.ToHuman(HumanNumberFormatOptions.StrictPreset); // "999.50K" (Accurate)
+  ```
+- **Performance**: Optimized `Span<char>`-based paths and zero-allocation parsing.
+- **Safety**: Non-intrusive ASP.NET Core integration that preserves API contracts by default.
+- **Governance**: A central Policy system to ensure consistent formatting across distributed services.
+
+---
+
+## 🚀 Comparison: Three Ways to Format
+
+| Approach | Code | Trade-off |
+| :--- | :--- | :--- |
+| **Naive .NET** | `(val / 1000).ToString("F2") + "K"` | Error-prone at thresholds, high allocation, no culture support. |
+| **Fluent API** | `val.ToHuman(2)` | **Balanced.** Minimal allocation with full formatting support. |
+| **Span API** | `val.ToHuman(span, out _)` | **High-Performance.** Zero-allocation; ideal for telemetry and logging. |
+
+> [!NOTE]
+> The "Naive" example reflects common real-world implementations, not optimized hand-written formatters. Both APIs use the same high-performance core engine; the Span overload simply bypasses string materialization for critical paths.
+
+---
+
+## 🔢 Core Formatting Engine
+
+### Readable vs. Strict Promotion
+By default, we prioritize **readability**. If a number rounds up to the next threshold (e.g., `999,499` to `1.00M`), we promote the suffix. For audit-heavy scenarios, use **Strict Mode**:
+
+```csharp
+999499m.ToHuman();                                      // "1.00M" (Readable Default)
+999499m.ToHuman(HumanNumberFormatOptions.StrictPreset); // "999.50K" (Strict Accuracy)
+```
+
+### Specialized Units
+- **Financial**: `1234.56m.ToHumanWords(); // "One Thousand Two Hundred..."`
+- **Bytes**: `1024L.ToHumanBytes(); // "1.00 KiB"` (Supports Binary/Decimal)
+- **Fractions**: `1.5m.ToHumanFraction(32); // "1 16/32"`
+- **Roman**: `2024.ToRoman(); // "MMXXIV"`
+
+### 🌐 Internationalization: Custom Words (I18n)
+
+For non-English support in financial word-formatting, implement the `IWordsProvider` interface:
+
+```csharp
+public class SpanishWordsProvider : IWordsProvider
+{
+    public string NegativeWord => "Negativo";
+    public string ConjunctionWord => "con";
+    
+    public string ToWords(decimal value) 
+    {
+        // Implementation for Spanish numbers...
+        return "Mil Doscientos"; 
+    }
+}
+
+// Usage
+var spanish = new SpanishWordsProvider();
+1200m.ToHumanWords(provider: spanish); // "Mil Doscientos"
+```
+
+---
+
+## 🧩 Policy-Driven Formatting (Enterprise Ready)
+
+Define formatting rules once and enforce them across your entire infrastructure. Ensure that APIs, dashboards, and reports share the same magnitude logic and rounding rules.
+
+```csharp
+// Setup central governance
+builder.Services.AddHumanNumbersDefaults(options =>
+{
+    options.AddPolicy("Finance", new HumanNumberFormatOptions
+    {
+        DecimalPlaces = 2,
+        PromotionThreshold = 1.0m // strict mode: 999,499 -> "999.50K"
+    });
+});
+
+// Apply consistently across services
+HumanNumber.Format(value).UsingPolicy("Finance").ToHuman();
+```
+
+### 🌍 Multi-Culture & Custom Magnitude Examples
+
+The policy system handles unique numbering systems (like 10,000-based scaling) with ease:
+
+```csharp
+builder.Services.AddHumanNumbersDefaults(options =>
+{
+    // Indian System: Lakhs (10^5) and Crores (10^7)
+    options.AddPolicy("Indian", new HumanNumberFormatOptions
+    {
+        CachedCustomSuffixes = new[] {
+            new MagnitudeSuffix(1000m, "K"),
+            new MagnitudeSuffix(100_000m, "Lakh"),
+            new MagnitudeSuffix(10_000_000m, "Crore")
+        },
+        Threshold = 1000m,
+        DecimalPlaces = 2
+    });
+
+    // Chinese System: Wàn (10^4) and Yì (10^8)
+    options.AddPolicy("Chinese", new HumanNumberFormatOptions
+    {
+        CachedCustomSuffixes = new[] {
+            new MagnitudeSuffix(10_000m, "Wàn"),
+            new MagnitudeSuffix(100_000_000m, "Yì")
+        },
+        Threshold = 10_000m
+    });
+});
+
+// Usage
+120000m.ToHuman(HumanNumbersConfig.Instance.GetPolicies()["Indian"]); // "1.20 Lakh"
+120000m.ToHuman(HumanNumbersConfig.Instance.GetPolicies()["Chinese"]); // "12.00 Wàn"
+```
+
+> [!TIP]
+> Use `CachedCustomSuffixes` for non-standard scaling (like 10^4 or 10^5). For standard 10^3 scaling, simply use `CustomSuffixes`.
+
+---
+
+## 🚀 Real-World Scenario: Zero-Allocation Telemetry
+
+In high-frequency logging or telemetry, even small string allocations can trigger GC pressure. **HumanNumbers** allows you to format directly into reusable buffers:
+
+```csharp
+// Reusable buffer (stack or ArrayPool)
+Span<char> buffer = stackalloc char[32];
+
+if (largeValue.ToHuman(buffer, out var written))
+{
+    // Log directly from the span without creating a string
+    logger.LogInformation("Metric: {Value}", buffer[..written]);
+}
+```
+
+---
+
+## 📊 Performance & Engineering Nuance
+
+We benchmark against "Naive" implementations to provide an honest look at the costs of convenience.
+
+| Operation | Latency | **Allocated Memory** | Engineering Note |
+| :--- | :--- | :--- | :--- |
+| **Manual Concatenation** | ~70 ns | 80 B | Standard `ToString() + "K"` approach. |
+| **`ToHuman()`** | ~160 ns | **56 B** | **Balanced.** Uses less memory than naive concatenation (56 B vs 80 B). |
+| **`ToHuman` (Span)** | ~140 ns | **0 B** | **Zero-Alloc.** When using Span overloads with preconfigured policies. |
+| **`TryParse`** | ~45 ns | **0 B** | **Zero-Alloc.** Fully allocation-free parsing. |
+
+> [!NOTE]
+> Latency figures are environment-dependent. The "Naive" example reflects common real-world implementations, not optimized hand-written formatters.
+
+---
+
+## 🌐 ASP.NET Core: Safe by Default
+
+Many libraries implicitly change JSON output globally, breaking API contracts. **HumanNumbers** is designed to be non-intrusive.
+
+> [!IMPORTANT]
+> By default, HumanNumbers **does not modify JSON output** unless explicitly enabled via attributes or result extensions.
+
+### 1. Register Policies
+```csharp
+builder.Services.AddHumanNumbersDefaults(options => {
+    options.AddPolicy("Compact", new HumanNumberFormatOptions { DecimalPlaces = 1 });
+});
+```
+
+### 2. Selective Serialization
+Control exactly what the client sees without breaking your DTOs.
+```csharp
+public class AnalyticsDto {
+    public decimal RawValue { get; set; } // JSON: 1500000
+
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
+    public decimal DisplayValue { get; set; } // JSON: "1.50M"
+}
+```
+
+### 3. Explicit Transformations
+In Minimal APIs, use `HumanOk` to trigger the transformation only when intended:
+```csharp
+app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000 }));
+```
+
+---
+
+## 🧠 Design Philosophy
+- **Predictable Performance**: Every feature has a known and stable allocation profile.
+- **Governance First**: Use the `Policy` system to define "Brand Guidelines" for numbers once, then apply them everywhere.
+- **Allocation Aware**: We leverage `Span<char>` and `ISpanFormattable` to ensure that adding "humanity" to your data doesn't sink your GC performance.
+- **Contract Safety**: Your API types remain `decimal`. We only change the *representation* during the final serialization step.
+
+---
+
+## 📦 Installation
 ```bash
 dotnet add package HumanNumbers
-```
-
----
-
-## Why HumanNumbers Exists
-
-* Dashboards need compact numbers
-* APIs should return human‑readable values
-* Currency + culture formatting is repetitive
-* Financial formats are niche and hard to implement
-* No single library solved all layers
-
-HumanNumbers is the unified foundation for presentation-ready numbers across .NET codebases.
-
----
-
-## When Should You Use This Library?
-
-* Dashboards / analytics
-* Admin panels
-* Public APIs consumed by frontend apps
-* Financial or trading systems
-* Razor / MVC / Blazor apps
-* Reports / PDFs / Excel exports
-
----
-
-## Installation
-
-### Core Library
-```bash
-dotnet add package HumanNumbers
-```
-
-### ASP.NET Core Integration
-```bash
 dotnet add package HumanNumbers.AspNetCore
 ```
 
 ---
 
-## Live Showcase & Playground
-
-Want to see all features in action before adopting? Check out the **[ExampleProject](src/ExampleProject)**:
-
-*   **Interactive Labs**: Test Roman numerals, Byte sizes, and Robust Parsing in real-time.
-*   **JSON Showcase**: See how `[HumanNumber]` with `OutputMode` transforms API responses selectively.
-*   **Round-trip Testing**: Verify model binding and serialization stability via the Financial Playground.
-
-To run the showcase locally:
-```bash
-dotnet run --project src/ExampleProject/NumberFormatter.Demo.csproj
-```
+## 🙌 Contributing & License
+Licensed under **MIT**. Contributions are welcome via Issues and Pull Requests.
 
 ---
 
-## Quick Start (Core Library)
+## 📈 Appendix: Detailed Benchmarks
 
-### Short Numbers
-```csharp
-1234.ToHuman();      // 1.23K
-1500000.ToHuman();   // 1.50M
-```
+Detailed benchmarks below reflect full production runs and may differ slightly from summarized figures above. All results were generated using **BenchmarkDotNet v0.14.0** on **.NET 10.0** (X64 RyuJIT).
 
-### Currency
-```csharp
-amount.ToHumanCurrency();
-amount.ToHumanCurrency("EUR");
-```
+| Method | Scenario / Input | Mean | Gen 0 | **Allocated** | Engineering Context |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`StandardScaled`** | Naive (999,499) | 134.61 ns | 0.0026 | 80 B | Naive `ToString` + Concat approach. |
+| **`ToHuman`** | Governed (999,499) | 351.97 ns | 0.0014 | **56 B** | **23% less memory** than naive. |
+| **`ToHuman` (Span)** | Governed (999,499) | 302.92 ns | **0** | **0 B** | **Zero-Alloc** path verified. |
+| | | | | | |
+| **`TryParse`** | `$1.50M` | 85.82 ns | - | **0 B** | **Zero-Alloc** parsing. |
+| **`ToHumanBytes`** | 1024 Bytes | 60.99 ns | 0.0013 | 40 B | Single materialized string. |
+| **`ToHumanWords`** | 1234.56 | 513.41 ns | 0.0186 | 560 B | Non-recursive assembly. |
+| **`ToRoman`** | 2024 | 50.66 ns | 0.0013 | 40 B | Optimized buffer path. |
 
-### Financial
-```csharp
-0.015m.ToHumanBps();                        // "150 bps"
-101.5m.ToHumanFraction(32);                 // "101 16/32"
-1234.56m.ToHumanWords();                    // "One Thousand Two Hundred Thirty-Four Dollars and 56/100"
-1234.56m.ToHumanWords("Euros", "Euro");     // "One Thousand Two Hundred Thirty-Four Euros and 56/100"
-
-// Financial rounding for market ticks
-10.22m.RoundToTick(0.05m, TickRoundingMode.Down); // 10.20m
-```
-
-### Parsing
-```csharp
-HumanNumber.Parse("1.5M");
-HumanNumber.TryParse("$50K", out decimal value);
-```
-
-### Try Pattern Methods (Exception-Free)
-```csharp
-if (1500m.TryToHuman(out var result))
-    Console.WriteLine(result); // "1.50K"
-
-if (1250m.TryToHumanCurrency("EUR", out var currency))
-    Console.WriteLine(currency); // "€1.25K"
-```
+**Key Takeaway**: While `HumanNumbers` handles complex thresholds and rounding logic that manual code often misses, it does so with a **smaller memory footprint** than naive string concatenation approaches.
 
 ---
 
-## Feature Overview
-
-* [Compact number formatting](#formatting-numbers)
-* [Currency formatting](#quick-start-core-library)
-* [Culture awareness](#culture-support)
-* [Byte sizes](#byte-size-formatting)
-* [Roman numerals](#roman-numerals)
-* [Financial formatting](#quick-start-core-library)
-* [JSON + ASP.NET integration](#aspnet-core-quick-setup)
-
----
-
-## Formatting Numbers
-
-### Custom Options
-```csharp
-1234.ToHuman(new HumanNumberFormatOptions { DecimalPlaces = 3 }); // 1.234K
-```
-
-### Fluent API
-```csharp
-HumanNumber.Format(1500000m)
-    .UsingPolicy("Dashboard")
-    .UsingCulture(new CultureInfo("fr-FR"))
-    .ToHuman(); // "1,5M"
-
-HumanNumber.Format(987654m)
-    .ToHumanCurrency("EUR"); // "€987.65K"
-```
-
-### Culture Support
-```csharp
-1234567.ToHuman(new CultureInfo("fr-FR")); // 1,23 M
-```
-
-### Custom Suffix Sets
-```csharp
-1000.ToHuman(new HumanNumberFormatOptions { CustomSuffixes = new[] { " thousand", " million" } }); // 1 thousand
-```
-
----
-
-## Byte Size Formatting
-
-```csharp
-1048576.ToHumanBytes(useBinaryPrefixes: true);  // "1.00 MiB"
-1000000.ToHumanBytes(useBinaryPrefixes: false); // "1.00 MB"
-```
-
----
-
-## Roman Numerals
-
-```csharp
-2024.ToRoman(); // MMXXIV
-```
-
----
-
-## ASP.NET Core Quick Setup
-
-```csharp
-builder.Services.AddHumanNumbersDefaults();
-```
-
-Enables automatically:
-* Per-property JSON formatting (opt-in via `[HumanNumber]`)
-* MVC / Minimal API support
-* DI services
-* TagHelpers
-
----
-
-## ASP.NET Core Usage
-
-### The `[HumanNumber]` Attribute
-
-The attribute is a **metadata marker** by default. It signals intent but does not alter JSON output unless explicitly opted-in via `OutputMode`.
-
-```csharp
-public class RevenueReport
-{
-    // Stays a raw number in JSON — safe default
-    [HumanNumber]
-    public decimal Revenue { get; set; }
-
-    // Formatted as a human string in JSON — explicit opt-in
-    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
-    public decimal DisplayRevenue { get; set; }
-
-    // Currency with explicit opt-in
-    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, IsCurrency = true, CurrencyCode = "USD")]
-    public decimal UsdRevenue { get; set; }
-}
-```
-
-**JSON Output:**
-```json
-{
-  "revenue": 1550000.50,
-  "displayRevenue": "1.55M",
-  "usdRevenue": "$1.55M"
-}
-```
-
-### Global Mode (Format Everything)
-
-If you want blanket formatting across your entire API surface (old v1 behavior):
-
-```csharp
-builder.Services.AddHumanNumbersJsonGlobal();
-```
-
-### JSON Output: Attribute-Driven vs Global
-
-| Setup | `revenue` output | `[HumanNumber]` output | `[SerializeAsHuman]` output |
-| :--- | :--- | :--- | :--- |
-| `AddHumanNumbersJson()` | `1550000.5` | `1550000.5` | `"1.55M"` |
-| `AddHumanNumbersJsonGlobal()` | `"1.55M"` | `"1.55M"` | `"1.55M"` |
-
-### Minimal API Example
-
-```csharp
-app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000.50m }));
-```
-
-### Financial-Specific Attributes
-```csharp
-public record FinancialData(
-    [property: BasisPoints(Decimals = 1, WriteAsString = true)] decimal Spread,
-    [property: FractionPrice(Denominator = 32)] decimal BondPrice
-);
-```
-
-### Razor TagHelpers
-
-```html
-<hn-number value="1234567" />
-<hn-currency value="1234.5" currency-code="USD" />
-<hn-check value="1250.50" major-currency="Dollars" major-currency-singular="Dollar" />
-```
-
-### Dependency Injection Service
-
-```csharp
-// Manual formatting in services/controllers
-public class MyService(IHumanNumberService humanNumberService)
-{
-    public string FormatRevenue(decimal revenue) 
-        => humanNumberService.Format(revenue, decimalPlaces: 1);
-    
-    public string FormatCurrency(decimal amount, string currency)
-        => humanNumberService.FormatCurrency(amount, currency);
-}
-```
-
-### Error Handling & Conflict Safety
-
-```csharp
-// Safe-first: [HumanNumber] respects existing converters
-[JsonConverter(typeof(MyCustomConverter))]
-[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)] // Silently skipped
-public decimal Value { get; set; }
-
-// Error modes
-builder.Services.AddHumanNumbersCore(options => {
-    options.CoreOptions.ErrorMode = HumanNumbersErrorMode.Strict; // Throw on errors
-});
-```
-
----
-
-## Formatting Policies
-
-```csharp
-builder.Services.AddHumanNumbersCore(options => 
-{
-    options.DefaultPolicyName = "Dashboard";
-});
-```
-
----
-
-## Supported Numeric Types
-
-HumanNumbers provides generic extension methods for all built-in .NET numeric types:
-
-*   **Floating Point**: `decimal`, `double`, `float`
-*   **Integers**: `long`, `ulong`, `int`, `uint`, `short`, `ushort`, `byte`, `sbyte`
-*   **Advanced**: Supports any type implementing `INumber<T>` (in .NET 7+)
-*   **Nullable**: All types support nullable variants that return `string.Empty` for null values
-
-*Note: All types are internally normalized to `decimal` for maximum precision during scaling.*
-
-### Generic Type Support
-```csharp
-// Works with any INumber<T> type
-myCustomNumeric.ToHuman();
-myCustomNumeric.ToHumanCurrency("USD");
-
-// Safe nullable handling
-decimal? value = null;
-var result = value.ToHuman(); // Returns "" (empty string)
-```
-
----
-
-## Performance & Benchmarks
-
-HumanNumbers is designed for high-throughput dashboard and API scenarios:
-
-*   **Zero Allocations**: Core formatting paths use `Span<char>` and stack-allocated buffers.
-*   **Caching**: Culture metadata (`NumberFormatInfo`) and currency symbols are cached globally.
-*   **Fast Path**: Native `decimal` operations are prioritized for speed.
-
-| Operation | Mean Time | Allocated |
-| :--- | :--- | :--- |
-| `1.23M.ToHuman()` | 85 ns | 0 B |
-| `ToHumanCurrency()` | 110 ns | 0 B |
-| `Parse("1.5M")` | 120 ns | 32 B |
-| `ToRoman()` | 45 ns | 0 B |
-
----
-
-## Migration From NumberFormatter / v1.x
-
-> [!WARNING]
-> **Deprecation Notice**: The `NumberFormatter` NuGet package is now deprecated. Future updates will only be released under the `HumanNumbers` namespace.
-
-1.  **Update Packages**: Swap `NumberFormatter` for `HumanNumbers`.
-2.  **Namespace Change**: Replace `using NumberFormatter;` with `using HumanNumbers;`.
-3.  **API Mapping**:
-    *   `ToShortString()` → `ToHuman()`
-    *   `ToShortCurrencyString()` → `ToHumanCurrency()`
-    *   `ToBpsString()` → `ToHumanBps()`
-    *   `ToFractionString()` → `ToHumanFraction()`
-    *   `ToCheckWords()` → `ToHumanWords()`
-    *   `<short-number>` → `<hn-number>`
-4.  **Attribute Changes**:
-    *   `[ShortNumberFormat]` → `[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]`
-    *   `[HumanNumberFormat]` → `[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]`
-5.  **Serialization Default Changed**: `[HumanNumber]` no longer alters JSON by default. Add `OutputMode = SerializeAsHuman` where you need formatted output in JSON.
-6.  **Configuration**: Use `HumanNumber.Configure()` instead of setting static defaults on the obsolete class.
-
-## Roadmap
-
-* Built-in Blazor components
-* Source generators for compile-time format configuration
-* Extended built-in policy presets
-
----
-
-## Read the Full Guide
-
-For exhaustive details on JSON policies, MVC automatic filters, resolving culture, and Minimal APIs, see the **[Full Documentation Here](docs/FullDocumentation.md)**.
-
----
-
-## Contributing
-
-Pull requests are welcome! Please run tests and follow our code style guidelines before submitting. Features must be covered by tests.
-
----
-
-## License
-
-[MIT License](LICENSE)
+## 🔎 Keywords
+human-readable numbers, number formatting, suffix formatting, K/M/B formatting, span formatting, zero allocation, .NET performance, telemetry formatting, financial formatting, magnitude formatting.

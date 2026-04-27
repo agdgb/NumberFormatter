@@ -10,7 +10,7 @@ using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Serialization;
 using Xunit;
 
-namespace NumberFormatter.Tests;
+namespace HumanNumbers.Tests;
 
 public class JsonSerializationTests
 {
@@ -137,7 +137,7 @@ public class JsonSerializationTests
         Assert.Contains("\"shortValue\":\"1.23K\"", json);
         Assert.Contains("\"nullableDecimal\":\"1.23M\"", json);
         Assert.Contains("\"nullableInt\":\"1.23M\"", json);
-        Assert.Contains("\"byteValue\":\"255.00\"", json);
+        Assert.Contains("\"byteValue\":\"255\"", json);
 
         Assert.NotNull(deserialized);
         Assert.Equal(1_230_000m, deserialized!.DecimalValue);

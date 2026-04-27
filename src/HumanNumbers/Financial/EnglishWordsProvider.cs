@@ -31,9 +31,12 @@ namespace HumanNumbers.Financial
         public string ToWords(decimal value)
         {
             decimal num = Math.Truncate(Math.Abs(value));
-
             if (num == 0) return Units[0];
 
+#if !NETSTANDARD2_0
+            // Optimized path for modern .NET
+            return ToWordsOptimized(num);
+#else
             var parts = new Stack<string>();
             int groupIndex = 0;
 
@@ -61,7 +64,57 @@ namespace HumanNumbers.Financial
             }
 
             return sb.ToString();
+#endif
         }
+
+#if !NETSTANDARD2_0
+        private string ToWordsOptimized(decimal num)
+        {
+            // Calculate how many groups we have
+            Span<int> groups = stackalloc int[12]; // Up to Decillion (12 groups of 1000)
+            int groupCount = 0;
+            while (num > 0)
+            {
+                groups[groupCount++] = (int)(num % 1000m);
+                num = Math.Truncate(num / 1000m);
+            }
+
+            var sb = new StringBuilder();
+            for (int i = groupCount - 1; i >= 0; i--)
+            {
+                int chunk = groups[i];
+                if (chunk == 0) continue;
+
+                if (sb.Length > 0) sb.Append(' ');
+
+                // Convert chunk
+                if (chunk >= 100)
+                {
+                    sb.Append(Units[chunk / 100]).Append(" Hundred");
+                    chunk %= 100;
+                    if (chunk > 0) sb.Append(' ');
+                }
+
+                if (chunk >= 20)
+                {
+                    sb.Append(Tens[chunk / 10]);
+                    chunk %= 10;
+                    if (chunk > 0) sb.Append('-').Append(Units[chunk]);
+                }
+                else if (chunk > 0)
+                {
+                    sb.Append(Units[chunk]);
+                }
+
+                if (i < ThousandsGroups.Length && !string.IsNullOrEmpty(ThousandsGroups[i]))
+                {
+                    sb.Append(' ').Append(ThousandsGroups[i]);
+                }
+            }
+
+            return sb.ToString();
+        }
+#endif
 
         private static string ConvertChunk(int value)
         {

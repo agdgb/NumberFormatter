@@ -88,6 +88,10 @@ namespace HumanNumbers.Bytes
             CultureInfo? culture = null) where T : struct
 #endif
         {
+            if (bytes is long l) return TryToHumanBytes(l, out result, decimalPlaces, useBinaryPrefixes, culture);
+            if (bytes is ulong ul) return TryToHumanBytes(ul, out result, decimalPlaces, useBinaryPrefixes, culture);
+            if (bytes is int i) return TryToHumanBytes((long)i, out result, decimalPlaces, useBinaryPrefixes, culture);
+
             try
             {
                 var doubleValue = Convert.ToDouble(bytes);
@@ -124,8 +128,76 @@ namespace HumanNumbers.Bytes
             return bytes.ToString() ?? string.Empty;
         }
 
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Formats a byte count into a character span.
+        /// </summary>
+        public static bool ToHumanBytes(
+            this long bytes,
+            Span<char> destination,
+            out int charsWritten,
+            int decimalPlaces = 2,
+            bool useBinaryPrefixes = true,
+            CultureInfo? culture = null)
+        {
+            return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, destination, out charsWritten);
+        }
+
+        /// <summary>
+        /// Attempts to format a byte count into a character span.
+        /// </summary>
+        public static bool TryFormat(
+            this long bytes,
+            Span<char> destination,
+            out int charsWritten,
+            int decimalPlaces = 2,
+            bool useBinaryPrefixes = true,
+            CultureInfo? culture = null)
+        {
+            return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, destination, out charsWritten);
+        }
+
+        /// <summary>
+        /// Formats a byte count into a character span.
+        /// </summary>
+        public static bool ToHumanBytes(
+            this ulong bytes,
+            Span<char> destination,
+            out int charsWritten,
+            int decimalPlaces = 2,
+            bool useBinaryPrefixes = true,
+            CultureInfo? culture = null)
+        {
+            return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, destination, out charsWritten);
+        }
+
+        /// <summary>
+        /// Attempts to format a byte count into a character span.
+        /// </summary>
+        public static bool TryFormat(
+            this ulong bytes,
+            Span<char> destination,
+            out int charsWritten,
+            int decimalPlaces = 2,
+            bool useBinaryPrefixes = true,
+            CultureInfo? culture = null)
+        {
+            return TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, destination, out charsWritten);
+        }
+#endif
+
         internal static bool TryFormatBytes(double bytes, int decimalPlaces, bool useBinaryPrefixes, CultureInfo? culture, out string result)
         {
+#if !NETSTANDARD2_0
+            Span<char> buffer = stackalloc char[64];
+            if (TryFormatBytes(bytes, decimalPlaces, useBinaryPrefixes, culture, buffer, out var charsWritten))
+            {
+                result = new string(buffer.Slice(0, charsWritten));
+                return true;
+            }
+            result = bytes.ToString(CultureInfo.InvariantCulture);
+            return false;
+#else
             try
             {
                 culture ??= CultureInfo.CurrentCulture;
@@ -140,12 +212,18 @@ namespace HumanNumbers.Bytes
                     return true;
                 }
 
-                int place = Convert.ToInt32(Math.Floor(Math.Log(absBytes, divisor)));
+                int place = 0;
+                double num = absBytes;
 
-                // Ensure place is within array bounds (Math.Clamp is not available in netstandard2.0)
-                place = Math.Max(0, Math.Min(place, suffixes.Length - 1));
+                if (absBytes >= divisor)
+                {
+                    while (num >= divisor && place < suffixes.Length - 1)
+                    {
+                        num /= divisor;
+                        place++;
+                    }
+                }
 
-                double num = absBytes / Math.Pow(divisor, place);
                 num = Math.Round(num, decimalPlaces, MidpointRounding.AwayFromZero);
 
                 // Edge case where rounding pushes it up to the next category (e.g. 999.9 MB -> 1.0 GB)
@@ -170,7 +248,85 @@ namespace HumanNumbers.Bytes
                 result = bytes.ToString(CultureInfo.InvariantCulture);
                 return false;
             }
+#endif
         }
+
+#if !NETSTANDARD2_0
+        internal static bool TryFormatBytes(double bytes, int decimalPlaces, bool useBinaryPrefixes, CultureInfo? culture, Span<char> destination, out int charsWritten)
+        {
+            charsWritten = 0;
+            try
+            {
+                culture ??= CultureInfo.CurrentCulture;
+                double absBytes = Math.Abs(bytes);
+                double divisor = useBinaryPrefixes ? 1024.0 : 1000.0;
+                var suffixes = useBinaryPrefixes ? BinarySuffixes : DecimalSuffixes;
+
+                if (absBytes == 0)
+                {
+                    if (destination.Length < 3) return false;
+                    destination[0] = '0';
+                    destination[1] = ' ';
+                    destination[2] = 'B';
+                    charsWritten = 3;
+                    return true;
+                }
+
+                int place = 0;
+                double num = absBytes;
+
+                if (absBytes >= divisor)
+                {
+                    while (num >= divisor && place < suffixes.Length - 1)
+                    {
+                        num /= divisor;
+                        place++;
+                    }
+                }
+
+                num = Math.Round(num, decimalPlaces, MidpointRounding.AwayFromZero);
+
+                if (num >= divisor && place < suffixes.Length - 1)
+                {
+                    num /= divisor;
+                    place++;
+                }
+
+                int pos = 0;
+                if (bytes < 0)
+                {
+                    var negSign = culture.NumberFormat.NegativeSign.AsSpan();
+                    if (pos + negSign.Length > destination.Length) return false;
+                    negSign.CopyTo(destination.Slice(pos));
+                    pos += negSign.Length;
+                }
+
+                int precision = (place == 0 && num == Math.Truncate(num)) ? 0 : decimalPlaces;
+                Span<char> format = stackalloc char[8];
+                "F".AsSpan().CopyTo(format);
+                precision.TryFormat(format.Slice(1), out var fLen);
+
+                if (!num.TryFormat(destination.Slice(pos), out var numWritten, format.Slice(0, 1 + fLen), culture))
+                    return false;
+                pos += numWritten;
+
+                if (pos + 1 > destination.Length) return false;
+                destination[pos++] = ' ';
+
+                var suffix = suffixes[place].AsSpan();
+                if (pos + suffix.Length > destination.Length) return false;
+                suffix.CopyTo(destination.Slice(pos));
+                pos += suffix.Length;
+
+                charsWritten = pos;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                HumanNumbersConfig.Instance.GlobalOptions.OnFormattingError?.Invoke(ex);
+                return bytes.TryFormat(destination, out charsWritten, default, culture);
+            }
+        }
+#endif
     }
 }
-

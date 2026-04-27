@@ -42,6 +42,16 @@ namespace HumanNumbers.Financial
             int denominator, 
             MidpointRounding rounding = MidpointRounding.ToEven)
         {
+#if !NETSTANDARD2_0
+            Span<char> buffer = stackalloc char[128];
+            if (TryFormatFraction(value, buffer, out var charsWritten, denominator, rounding))
+            {
+                result = new string(buffer.Slice(0, charsWritten));
+                return true;
+            }
+            result = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return false;
+#else
             try
             {
                 if (denominator <= 0)
@@ -56,10 +66,8 @@ namespace HumanNumbers.Financial
                 var integral = Math.Truncate(absValue);
                 var decimalPart = absValue - integral;
 
-                // Convert the decimal part to the closest fraction of the denominator
                 var fractionNumerator = Math.Round(decimalPart * denominator, 0, rounding);
 
-                // If the rounding pushes the fraction numerator to equal the denominator (e.g. 32/32)
                 if (fractionNumerator >= denominator)
                 {
                     integral += 1;
@@ -85,7 +93,67 @@ namespace HumanNumbers.Financial
                 result = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 return false;
             }
+#endif
         }
+
+#if !NETSTANDARD2_0
+        /// <summary>
+        /// Attempts to format a decimal to a fractional span.
+        /// </summary>
+        public static bool TryFormatFraction(
+            this decimal value,
+            Span<char> destination,
+            out int charsWritten,
+            int denominator,
+            MidpointRounding rounding = MidpointRounding.ToEven)
+        {
+            charsWritten = 0;
+            if (denominator <= 0) return false;
+
+            var isNegative = value < 0;
+            var absValue = Math.Abs(value);
+            var integral = Math.Truncate(absValue);
+            var decimalPart = absValue - integral;
+
+            var fractionNumerator = Math.Round(decimalPart * denominator, 0, rounding);
+            if (fractionNumerator >= denominator)
+            {
+                integral += 1;
+                fractionNumerator = 0;
+            }
+
+            int pos = 0;
+            if (isNegative)
+            {
+                if (pos >= destination.Length) return false;
+                destination[pos++] = '-';
+            }
+
+            if (!integral.TryFormat(destination.Slice(pos), out var intWritten, default, System.Globalization.CultureInfo.InvariantCulture))
+                return false;
+            pos += intWritten;
+
+            if (fractionNumerator != 0)
+            {
+                if (pos + 1 > destination.Length) return false;
+                destination[pos++] = ' ';
+
+                if (!fractionNumerator.TryFormat(destination.Slice(pos), out var numWritten, default, System.Globalization.CultureInfo.InvariantCulture))
+                    return false;
+                pos += numWritten;
+
+                if (pos + 1 > destination.Length) return false;
+                destination[pos++] = '/';
+
+                if (!((decimal)denominator).TryFormat(destination.Slice(pos), out var denWritten, default, System.Globalization.CultureInfo.InvariantCulture))
+                    return false;
+                pos += denWritten;
+            }
+
+            charsWritten = pos;
+            return true;
+        }
+#endif
 
         /// <summary>
         /// Converts a decimal to a fractional string used in Treasury/Bond markets (e.g. 10.03125 -> "10 1/32").
@@ -121,8 +189,11 @@ namespace HumanNumbers.Financial
 
             if (slashIndex == -1)
             {
-                // No fraction part, just a regular number
+#if !NETSTANDARD2_0
+                if (decimal.TryParse(span, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var num))
+#else
                 if (decimal.TryParse(span.ToString(), out var num))
+#endif
                 {
                     result = isNegative ? -num : num;
                     return true;
@@ -143,18 +214,24 @@ namespace HumanNumbers.Financial
             }
             else
             {
-                // Just a fraction, e.g. "1/32"
                 numeratorSpan = span.Slice(0, slashIndex);
                 denominatorSpan = span.Slice(slashIndex + 1);
             }
 
+#if !NETSTANDARD2_0
+            if (decimal.TryParse(integralSpan, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var integral) &&
+                decimal.TryParse(numeratorSpan, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var numPart) &&
+                decimal.TryParse(denominatorSpan, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var denPart) &&
+                denPart != 0)
+#else
             if (decimal.TryParse(integralSpan.ToString(), out var integral) &&
                 decimal.TryParse(numeratorSpan.ToString(), out var numPart) &&
                 decimal.TryParse(denominatorSpan.ToString(), out var denPart) &&
                 denPart != 0)
+#endif
             {
-                var value = integral + (numPart / denPart);
-                result = isNegative ? -value : value;
+                var valuePart = integral + (numPart / denPart);
+                result = isNegative ? -valuePart : valuePart;
                 return true;
             }
 

@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NumberFormatter.AspNetCore\HumanNumbers.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\NumberFormatter\HumanNumbers.csproj" />
+    <ProjectReference Include="..\..\src\HumanNumbers.AspNetCore\HumanNumbers.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\HumanNumbers\HumanNumbers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@ using System.Text.Json;
 using HumanNumbers.AspNetCore.Financial;
 using Xunit;
 
-namespace NumberFormatter.Tests;
+namespace HumanNumbers.Tests;
 
 public class FinancialJsonIntegrationTests
 {

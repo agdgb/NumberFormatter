@@ -8,7 +8,7 @@ using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Serialization;
 using Xunit;
 
-namespace NumberFormatter.Tests;
+namespace HumanNumbers.Tests;
 
 public class AspNetCoreIntegrationTests
 {

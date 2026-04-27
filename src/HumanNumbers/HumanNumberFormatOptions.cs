@@ -142,7 +142,7 @@ namespace HumanNumbers.Formatting
             if (HumanNumbersConfig.Instance.TryGetPolicy(policyName, out var options))
             {
                 // Copy values from policy
-                this.DecimalPlaces = options.DecimalPlaces;
+                this.DecimalPlaces = options!.DecimalPlaces;
                 this.PromotionThreshold = options.PromotionThreshold;
                 this.Threshold = options.Threshold;
                 this.AlwaysShowSuffix = options.AlwaysShowSuffix;

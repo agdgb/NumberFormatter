@@ -12,15 +12,23 @@
 		<!-- NuGet Package Metadata -->
 		<IsPackable>true</IsPackable>
 		<PackageId>HumanNumbers</PackageId>
-		<Version>2.0.0</Version>
+		<Version>2.0.0-preview.1</Version>
 		<Authors>Amanuel Girma</Authors>
 		<Description>The official successor to the NumberFormatter library. HumanNumbers is a high-performance, culture‑aware platform for human-readable number formatting in .NET. Supports short numbers (K, M, B), currencies, byte sizes, Roman numerals, and more.</Description>
 		<PackageTags>number;format;short-number;currency;k;m;b;t;culture;humannumbers;bytes;size;roman</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/agdgb/HumanNumbers</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/agdgb/HumanNumbers</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+		<!-- SourceLink and Symbols -->
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		<Deterministic>true</Deterministic>
 	</PropertyGroup>
 
 	<ItemGroup>
