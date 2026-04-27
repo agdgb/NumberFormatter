@@ -1,4 +1,4 @@
-using HumanNumbers.AspNetCore;
+﻿using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Serialization;
 using System;
 using System.Collections.Generic;
@@ -10,19 +10,19 @@ namespace HumanNumbers.Demo.Models
 {
     public class FinancialData
     {
-        [HumanNumberFormat(isCurrency: true)]
+        [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, IsCurrency = true)]
         public decimal Revenue { get; set; }
 
-        [HumanNumberFormat(isCurrency: true, currencyCode: "EUR")]
+        [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, IsCurrency = true, CurrencyCode = "EUR")]
         public decimal EuroRevenue { get; set; }
 
-        [HumanNumberFormat(decimalPlaces: 1)]
+        [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, DecimalPlaces = 1)]
         public decimal GrowthRate { get; set; }
 
-        // No attribute – will use the global converter (plain formatting)
+        // No attribute â€“ will use the global converter (plain formatting)
         public long PageViews { get; set; }
 
-        // Dictionary with currency codes as keys – we'll format manually in the controller
+        // Dictionary with currency codes as keys â€“ we'll format manually in the controller
         public Dictionary<string, decimal> InternationalRevenue { get; set; } = new();
     }
 }

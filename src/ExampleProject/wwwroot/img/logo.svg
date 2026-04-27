@@ -1,0 +1,24 @@
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="ultraGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <linearGradient id="dataGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00EEFF" />
+      <stop offset="100%" stop-color="#0077FF" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="800" fill="#000" rx="160" />
+
+  <g filter="url(#ultraGlow)">
+    <circle cx="400" cy="510" r="140" fill="none" stroke="url(#dataGrad)" stroke-width="34" />
+    
+    <path d="M 320 280 A 120 120 0 1 1 480 280" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" />
+    
+    <path d="M 400 380 V 440" stroke="url(#dataGrad)" stroke-width="34" stroke-linecap="round" opacity="0.95" />
+  </g>
+
+  <circle cx="400" cy="510" r="140" fill="none" stroke="white" stroke-width="1.5" opacity="0.15" />
+</svg>
