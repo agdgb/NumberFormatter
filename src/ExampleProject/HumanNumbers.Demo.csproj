@@ -3,13 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <PackageId>HumanNumbers.Demo</PackageId>
+    <RootNamespace>HumanNumbers.Demo</RootNamespace>
+    <AssemblyName>HumanNumbers.Demo</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>99cbceae-b71f-4194-9889-c30257a4833d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NumberFormatter.AspNetCore\HumanNumbers.AspNetCore.csproj" />
-    <ProjectReference Include="..\NumberFormatter\HumanNumbers.csproj" />
+    <ProjectReference Include="..\HumanNumbers.AspNetCore\HumanNumbers.AspNetCore.csproj" />
+    <ProjectReference Include="..\HumanNumbers\HumanNumbers.csproj" />
   </ItemGroup>
 	
 </Project>

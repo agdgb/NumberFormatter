@@ -1,33 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NumberFormatter Showcase</title>
-    <!-- Modern Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #2c3e50;
+    <title>@ViewData["Title"] - HumanNumbers Showcase</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        vercel: {
+                            black: '#000000',
+                            white: '#ffffff',
+                            gray: '#171717',
+                            'gray-light': '#eaeaea',
+                            'gray-medium': '#a3a3a3',
+                            blue: '#0070f3',
+                            'blue-light': '#0070f320',
+                            purple: '#7928ca',
+                            'purple-light': '#7928ca20',
+                            pink: '#ff0080',
+                            'pink-light': '#ff008020',
+                            cyan: '#00d9ff',
+                            'cyan-light': '#00d9ff20',
+                            orange: '#ffa500',
+                            'orange-light': '#ffa50020'
+                        },
+                        human: {
+                            primary: '#0d6efd',
+                            'primary-light': '#3b8bfd',
+                            'primary-dark': '#0a58ca',
+                            secondary: '#6c757d',
+                            success: '#198754',
+                            warning: '#ffc107',
+                            danger: '#dc3545',
+                            info: '#0dcaf0'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+                        'brand': ['Outfit', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        }
+                    }
+                }
+            }
         }
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        }
-    </style>
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="~/css/main.css" rel="stylesheet" />
+    
+    <!-- Theme Management -->
+    <script>
+        // Theme persistence
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+        })();
+    </script>
+    
+    <!-- Meta tags for better SEO -->
+    <meta name="description" content="HumanNumbers Showcase - High-performance, culture-aware .NET number formatting ecosystem" />
+    <meta name="keywords" content="HumanNumbers, .NET, number formatting, ASP.NET Core, performance" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="@ViewData["Title"] - HumanNumbers Showcase" />
+    <meta property="og:description" content="High-performance, culture-aware .NET number formatting ecosystem" />
+    <meta property="og:type" content="website" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>" />
 </head>
-<body>
-    <main role="main" class="pb-5">
+<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-inter antialiased selection:bg-blue-600 selection:text-white">
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 w-full backdrop-blur-md border-b bg-white/80 border-gray-200 dark:bg-gray-950/80 dark:border-gray-800 shadow-sm transition-all duration-300">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo/Brand -->
+                <a href="#" class="flex items-center space-x-3 group cursor-pointer hover:opacity-90 transition-opacity">
+                    <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 shadow-md rounded-xl group-hover:shadow-cyan-500/30 transition-all duration-300 transform group-hover:-translate-y-0.5 bg-gray-50 dark:bg-[#050505] border border-gray-200 dark:border-transparent">
+                        <defs>
+                            <filter id="ultraGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="12" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                            <linearGradient id="dataGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00EEFF" />
+                                <stop offset="100%" stop-color="#0077FF" />
+                            </linearGradient>
+                        </defs>
+                        <g filter="url(#ultraGlow)">
+                            <circle cx="400" cy="510" r="140" fill="none" stroke="url(#dataGrad)" stroke-width="34" />
+                            <path d="M 320 280 A 120 120 0 1 1 480 280" fill="none" class="stroke-gray-900 dark:stroke-white" style="transition: stroke 0.3s;" stroke-width="34" stroke-linecap="round" />
+                            <path d="M 400 380 V 440" stroke="url(#dataGrad)" stroke-width="34" stroke-linecap="round" opacity="0.95" />
+                        </g>
+                        <circle cx="400" cy="510" r="140" fill="none" class="stroke-gray-900 dark:stroke-white" style="transition: stroke 0.3s;" stroke-width="1.5" opacity="0.15" />
+                    </svg>
+                    <div class="flex items-baseline space-x-2">
+                        <span class="text-2xl font-brand font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span>
+                        <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30 uppercase tracking-widest translate-y-[-2px]">Showcase</span>
+                    </div>
+                </a>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-sm font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">Features</a>
+                    <a href="#policies" class="text-sm font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">Policies</a>
+                    <a href="#financial" class="text-sm font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">Financial</a>
+                    <a href="#performance" class="text-sm font-medium text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">Performance</a>
+                </div>
+
+                <!-- Right Side Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- GitHub Link -->
+                    <a href="https://github.com/your-repo/humannumbers" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" 
+                            class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                            aria-label="Toggle theme">
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
         @RenderBody()
     </main>
 
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div class="text-gray-500 dark:text-gray-400 text-sm">
+                    © 2024 <span class="font-brand font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span>. High-performance .NET number formatting.
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors duration-200">Documentation</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors duration-200">GitHub</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors duration-200">NuGet</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            const html = document.documentElement;
+            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.classList.toggle('dark', newTheme === 'dark');
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+
+    <!-- Enhanced JavaScript -->
+    <script src="~/js/theme-manager.js"></script>
+    <script src="~/js/animations.js"></script>
+    <script src="~/js/api-client.js"></script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

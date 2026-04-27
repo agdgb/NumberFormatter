@@ -5,6 +5,8 @@ using System.Linq;
 using HumanNumbers;
 using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Financial;
+using HumanNumbers.Suffixes;
+using HumanNumbers.Formatting;
 using HumanNumbers.Demo.Models;
 using HumanNumbers.Financial;
 using HumanNumbers.Roman;
@@ -27,9 +29,63 @@ public class DemoController : ControllerBase
     {
         public string Input { get; set; } = string.Empty;
         public string Culture { get; set; } = string.Empty;
-        
+
         [NoHumanFormat]
         public decimal ParsedValue { get; set; }
+    }
+
+    [HttpGet("policies")]
+    public IActionResult GetPolicies()
+    {
+        // Add "Default" to the list since it's the baseline
+        var policies = new List<string> { "Default" };
+        policies.AddRange(HumanNumbersConfig.Instance.GetPolicyNames());
+        return Ok(policies);
+    }
+
+    [HttpGet("format-policy")]
+    public IActionResult FormatWithPolicy(
+        [FromQuery] decimal value,
+        [FromQuery] string? policy = null,
+        [FromQuery] string? mode = "number",
+        [FromQuery] string? currency = "USD",
+        [FromQuery] bool? alwaysShowSuffix = null,
+        [FromQuery] decimal? threshold = null)
+    {
+        var activePolicyName = string.IsNullOrEmpty(policy) ? "Default" : policy;
+
+        // Start with policy options
+        HumanNumbersConfig.Instance.TryGetPolicy(activePolicyName, out var options);
+        if (activePolicyName == "Default" || options == null) options = HumanNumbersConfig.Instance.GlobalOptions;
+
+        // Override with explicit parameters if provided
+        if (alwaysShowSuffix.HasValue) options.AlwaysShowSuffix = alwaysShowSuffix.Value;
+        if (threshold.HasValue) options.Threshold = threshold.Value;
+
+        var context = HumanNumber.Format(value).UsingOptions(options);
+
+        // Find the options for technical detail display again if it was Default
+        var policyOptions = options;
+
+        string result = mode?.ToLower() switch
+        {
+            "currency" => context.ToHumanCurrency(currency),
+            "words" => value.ToHumanWords(),
+            _ => context.ToHuman()
+        };
+
+        return Ok(new
+        {
+            formatted = result,
+            policy = activePolicyName,
+            details = new
+            {
+                threshold = policyOptions.Threshold,
+                decimalPlaces = policyOptions.DecimalPlaces,
+                suffixes = policyOptions.CachedCustomSuffixes?.Select(s => new { s.Threshold, s.Suffix })
+                           ?? StandardSuffixSets.Default.Select(s => new { s.Threshold, s.Suffix })
+            }
+        });
     }
 
     [HttpGet("data")]
@@ -95,8 +151,9 @@ public class DemoController : ControllerBase
     [HttpGet("bytes/{value:long}")]
     public IActionResult FormatBytes(long value, [FromQuery] bool binary = false)
     {
-        return Ok(new { 
-            value, 
+        return Ok(new
+        {
+            value,
             formatted = value.ToHumanBytes(useBinaryPrefixes: binary),
             type = binary ? "Binary (IEC)" : "Decimal (SI)"
         });
@@ -123,14 +180,14 @@ public class DemoController : ControllerBase
         try
         {
             var jsonString = rawInput.GetRawText();
-            var options = new JsonSerializerOptions 
-            { 
+            var options = new JsonSerializerOptions
+            {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
             };
-            
+
             var parsed = JsonSerializer.Deserialize<FinancialPlaygroundRequest>(jsonString, options);
-            
+
             var roundtripString = JsonSerializer.Serialize(parsed, options);
             var roundtripJsonElement = JsonSerializer.Deserialize<JsonElement>(roundtripString);
 
@@ -141,14 +198,15 @@ public class DemoController : ControllerBase
             return Ok(new
             {
                 input = rawInput,
-                parsed = new { 
-                   spread = parsed?.Spread,
-                   treasuryPrice = parsed?.TreasuryPrice,
-                   rawAmount = parsed?.RawAmount
+                parsed = new
+                {
+                    spread = parsed?.Spread,
+                    treasuryPrice = parsed?.TreasuryPrice,
+                    rawAmount = parsed?.RawAmount
                 },
                 roundtrip = roundtripJsonElement,
                 roundtripMatch = isMatch,
-                wordsOutput = parsed?.RawAmount != null ? parsed.RawAmount.Value.ToWords() : null
+                wordsOutput = parsed?.RawAmount != null ? parsed.RawAmount.Value.ToHumanWords() : null
             });
         }
         catch (JsonException ex)

@@ -1,290 +1,642 @@
 @addTagHelper *, HumanNumbers.AspNetCore
 
 @{
-    ViewData["Title"] = "HumanNumbers Feature Showcase";
+    ViewData["Title"] = "HumanNumbers Showcase";
     Layout = "_Layout";
 }
 
 @using HumanNumbers
 @using System.Globalization
 
-<div class="container my-5">
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-primary">HumanNumbers Showcase</h1>
-        <p class="lead text-muted">Exhaustive technical demonstration of the <code>HumanNumbers</code> v2.0 ecosystem.</p>
-        <div class="d-flex justify-content-center gap-2 mt-3">
-             <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2">.NET 8.0 / 10.0+</span>
-             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2">Zero Allocation</span>
-             <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2">Culture Aware</span>
-        </div>
-    </div>
-
-    <!-- 1. The Interactive Lab (Roman & Bytes) -->
-    <div class="row g-4 mb-5">
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="card-header bg-gradient-primary text-white py-3">
-                    <h5 class="mb-0 fw-semibold"><i class="bi bi-hash me-2"></i>Roman Numeral Lab</h5>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted small">Supports integers from 1 to 3,999.</p>
-                    <div class="input-group mb-3">
-                        <input type="number" id="romanInput" class="form-control form-control-lg border-primary border-opacity-25" value="2024" min="1" max="3999">
-                        <button class="btn btn-primary px-4" onclick="convertRoman()"><i class="bi bi-magic me-2"></i>Convert</button>
-                    </div>
-                    <div id="romanResultContainer" class="p-3 bg-light rounded-3 text-center d-none">
-                        <span class="text-uppercase text-muted small d-block mb-1">Roman Output</span>
-                        <h2 id="romanOutput" class="display-5 fw-bold text-primary mb-0"></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="card-header bg-success text-white py-3" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                    <h5 class="mb-0 fw-semibold"><i class="bi bi-hdd-fill me-2"></i>Byte Size Formatter</h5>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted small">Toggle between SI (Decimal) and IEC (Binary) standards.</p>
-                    <div class="input-group mb-3">
-                        <input type="number" id="byteInput" class="form-control form-control-lg border-success border-opacity-25" value="5368709120" min="0">
-                        <div class="input-group-text bg-white border-success border-opacity-25">
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" id="binaryToggle">
-                                <label class="form-check-label small ms-2" for="binaryToggle">IEC / Binary</label>
-                            </div>
-                        </div>
-                        <button class="btn btn-success px-4" onclick="convertBytes()"><i class="bi bi-cpu me-2"></i>Scale</button>
-                    </div>
-                    <div id="byteResultContainer" class="p-3 bg-light rounded-3 text-center d-none">
-                        <span class="text-uppercase text-muted small d-block mb-1" id="byteLabel">Human-Readable Size</span>
-                        <h2 id="byteOutput" class="display-5 fw-bold text-success mb-0"></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. Robust Parsing Lab -->
-    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
-        <div class="card-header bg-info text-white py-3" style="background: linear-gradient(135deg, #0dcaf0 0%, #0bacce 100%);">
-            <h5 class="mb-0 fw-semibold"><i class="bi bi-arrow-down-left-circle-fill me-2"></i>Robust Parsing Lab (Round-Trip)</h5>
-        </div>
-        <div class="card-body p-4 bg-white">
-            <p class="card-text text-secondary mb-4">
-                Demonstrating <code>HumanNumber.Parse</code>. Input a formatted string (even with suffixes or culture-specific symbols) and see it resolve back to a decimal.
-            </p>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold text-info-emphasis">Formatted Input</label>
-                    <input type="text" id="parseInput" class="form-control form-control-lg font-monospace" value="1.5M" placeholder="e.g. 1.5M, $50k, 1,250.50">
-                    <div class="mt-2 d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-info" onclick="setParsePreset('1.5M')">1.5M</button>
-                        <button class="btn btn-sm btn-outline-info" onclick="setParsePreset('$50.25k')">$50.25k</button>
-                        <button class="btn btn-sm btn-outline-info" onclick="setParsePreset('1,5k', 'fr-FR')">1,5k (FR)</button>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold text-info-emphasis">Culture</label>
-                    <select id="parseCulture" class="form-select form-select-lg">
-                        <option value="">Invariant / US</option>
-                        <option value="fr-FR">French (fr-FR)</option>
-                        <option value="de-DE">German (de-DE)</option>
-                        <option value="en-GB">British (en-GB)</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-info text-white btn-lg w-100 fw-bold" onclick="executeParse()"><i class="bi bi-play-fill me-1"></i>Resolve</button>
-                </div>
-            </div>
-            <div id="parseResultContainer" class="mt-4 p-4 border border-info border-opacity-25 rounded-4 bg-info bg-opacity-10 d-none text-center">
-                <i class="bi bi-check-circle-fill text-info fs-3 mb-2 d-block"></i>
-                <span class="text-uppercase text-muted small fw-semibold">Resolved Decimal Value</span>
-                <h3 id="parseOutput" class="fw-bold text-info-emphasis mb-0 mt-1"></h3>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Attribute & JSON Showcase -->
-    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
-        <div class="card-header bg-warning text-dark py-3" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
-            <h5 class="mb-0 fw-semibold"><i class="bi bi-diagram-3-fill me-2"></i>Attribute Mapping Showcase</h5>
-        </div>
-        <div class="card-body p-4 bg-white">
-            <div class="row align-items-center mb-4">
-                <div class="col-md-8">
-                    <p class="card-text text-secondary mb-0">
-                        See how <code>[HumanNumberFormat]</code> and <code>[NoHumanFormat]</code> control serialization in a single API response.
-                    </p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <button class="btn btn-warning fw-bold px-4 shadow-sm" onclick="fetchShowcase()"><i class="bi bi-cloud-download-fill me-2"></i>Fetch Showcase JSON</button>
-                </div>
+<!-- Hero Section -->
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-4xl mx-auto">
+            <!-- Badge -->
+            <div class="inline-flex items-center space-x-2 mb-6">
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">v2.0</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Zero-Allocation</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Culture-Aware</span>
             </div>
             
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <h6 class="text-uppercase fw-bold text-muted small mb-3">Response Preview</h6>
-                    <div class="position-relative">
-                        <pre class="bg-dark text-light p-4 rounded-4 shadow-sm font-monospace mb-0" style="min-height: 250px;"><code id="showcaseOutput" class="language-json">// Click the button to see attribute-driven JSON...</code></pre>
+            <!-- Main Title -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                <span class="font-brand font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent transform-gpu">HumanNumbers</span> Showcase
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+                Exhaustive technical demonstration of the high-performance, culture-aware .NET number formatting ecosystem
+            </p>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">~85ns</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Formatting Time</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">0 B</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Allocations</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">.NET 8+</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Compatible</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">100+</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Cultures</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Start Section -->
+<section id="quick-start" class="py-12 px-4 sm:px-6 lg:px-8 border-b border-gray-100 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center space-x-4 mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Quick Start Reference</h2>
+            <div class="h-px flex-1 bg-gray-100 dark:bg-gray-800"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Basic Usage -->
+            <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-blue-500/50 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Basics</span>
+                    <button onclick="copySnippet('basic-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-blue-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </button>
+                </div>
+                <div class="bg-gray-50 dark:bg-black/40 rounded-xl p-4 font-mono text-sm overflow-hidden">
+                    <pre id="basic-code" class="text-gray-800 dark:text-blue-100">1234567m.ToHuman(); <span class="text-gray-500">// "1.23M"</span></pre>
+                </div>
+            </div>
+
+            <!-- Currency -->
+            <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-cyan-500/50 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Currency</span>
+                    <button onclick="copySnippet('currency-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-cyan-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </button>
+                </div>
+                <div class="bg-gray-50 dark:bg-black/40 rounded-xl p-4 font-mono text-sm overflow-hidden">
+                    <pre id="currency-code" class="text-gray-800 dark:text-cyan-100">val.ToHumanCurrency("USD"); <span class="text-gray-500">// "$1.23M"</span></pre>
+                </div>
+            </div>
+
+            <!-- Fluent API -->
+            <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-purple-500/50 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Fluent API</span>
+                    <button onclick="copySnippet('fluent-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-purple-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </button>
+                </div>
+                <div class="bg-gray-50 dark:bg-black/40 rounded-xl p-4 font-mono text-sm overflow-hidden">
+                    <pre id="fluent-code" class="text-gray-800 dark:text-purple-100">HumanNumber.Format(val).Strict().ToHuman();</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Labs Section -->
+<section id="features" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Interactive Labs</h2>
+            <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Explore the full capabilities of <span class="font-brand font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span> through hands-on demonstrations
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Roman Numeral Lab -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-linear-to-br from-human-primary to-human-primary-dark rounded-lg flex items-center justify-center">
+                        <span class="text-gray-900 dark:text-white font-bold text-sm">#</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Roman Numeral Lab</h3>
+                </div>
+                
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">Convert integers to Roman numerals (1-3999)</p>
+                
+                <div class="space-y-4">
+                    <div class="flex space-x-3">
+                        <input type="number" id="romanInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex-1" value="2024" min="1" max="3999">
+                        <button onclick="convertRoman()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg px-6">
+                            Convert
+                        </button>
+                    </div>
+                    
+                    <div id="romanResultContainer" class="hidden">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
+                            <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roman Output</span>
+                            <div id="romanOutput" class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1"></div>
+                        </div>
+                        <div class="mt-4 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800">
+                            <span class="text-blue-500">var</span> result = <span id="romanCodePreview" class="text-gray-300"></span>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <h6 class="text-uppercase fw-bold text-muted small mb-3">Model Configuration</h6>
-                    <div class="bg-light p-4 rounded-4 border border-light-subtle h-100">
-                        <div class="small mb-3"><i class="bi bi-code-slash text-warning me-2"></i><strong>ShowcaseModel.cs</strong></div>
-                        <ul class="list-group list-group-flush small bg-transparent">
-                            <li class="list-group-item bg-transparent px-0 py-2 border-light-subtle">
-                                <code class="text-primary">[HumanNumberFormat(isCurrency: true)]</code><br/>
-                                <span class="text-muted">TotalValue: 1,550,000.50 &rarr; "$1.55M"</span>
-                            </li>
-                            <li class="list-group-item bg-transparent px-0 py-2 border-light-subtle">
-                                <code class="text-danger">[NoHumanFormat]</code><br/>
-                                <span class="text-muted">SystemInternalId: 9876543210 &rarr; 9876543210</span>
-                            </li>
-                            <li class="list-group-item bg-transparent px-0 py-2 border-light-subtle">
-                                <code class="text-secondary">(Unmarked)</code><br/>
-                                <span class="text-muted">ActiveTransactions: 1250 &rarr; "1.25k"</span>
-                            </li>
-                        </ul>
+            </div>
+
+            <!-- Byte Size Lab -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl hover:-translate-y-0.5 p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-linear-to-br from-vercel-cyan to-cyan-600 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-900 font-bold text-sm">💾</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Byte Size Formatter</h3>
+                </div>
+                
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">Toggle between SI (Decimal) and IEC (Binary) standards</p>
+                
+                <div class="space-y-4">
+                    <div class="flex space-x-3">
+                        <input type="number" id="byteInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex-1" value="5368709120" min="0">
+                        <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
+                            <input type="checkbox" id="binaryToggle" class="w-4 h-4 text-blue-600 dark:text-blue-400 bg-gray-700 border-gray-600 rounded focus:ring-vercel-blue focus:ring-2">
+                            <label for="binaryToggle" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">IEC/Binary</label>
+                        </div>
+                        <button onclick="convertBytes()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg px-6">
+                            Scale
+                        </button>
+                    </div>
+                    
+                    <div id="byteResultContainer" class="hidden">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center">
+                            <span id="byteLabel" class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Human-Readable Size</span>
+                            <div id="byteOutput" class="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1"></div>
+                        </div>
+                        <div class="mt-4 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800">
+                            <span class="text-blue-500">var</span> size = <span id="byteCodePreview" class="text-gray-300"></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- 4. Performance & Benchmarks -->
-    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
-        <div class="card-header bg-dark text-white py-3">
-            <h5 class="mb-0 fw-semibold"><i class="bi bi-speedometer2 me-2"></i>Performance & Benchmarks</h5>
-        </div>
-        <div class="card-body p-4 bg-white">
-            <p class="text-secondary mb-4">HumanNumbers is optimized for zero-allocation hot paths using <code>Span&lt;char&gt;</code>. These metrics are recorded on a generic production machine.</p>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle border border-light-subtle rounded-3 overflow-hidden">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="ps-4">Feature</th>
-                            <th>Execution Time</th>
-                            <th>Allocated Memory</th>
-                            <th class="pe-4">Optimization Level</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="ps-4"><code>ToHuman()</code> (Scaling)</td>
-                            <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">~85 ns</span></td>
-                            <td><span class="text-success fw-bold">0 B</span></td>
-                            <td class="pe-4 fw-semibold text-muted">Zero-Allocation <i class="bi bi-lightning-charge-fill text-warning ms-1"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-4"><code>ToHumanCurrency()</code></td>
-                            <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">~110 ns</span></td>
-                            <td><span class="text-success fw-bold">0 B</span></td>
-                            <td class="pe-4 fw-semibold text-muted">Zero-Allocation <i class="bi bi-lightning-charge-fill text-warning ms-1"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-4"><code>HumanNumber.Parse()</code></td>
-                            <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold">~120 ns</span></td>
-                            <td><span class="text-secondary fw-bold">32 B</span></td>
-                            <td class="pe-4 fw-semibold text-muted">Optimized <i class="bi bi-check-circle-fill text-primary ms-1"></i></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-4">Roman Numerals</td>
-                            <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">~45 ns</span></td>
-                            <td><span class="text-success fw-bold">0 B</span></td>
-                            <td class="pe-4 fw-semibold text-muted">Zero-Allocation <i class="bi bi-lightning-charge-fill text-warning ms-1"></i></td>
-                        </tr>
-                    </tbody>
-                </table>
+<!-- Section Connector -->
+<div class="relative h-20 bg-gradient-to-b from-transparent via-gray-100 dark:via-gray-900/50 to-transparent"></div>
+
+<!-- Parsing Lab Section -->
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 p-8">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Robust Parsing Lab</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Demonstrating <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">HumanNumber.Parse</code> 
+                        with round-trip support for formatted strings
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Formatted Input</label>
+                        <input type="text" id="parseInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" value="1.5M" placeholder="e.g. 1.5M, $50k, 1,250.50">
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="setParsePreset('1.5M')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">1.5M</button>
+                            <button onclick="setParsePreset('$50.25k')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">$50.25k</button>
+                            <button onclick="setParsePreset('1,5k', 'fr-FR')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">1,5k (FR)</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Culture</label>
+                        <select id="parseCulture" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 cursor-pointer">
+                            <option value="">Invariant / US</option>
+                            <option value="fr-FR">French (fr-FR)</option>
+                            <option value="de-DE">German (de-DE)</option>
+                            <option value="en-GB">British (en-GB)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button onclick="executeParse()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg w-full">
+                            Resolve
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="parseResultContainer" class="hidden">
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 text-center border border-vercel-blue/20">
+                        <div class="inline-flex items-center justify-center w-12 h-12 bg-vercel-blue/10 rounded-full mb-3">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Resolved Decimal Value</div>
+                        <div id="parseOutput" class="text-3xl font-bold text-gray-900 dark:text-white"></div>
+                        
+                        <div class="mt-6 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800 text-left">
+                            <span class="text-blue-500">decimal</span> val = <span id="parseCodePreview" class="text-gray-300"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- 5. Financial Systems Playground (Existing) -->
-    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
-        <div class="card-header bg-danger text-white py-3" style="background: linear-gradient(135deg, #dc3545 0%, #a71d2a 100%);">
-            <h5 class="mb-0 fw-semibold"><i class="bi bi-wallet2 me-2"></i>Interactive Financial Playground</h5>
+<!-- Section Connector -->
+<div class="relative h-20 bg-gradient-to-b from-transparent via-gray-100 dark:via-gray-900/50 to-transparent"></div>
+
+<!-- Policy Lab Section -->
+<section id="policies" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Interactive Policy Lab</h2>
+            <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Experiment with cross-culture numbering systems and custom policies
+            </p>
         </div>
-        <div class="card-body p-4 bg-white">
-            <!-- Content same as before but slightly refined UI -->
-             <div id="financialErrorBox" class="alert alert-danger d-none rounded-3 shadow-sm border-0 mb-4">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <span id="financialErrorText" class="fw-semibold"></span>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <!-- Control Panel -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Control Panel</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Numeric Value</label>
+                        <input type="number" id="policyValue" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" value="12345678" oninput="executePolicyLab()">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Identity</label>
+                        <select id="policySelect" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" onchange="executePolicyLab()">
+                            <!-- Populated via API -->
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Threshold Override</label>
+                            <input type="number" id="thresholdOverride" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" placeholder="Inherit from policy" oninput="executePolicyLab()">
+                        </div>
+                        <div class="flex items-center space-x-2 pt-0 sm:pt-7">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="alwaysSuffixToggle" class="w-4 h-4 text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer" onchange="executePolicyLab()">
+                            </div>
+                            <label for="alwaysSuffixToggle" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer select-none">Always Show Suffix</label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Output Mode</label>
+                        <div class="inline-flex space-x-1.5 bg-gray-100 dark:bg-gray-800/80 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/50">
+                            <input type="radio" name="policyMode" id="modeNum" value="number" checked onchange="executePolicyLab()" class="peer sr-only">
+                            <label for="modeNum" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                </svg>
+                                Number
+                            </label>
+                            
+                            <input type="radio" name="policyMode" id="modeCur" value="currency" onchange="executePolicyLab()" class="peer sr-only">
+                            <label for="modeCur" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Currency
+                            </label>
+                            
+                            <input type="radio" name="policyMode" id="modeWords" value="words" onchange="executePolicyLab()" class="peer sr-only">
+                            <label for="modeWords" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                                Words
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="row g-4">
-                <div class="col-lg-5">
-                    <h6 class="fw-bold text-danger-emphasis mb-3">Live JSON Submission</h6>
-                    <div class="mb-3 d-flex flex-wrap gap-2">
-                        <button class="btn btn-outline-danger btn-sm" onclick="loadPreset('golden')">Golden Standard</button>
-                        <button class="btn btn-outline-danger btn-sm" onclick="loadPreset('negative')">Negative Case</button>
+            <!-- Output Display -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 p-6">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Live Output</h3>
+                
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-8 text-center mb-6">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Human-Readable Representation</div>
+                    <div id="policyOutput" class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent transform-gpu">...</div>
+                    <div class="mt-6 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800 text-left">
+                        <span class="text-blue-500">string</span> result = <span id="policyCodePreview" class="text-gray-300"></span>
                     </div>
-                    <textarea id="financialInput" class="form-control font-monospace shadow-sm bg-light border-light-subtle rounded-3" rows="7">
-{
+                    <div class="flex justify-center space-x-2 mt-4">
+                        <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">Real-time Reactive</span>
+                        <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Context Aware</span>
+                    </div>
+                </div>
+
+                <!-- Technical Context -->
+                <div class="bg-white dark:bg-gray-950 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4">Technical Policy Context</h4>
+                    <div id="policyDetails">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Start Scaling at</div>
+                                <div id="detailThreshold" class="text-lg font-bold text-gray-900 dark:text-white">1,000</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Precision</div>
+                                <div id="detailPrecision" class="text-lg font-bold text-gray-900 dark:text-white">2</div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Magnitude Suffix Map</div>
+                            <div id="detailSuffixList" class="space-y-1">
+                                <!-- Populated via API -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Financial Playground Section -->
+<section id="financial" class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Financial Systems Playground</h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Advanced financial formatting with basis points, fractional prices, and check-writing
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- JSON Input -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Live JSON Submission</h3>
+                    
+                    <div class="flex space-x-2 mb-4">
+                        <button onclick="loadPreset('golden')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white">
+                            Golden Standard
+                        </button>
+                        <button onclick="loadPreset('negative')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white">
+                            Negative Case
+                        </button>
+                    </div>
+                    
+                    <textarea id="financialInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-mono" rows="8">{
   "spread": "125 bps",
   "treasuryPrice": "101 16/32",
   "rawAmount": "5432.10"
 }</textarea>
-                    <button class="btn btn-danger w-100 mt-3 shadow-sm fw-bold border-0" onclick="executePlayground()"><i class="bi bi-braces me-1"></i>Run Model Binding</button>
+                    
+                    <button onclick="executePlayground()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg w-full mt-4">
+                        Run Model Binding
+                    </button>
                 </div>
 
-                <div class="col-lg-7">
-                     <h6 class="fw-bold text-success-emphasis mb-3 d-flex justify-content-between align-items-center">
-                         ASP.NET Serialization Roundtrip 
-                         <span id="matchBadge" class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill fw-normal fs-6 px-3">Idle</span>
-                     </h6>
-                     <pre id="financialResult" class="bg-dark text-light p-4 rounded-4 shadow-sm mb-0 font-monospace" style="min-height: 200px; overflow-x: auto;">// Hit Run to map via ASP.NET...</pre>
+                <!-- Results Display -->
+                <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">ASP.NET Serialization Roundtrip</h3>
+                        <span id="matchBadge" class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Idle</span>
+                    </div>
+                    
+                    <div id="financialErrorBox" class="hidden bg-red-900/20 border border-red-800/30 rounded-lg p-4 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span id="financialErrorText" class="text-red-400 font-medium"></span>
+                        </div>
+                    </div>
+                    
+                    <pre id="financialResult" class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 font-mono text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">// Hit Run to map via ASP.NET...</pre>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Performance Section -->
+<section id="performance" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Performance & Benchmarks</h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    <span class="font-brand font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span> is optimized for zero-allocation hot paths using <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">Span&lt;char&gt;</code>
+                </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg transition-all duration-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50">
+                            <tr>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Feature</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Execution Time</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Allocated Memory</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Optimization Level</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800">
+                            <tr class="hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">ToHuman()</code>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Scaling</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~85 ns</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
+                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">ToHumanCurrency()</code>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~110 ns</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
+                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">HumanNumber.Parse()</code>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">~120 ns</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-600 dark:text-gray-400 font-semibold">32 B</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Optimized</span>
+                                        <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Roman Numerals</code>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~45 ns</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
+                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Ready to Transform Your Numbers?</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
+                Join thousands of developers who are already using <span class="font-brand font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span> in production
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="https://www.nuget.org/packages/HumanNumbers" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg px-8 py-3 text-lg">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Install NuGet
+                </a>
+                
+                <a href="https://github.com/your-repo/humannumbers" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer btn-vercel-secondary px-8 py-3 text-lg">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 
 @section Scripts {
     <script>
+        // Utility: Copy to Clipboard
+        function copySnippet(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.currentTarget;
+                const originalSvg = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                setTimeout(() => btn.innerHTML = originalSvg, 2000);
+            });
+        }
+
+        // Roman Numeral Converter
         async function convertRoman() {
             const val = document.getElementById('romanInput').value;
             const resContainer = document.getElementById('romanResultContainer');
             const output = document.getElementById('romanOutput');
+            const codeEl = document.getElementById('romanCodePreview');
             
+            codeEl.innerText = `${val}.ToRoman();`;
+
             try {
                 const response = await fetch(`/api/demo/roman/${val}`);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error);
 
                 output.innerText = data.roman;
-                resContainer.classList.remove('d-none');
+                resContainer.classList.remove('hidden');
+                resContainer.classList.add('animate-fade-in');
             } catch (e) {
-                alert("Roman Error: " + e.message);
+                console.error("Roman Error:", e);
             }
         }
 
+        // Byte Size Converter
         async function convertBytes() {
             const val = document.getElementById('byteInput').value;
             const binary = document.getElementById('binaryToggle').checked;
             const resContainer = document.getElementById('byteResultContainer');
             const output = document.getElementById('byteOutput');
             const label = document.getElementById('byteLabel');
+            const codeEl = document.getElementById('byteCodePreview');
             
+            codeEl.innerText = `${val}.ToHumanBytes(useBinaryPrefixes: ${binary});`;
+
             try {
                 const response = await fetch(`/api/demo/bytes/${val}?binary=${binary}`);
                 const data = await response.json();
                 
                 label.innerText = data.type;
                 output.innerText = data.formatted;
-                resContainer.classList.remove('d-none');
+                resContainer.classList.remove('hidden');
+                resContainer.classList.add('animate-fade-in');
             } catch (e) {
-                alert("Byte Error: " + e.message);
+                console.error("Byte Error:", e);
             }
         }
 
+        // Parser
         async function executeParse() {
             const input = document.getElementById('parseInput').value;
             const culture = document.getElementById('parseCulture').value;
             const resContainer = document.getElementById('parseResultContainer');
             const output = document.getElementById('parseOutput');
+            const codeEl = document.getElementById('parseCodePreview');
             
+            const cultureArg = culture ? `, new CultureInfo("${culture}")` : '';
+            codeEl.innerText = `HumanNumber.Parse("${input}"${cultureArg});`;
+
             try {
                 const url = `/api/demo/parse?input=${encodeURIComponent(input)}&culture=${culture}`;
                 const response = await fetch(url);
@@ -292,9 +644,10 @@
                 if (!response.ok) throw new Error(data.error);
 
                 output.innerText = data.parsedValue;
-                resContainer.classList.remove('d-none');
+                resContainer.classList.remove('hidden');
+                resContainer.classList.add('animate-scale-in');
             } catch (e) {
-                alert(e.message);
+                console.error("Parse Error:", e);
             }
         }
 
@@ -304,40 +657,100 @@
             executeParse();
         }
 
-        async function fetchShowcase() {
-            const output = document.getElementById('showcaseOutput');
-            output.innerText = "Fetching showcase data...";
-            output.style.opacity = '0.5';
-
+        // Policy Lab
+        async function fetchPolicies() {
+            const select = document.getElementById('policySelect');
             try {
-                const response = await fetch('/api/demo/showcase');
-                const data = await response.json();
-                output.innerText = JSON.stringify(data, null, 2);
+                const response = await fetch('/api/demo/policies');
+                const policies = await response.json();
+                select.innerHTML = '';
+                policies.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.innerText = p;
+                    select.appendChild(opt);
+                });
+                executePolicyLab();
             } catch (e) {
-                output.innerText = "Error: " + e.message;
-            } finally {
-                output.style.opacity = '1';
+                console.error("Failed to fetch policies", e);
             }
         }
 
-        // Financial Playground logic (preserved from previous version)
+        async function executePolicyLab() {
+            const val = document.getElementById('policyValue').value;
+            const policy = document.getElementById('policySelect').value;
+            const mode = document.querySelector('input[name="policyMode"]:checked').value;
+            const alwaysShowSuffix = document.getElementById('alwaysSuffixToggle').checked;
+            const threshold = document.getElementById('thresholdOverride').value;
+            const output = document.getElementById('policyOutput');
+            const details = document.getElementById('policyDetails');
+            const codeEl = document.getElementById('policyCodePreview');
+
+            if (!val) {
+                output.innerText = "...";
+                return;
+            }
+
+            // Construct Code Preview
+            let code = `HumanNumber.Format(${val})`;
+            if (policy !== "Default") code += `.UsingPolicy("${policy}")`;
+            if (alwaysShowSuffix) code += `.UsingOptions(o => o.AlwaysShowSuffix = true)`;
+            if (threshold) code += `.UsingOptions(o => o.Threshold = ${threshold}m)`;
+            code += mode === 'currency' ? '.ToHumanCurrency()' : '.ToHuman()';
+            codeEl.innerText = code;
+
+            details.style.opacity = '0.5';
+            
+            try {
+                let url = `/api/demo/format-policy?value=${val}&policy=${policy}&mode=${mode}&alwaysShowSuffix=${alwaysShowSuffix}`;
+                if (threshold) url += `&threshold=${threshold}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                output.innerText = data.formatted;
+                
+                // Update Technical Context
+                document.getElementById('detailThreshold').innerText = new Intl.NumberFormat().format(data.details.threshold);
+                document.getElementById('detailPrecision').innerText = data.details.decimalPlaces;
+                
+                const suffixList = document.getElementById('detailSuffixList');
+                suffixList.innerHTML = '';
+                data.details.suffixes.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center py-2 border-b border-gray-800';
+                    item.innerHTML = `<span class="text-xs text-gray-500 dark:text-gray-400">>= ${new Intl.NumberFormat().format(s.threshold)}</span> <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">${s.suffix || 'None'}</span>`;
+                    suffixList.appendChild(item);
+                });
+
+            } catch (e) {
+                console.error("Policy formatting failed", e);
+            } finally {
+                details.style.opacity = '1';
+            }
+        }
+
+        // Financial Playground
         function loadPreset(type) {
             const el = document.getElementById('financialInput');
-            if (type === 'golden') el.value = '{\n  "spread": "125 bps",\n  "treasuryPrice": "101 16/32",\n  "rawAmount": "5432.10"\n}';
-            if (type === 'negative') el.value = '{\n  "spread": "-50 bps",\n  "treasuryPrice": "99 1/32",\n  "rawAmount": "-1000.00"\n}';
+            if (type === 'golden') {
+                el.value = '{\n  "spread": "125 bps",\n  "treasuryPrice": "101 16/32",\n  "rawAmount": "5432.10"\n}';
+            } else if (type === 'negative') {
+                el.value = '{\n  "spread": "-50 bps",\n  "treasuryPrice": "99 1/32",\n  "rawAmount": "-1000.00"\n}';
+            }
         }
 
         async function executePlayground() {
-             const inputTxt = document.getElementById('financialInput').value;
-             const resEl = document.getElementById('financialResult');
-             const badge = document.getElementById('matchBadge');
-             const errBox = document.getElementById('financialErrorBox');
-             const errTxt = document.getElementById('financialErrorText');
+            const inputTxt = document.getElementById('financialInput').value;
+            const resEl = document.getElementById('financialResult');
+            const badge = document.getElementById('matchBadge');
+            const errBox = document.getElementById('financialErrorBox');
+            const errTxt = document.getElementById('financialErrorText');
 
-             errBox.classList.add('d-none');
-             resEl.innerText = "Processing binding...";
-             
-             try {
+            errBox.classList.add('hidden');
+            resEl.innerText = "Processing binding...";
+            
+            try {
                 const response = await fetch('/api/demo/financial', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -348,19 +761,24 @@
 
                 resEl.innerText = JSON.stringify(data, null, 2);
                 if (data.roundtripMatch) {
-                    badge.className = "badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                    badge.className = "inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-500/30";
                     badge.innerText = "Perfect Roundtrip";
                 } else {
-                    badge.className = "badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                    badge.className = "inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30";
                     badge.innerText = "Content Changed";
                 }
-             } catch (e) {
+            } catch (e) {
                 errTxt.innerText = e.message;
-                errBox.classList.remove('d-none');
+                errBox.classList.remove('hidden');
                 resEl.innerText = "// Deserialization Error";
-                badge.className = "badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill fw-normal fs-6 px-3";
+                badge.className = "inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-800 dark:text-red-300 border border-red-500/30";
                 badge.innerText = "Fatal Error";
-             }
+            }
         }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchPolicies();
+        });
     </script>
 }
