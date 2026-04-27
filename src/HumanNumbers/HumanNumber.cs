@@ -885,7 +885,7 @@ namespace HumanNumbers
                     ? 0
                     : options.DecimalPlaces;
 
-                var formattedNumber = roundedValue.ToString($"F{precision}", numberFormat);
+                var formattedNumber = roundedValue.ToString($"N{precision}", numberFormat);
 
                 if (options.CurrencySymbol != null)
                 {
@@ -1020,7 +1020,7 @@ namespace HumanNumbers
 
             // 2. Number
             Span<char> format = stackalloc char[8];
-            "F".AsSpan().CopyTo(format);
+            "N".AsSpan().CopyTo(format);
             precision.TryFormat(format.Slice(1), out var fLen);
             var formatSpan = format.Slice(0, 1 + fLen);
 
@@ -1097,7 +1097,7 @@ namespace HumanNumbers
 
             // Number
             Span<char> format = stackalloc char[8];
-            "F".AsSpan().CopyTo(format);
+            "N".AsSpan().CopyTo(format);
             options.DecimalPlaces.TryFormat(format.Slice(1), out var fLen);
             
             if (!roundedValue.TryFormat(destination.Slice(pos), out var numWritten, format.Slice(0, 1 + fLen), numberFormat))
