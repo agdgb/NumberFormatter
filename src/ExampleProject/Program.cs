@@ -1,21 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
-using NumberFormatter;
-using NumberFormatter.AspNetCore;
-using NumberFormatter.AspNetCore.Financial;
+using HumanNumbers;
+using HumanNumbers.AspNetCore;
+using HumanNumbers.AspNetCore.Financial;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services with proper ASP.NET Core integration
+// Add services with proper ASP.NET Core integration using the new unified setup
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // This will apply short number formatting to all numeric properties
-        options.JsonSerializerOptions.Converters.Add(new ShortNumberJsonConverterFactory());
         options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
-    })
-    .AddFinancialFormatters();
+    });
 
-builder.Services.AddNumberFormatter(); // Add formatter service
+// 1-line setup for JSON, MVC extensions, DI, and Financial formatters
+builder.Services.AddHumanNumbersDefaults(options => 
+{
+    options.DefaultPolicyName = "Dashboard";
+});
 
 // Add Razor pages for tag helpers
 builder.Services.AddRazorPages();
@@ -30,6 +31,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapControllers(); // still map API controllers
+app.MapControllers(); // map API controllers
+
+// Add a Minimal API example endpoint
+app.MapGet("/api/demo/minimal", () => Results.Extensions.HumanOk(new { Revenue = 1500000m }));
 
 app.Run();

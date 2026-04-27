@@ -1,21 +1,22 @@
-﻿using NumberFormatter.AspNetCore;
+using HumanNumbers.AspNetCore;
+using HumanNumbers.AspNetCore.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NumberFormatter.Demo.Models
+namespace HumanNumbers.Demo.Models
 {
     public class FinancialData
     {
-        [ShortNumberFormat(isCurrency: true)]
+        [HumanNumberFormat(isCurrency: true)]
         public decimal Revenue { get; set; }
 
-        [ShortNumberFormat(isCurrency: true, currencyCode: "EUR")]
+        [HumanNumberFormat(isCurrency: true, currencyCode: "EUR")]
         public decimal EuroRevenue { get; set; }
 
-        [ShortNumberFormat(decimalPlaces: 1)]
+        [HumanNumberFormat(decimalPlaces: 1)]
         public decimal GrowthRate { get; set; }
 
         // No attribute – will use the global converter (plain formatting)

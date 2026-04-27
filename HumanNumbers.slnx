@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/examples/">
+    <File Path="Program.cs" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ExampleProject/NumberFormatter.Demo.csproj" Id="be4862ce-a1ec-4d4f-af66-b9d8e83e39ab" />
+    <Project Path="src/NumberFormatter.AspNetCore/HumanNumbers.AspNetCore.csproj" Id="eaf076d0-1e6a-4f94-920d-2243981ffc21" />
+    <Project Path="src/NumberFormatter/HumanNumbers.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
