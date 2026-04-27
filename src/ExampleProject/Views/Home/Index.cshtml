@@ -14,7 +14,7 @@
         <div class="text-center max-w-4xl mx-auto">
             <!-- Badge -->
             <div class="inline-flex items-center space-x-2 mb-6">
-                <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">v2.0</span>
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">v2.0.0-preview.1</span>
                 <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Zero-Allocation</span>
                 <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">Culture-Aware</span>
             </div>
@@ -360,6 +360,95 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Financial Labs Section -->
+<section id="financial-labs" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900/30">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">Financial Engineering Labs</h2>
+            <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Specialized formatting for trading desks, treasury markets, and accounting systems
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Basis Points Lab -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <span class="text-blue-500 font-bold text-sm">%</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Basis Points (bps)</h3>
+                </div>
+                <div class="space-y-4">
+                    <input type="number" id="bpsInput" class="w-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" value="0.0125" step="0.0001" oninput="executeBpsLab()">
+                    <div id="bpsOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center font-bold text-blue-500 text-xl">...</div>
+                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
+                        <span id="bpsCodePreview">val.ToHumanBps()</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Treasury Fraction Lab -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-cyan-500/10 rounded-lg flex items-center justify-center">
+                        <span class="text-cyan-500 font-bold text-sm">½</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Treasury Fractions</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex gap-2">
+                        <input type="number" id="fractionInput" class="flex-1 px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" value="101.5" step="0.03125" oninput="executeFractionLab()">
+                        <select id="fractionDenominator" class="w-20 px-2 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" onchange="executeFractionLab()">
+                            <option value="32">/32</option>
+                            <option value="64">/64</option>
+                            <option value="8">/8</option>
+                        </select>
+                    </div>
+                    <div id="fractionOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center font-bold text-cyan-500 text-xl">...</div>
+                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
+                        <span id="fractionCodePreview">val.ToHumanFraction(32)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Check Writing Lab -->
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                        <span class="text-purple-500 font-bold text-sm">✍️</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Check Writing</h3>
+                </div>
+                <div class="space-y-4">
+                    <input type="number" id="wordsInput" class="w-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" value="1250.50" oninput="executeWordsLab()">
+                    <div id="wordsOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-sm font-medium text-purple-500 text-center leading-relaxed">...</div>
+                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
+                        <span id="wordsCodePreview">val.ToHumanWords("Dollars")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TagHelper Showcase -->
+        <div class="mt-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">ASP.NET Core TagHelpers</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Embed human-readable numbers directly in your Razor views</p>
+                </div>
+                <div class="bg-black/40 rounded-xl p-4 font-mono text-xs text-blue-300 border border-gray-800">
+                    &lt;hn-check value="1250.50" major-currency="Dollars" /&gt;
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-xs text-gray-500 uppercase tracking-widest mb-1">Live Razor Output</span>
+                    <hn-check value="@(1250.50m)" major-currency="Dollars" class="text-lg font-bold text-green-500" />
                 </div>
             </div>
         </div>
@@ -776,9 +865,56 @@
             }
         }
 
+        // Financial Labs
+        async function executeBpsLab() {
+            const val = document.getElementById('bpsInput').value;
+            const output = document.getElementById('bpsOutput');
+            const codeEl = document.getElementById('bpsCodePreview');
+            
+            codeEl.innerText = `${val}m.ToHumanBps();`;
+            
+            try {
+                const response = await fetch(`/api/demo/bps?value=${val}`);
+                const data = await response.json();
+                output.innerText = data.formatted;
+            } catch (e) { console.error(e); }
+        }
+
+        async function executeFractionLab() {
+            const val = document.getElementById('fractionInput').value;
+            const den = document.getElementById('fractionDenominator').value;
+            const output = document.getElementById('fractionOutput');
+            const codeEl = document.getElementById('fractionCodePreview');
+            
+            codeEl.innerText = `${val}m.ToHumanFraction(${den});`;
+            
+            try {
+                const response = await fetch(`/api/demo/fraction?value=${val}&denominator=${den}`);
+                const data = await response.json();
+                output.innerText = data.formatted;
+            } catch (e) { console.error(e); }
+        }
+
+        async function executeWordsLab() {
+            const val = document.getElementById('wordsInput').value;
+            const output = document.getElementById('wordsOutput');
+            const codeEl = document.getElementById('wordsCodePreview');
+            
+            codeEl.innerText = `${val}m.ToHumanWords("Dollars");`;
+            
+            try {
+                const response = await fetch(`/api/demo/words?value=${val}&major=Dollars&singular=Dollar`);
+                const data = await response.json();
+                output.innerText = data.formatted;
+            } catch (e) { console.error(e); }
+        }
+
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             fetchPolicies();
+            executeBpsLab();
+            executeFractionLab();
+            executeWordsLab();
         });
     </script>
 }

@@ -219,4 +219,36 @@ public class DemoController : ControllerBase
             return BadRequest(new { error = "An unexpected error occurred: " + ex.Message });
         }
     }
+
+    [HttpGet("bps")]
+    public IActionResult ToBps([FromQuery] decimal value, [FromQuery] int decimals = 0)
+    {
+        return Ok(new
+        {
+            value,
+            formatted = value.ToHumanBps(decimals),
+            bps = value.ToBps()
+        });
+    }
+
+    [HttpGet("fraction")]
+    public IActionResult ToFraction([FromQuery] decimal value, [FromQuery] int denominator = 32)
+    {
+        return Ok(new
+        {
+            value,
+            formatted = value.ToHumanFraction(denominator),
+            denominator
+        });
+    }
+
+    [HttpGet("words")]
+    public IActionResult ToWords([FromQuery] decimal value, [FromQuery] string? major = null, [FromQuery] string? singular = null)
+    {
+        return Ok(new
+        {
+            value,
+            formatted = value.ToHumanWords(major, singular)
+        });
+    }
 }
