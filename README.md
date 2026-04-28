@@ -181,10 +181,10 @@ We benchmark against "Naive" implementations to provide an honest look at the co
 
 | Operation | Latency | **Allocated Memory** | Engineering Note |
 | :--- | :--- | :--- | :--- |
-| **Manual Concatenation** | ~70 ns | 80 B | Standard `ToString() + "K"` approach. |
-| **`ToHuman()`** | ~160 ns | **56 B** | **Balanced.** Uses less memory than naive concatenation (56 B vs 80 B). |
-| **`ToHuman` (Span)** | ~140 ns | **0 B** | **Zero-Alloc.** When using Span overloads with preconfigured policies. |
-| **`TryParse`** | ~45 ns | **0 B** | **Zero-Alloc.** Fully allocation-free parsing. |
+| **Manual Concatenation** | ~60-80 ns | 64-80 B | Standard `ToString() + "K"` approach. |
+| **`ToHuman()`** | ~160-180 ns | **56 B** | **Balanced.** Uses less memory than naive concatenation. |
+| **`ToHuman` (Span)** | ~150-170 ns | **24 B** | **Optimized.** Significant memory reduction via Span paths. |
+| **`TryParse`** | ~40-50 ns | **0 B** | **Zero-Alloc.** Fully allocation-free parsing. |
 
 > [!NOTE]
 > Latency figures are environment-dependent. The "Naive" example reflects common real-world implementations, not optimized hand-written formatters.
@@ -276,14 +276,14 @@ Detailed benchmarks below reflect full production runs and may differ slightly f
 
 | Method | Scenario / Input | Mean | Gen 0 | **Allocated** | Engineering Context |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`StandardScaled`** | Naive (999,499) | 134.61 ns | 0.0026 | 80 B | Naive `ToString` + Concat approach. |
-| **`ToHuman`** | Governed (999,499) | 351.97 ns | 0.0014 | **56 B** | **23% less memory** than naive. |
-| **`ToHuman` (Span)** | Governed (999,499) | 302.92 ns | **0** | **0 B** | **Zero-Alloc** path verified. |
+| **`StandardScaled`** | Naive (999,499) | 78.33 ns | 0.0026 | 80 B | Naive `ToString` + Concat approach. |
+| **`ToHuman`** | Governed (999,499) | 172.79 ns | 0.0024 | **56 B** | **30% less memory** than naive. |
+| **`ToHuman` (Span)** | Governed (999,499) | 152.09 ns | 0.0007 | **24 B** | **Optimized** Span path. |
 | | | | | | |
-| **`TryParse`** | `$1.50M` | 85.82 ns | - | **0 B** | **Zero-Alloc** parsing. |
-| **`ToHumanBytes`** | 1024 Bytes | 60.99 ns | 0.0013 | 40 B | Single materialized string. |
-| **`ToHumanWords`** | 1234.56 | 513.41 ns | 0.0186 | 560 B | Non-recursive assembly. |
-| **`ToRoman`** | 2024 | 50.66 ns | 0.0013 | 40 B | Optimized buffer path. |
+| **`TryParse`** | `$1.50M` | 50.86 ns | - | **0 B** | **Zero-Alloc** parsing. |
+| **`ToHumanBytes`** | 1024 Bytes | 56.62 ns | 0.0013 | 40 B | Single materialized string. |
+| **`ToHumanWords`** | 1234.56 | 322.15 ns | 0.0186 | 560 B | Non-recursive assembly. |
+| **`ToRoman`** | 2024 | 31.79 ns | 0.0013 | 40 B | Optimized buffer path. |
 
 **Key Takeaway**: While `HumanNumbers` handles complex thresholds and rounding logic that manual code often misses, it does so with a **smaller memory footprint** than naive string concatenation approaches.
 

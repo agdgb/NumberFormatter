@@ -31,21 +31,21 @@
             
             <!-- Quick Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">~85ns</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Formatting Time</div>
+                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">~170ns</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Formatting Time</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">0 B</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Allocations</div>
+                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">56 B</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Base Allocations</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">.NET Standard 2.0+</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Compatible</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Compatible</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
                     <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">Full I18N</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400">Cultures Supported</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Cultures Supported</div>
                 </div>
             </div>
         </div>
@@ -65,7 +65,8 @@
             <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-blue-500/50 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Basics</span>
-                    <button onclick="copySnippet('basic-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-blue-500">
+                    <button onclick="copySnippet('basic-code')" class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-blue-500">
+                        <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     </button>
                 </div>
@@ -78,7 +79,8 @@
             <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-cyan-500/50 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Currency</span>
-                    <button onclick="copySnippet('currency-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-cyan-500">
+                    <button onclick="copySnippet('currency-code')" class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-cyan-500">
+                        <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     </button>
                 </div>
@@ -91,7 +93,8 @@
             <div class="group relative bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 hover:border-purple-500/50 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Fluent API</span>
-                    <button onclick="copySnippet('fluent-code')" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-purple-500">
+                    <button onclick="copySnippet('fluent-code')" class="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-purple-500">
+                        <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     </button>
                 </div>
@@ -138,8 +141,8 @@
                             <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roman Output</span>
                             <div id="romanOutput" class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1"></div>
                         </div>
-                        <div class="mt-4 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800">
-                            <span class="text-blue-500">var</span> result = <span id="romanCodePreview" class="text-gray-300"></span>
+                        <div class="mt-4 p-3 bg-gray-900 dark:bg-black/40 rounded-lg font-mono text-[10px] border border-gray-800 shadow-inner">
+                            <span class="text-blue-400">var</span> <span class="text-gray-300">result = </span><span id="romanCodePreview" class="text-blue-200"></span>
                         </div>
                     </div>
                 </div>
@@ -154,13 +157,13 @@
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Byte Size Formatter</h3>
                 </div>
                 
-                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">Toggle between SI (Decimal) and IEC (Binary) standards</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">Defaulting to IEC (Binary) prefixes for precise developer presentation</p>
                 
                 <div class="space-y-4">
                     <div class="flex space-x-3">
-                        <input type="number" id="byteInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex-1" value="5368709120" min="0">
+                        <input type="number" id="byteInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 flex-1" value="5368709120" min="0" oninput="convertBytes()">
                         <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-2">
-                            <input type="checkbox" id="binaryToggle" class="w-4 h-4 text-blue-600 dark:text-blue-400 bg-gray-700 border-gray-600 rounded focus:ring-vercel-blue focus:ring-2">
+                            <input type="checkbox" id="binaryToggle" class="w-4 h-4 text-blue-600 dark:text-blue-400 bg-gray-700 border-gray-600 rounded focus:ring-vercel-blue focus:ring-2" checked onchange="convertBytes()">
                             <label for="binaryToggle" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">IEC/Binary</label>
                         </div>
                         <button onclick="convertBytes()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg px-6">
@@ -173,8 +176,8 @@
                             <span id="byteLabel" class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Human-Readable Size</span>
                             <div id="byteOutput" class="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1"></div>
                         </div>
-                        <div class="mt-4 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800">
-                            <span class="text-blue-500">var</span> size = <span id="byteCodePreview" class="text-gray-300"></span>
+                        <div class="mt-4 p-3 bg-gray-900 dark:bg-black/40 rounded-lg font-mono text-[10px] border border-gray-800 shadow-inner">
+                            <span class="text-blue-400">var</span> <span class="text-gray-300">size = </span><span id="byteCodePreview" class="text-blue-200"></span>
                         </div>
                     </div>
                 </div>
@@ -237,8 +240,8 @@
                         <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Resolved Decimal Value</div>
                         <div id="parseOutput" class="text-3xl font-bold text-gray-900 dark:text-white"></div>
                         
-                        <div class="mt-6 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800 text-left">
-                            <span class="text-blue-500">decimal</span> val = <span id="parseCodePreview" class="text-gray-300"></span>
+                        <div class="mt-6 p-3 bg-gray-900 dark:bg-black/40 rounded-lg font-mono text-[10px] border border-gray-800 text-left shadow-inner">
+                            <span class="text-blue-400">decimal</span> <span class="text-gray-300">val = </span><span id="parseCodePreview" class="text-blue-200"></span>
                         </div>
                     </div>
                 </div>
@@ -293,30 +296,25 @@
                     
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Output Mode</label>
-                        <div class="inline-flex space-x-1.5 bg-gray-100 dark:bg-gray-800/80 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700/50">
-                            <input type="radio" name="policyMode" id="modeNum" value="number" checked onchange="executePolicyLab()" class="peer sr-only">
-                            <label for="modeNum" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
+                        <div class="flex flex-wrap gap-3" id="policyModeContainer">
+                            <button type="button" onclick="setPolicyMode('number')" id="btn-mode-number" class="mode-btn relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 border shadow-sm group active">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 12h10M7 17h10"/>
                                 </svg>
                                 Number
-                            </label>
+                            </button>
                             
-                            <input type="radio" name="policyMode" id="modeCur" value="currency" onchange="executePolicyLab()" class="peer sr-only">
-                            <label for="modeCur" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
+                            <button type="button" onclick="setPolicyMode('currency')" id="btn-mode-currency" class="mode-btn relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 border shadow-sm group">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 Currency
-                            </label>
+                            </button>
                             
-                            <input type="radio" name="policyMode" id="modeWords" value="words" onchange="executePolicyLab()" class="peer sr-only">
-                            <label for="modeWords" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 border border-transparent peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-gray-900 peer-checked:bg-white peer-checked:dark:bg-gray-700 peer-checked:text-blue-600 peer-checked:dark:text-blue-400 peer-checked:shadow-sm peer-checked:border-gray-200 peer-checked:dark:border-gray-600">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                                </svg>
+                            <button type="button" onclick="setPolicyMode('words')" id="btn-mode-words" class="mode-btn relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 border shadow-sm group">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                                 Words
-                            </label>
+                            </button>
+                            
+                            <input type="hidden" id="currentPolicyMode" value="number">
                         </div>
                     </div>
                 </div>
@@ -329,8 +327,8 @@
                 <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-8 text-center mb-6">
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Human-Readable Representation</div>
                     <div id="policyOutput" class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent transform-gpu">...</div>
-                    <div class="mt-6 p-3 bg-black/20 rounded-lg font-mono text-[10px] text-gray-400 border border-gray-800 text-left">
-                        <span class="text-blue-500">string</span> result = <span id="policyCodePreview" class="text-gray-300"></span>
+                    <div class="mt-6 p-3 bg-gray-900 dark:bg-black/40 rounded-lg font-mono text-[10px] border border-gray-800 text-left shadow-inner">
+                        <span class="text-blue-400">string</span> <span class="text-gray-300">result = </span><span id="policyCodePreview" class="text-blue-200"></span>
                     </div>
                     <div class="flex justify-center space-x-2 mt-4">
                         <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">Real-time Reactive</span>
@@ -388,8 +386,8 @@
                 <div class="space-y-4">
                     <input type="number" id="bpsInput" class="w-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" value="0.0125" step="0.0001" oninput="executeBpsLab()">
                     <div id="bpsOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center font-bold text-blue-500 text-xl">...</div>
-                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
-                        <span id="bpsCodePreview">val.ToHumanBps()</span>
+                    <div class="p-2 bg-gray-900 dark:bg-black/40 rounded font-mono text-[10px] border border-gray-800 shadow-inner">
+                        <span id="bpsCodePreview" class="text-blue-300">val.ToHumanBps()</span>
                     </div>
                 </div>
             </div>
@@ -412,8 +410,8 @@
                         </select>
                     </div>
                     <div id="fractionOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-center font-bold text-cyan-500 text-xl">...</div>
-                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
-                        <span id="fractionCodePreview">val.ToHumanFraction(32)</span>
+                    <div class="p-2 bg-gray-900 dark:bg-black/40 rounded font-mono text-[10px] border border-gray-800 shadow-inner">
+                        <span id="fractionCodePreview" class="text-blue-300">val.ToHumanFraction(32)</span>
                     </div>
                 </div>
             </div>
@@ -429,8 +427,8 @@
                 <div class="space-y-4">
                     <input type="number" id="wordsInput" class="w-full px-4 py-2 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg" value="1250.50" oninput="executeWordsLab()">
                     <div id="wordsOutput" class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 text-sm font-medium text-purple-500 text-center leading-relaxed">...</div>
-                    <div class="p-2 bg-black/20 rounded font-mono text-[10px] text-gray-400">
-                        <span id="wordsCodePreview">val.ToHumanWords("Dollars")</span>
+                    <div class="p-2 bg-gray-900 dark:bg-black/40 rounded font-mono text-[10px] border border-gray-800 shadow-inner">
+                        <span id="wordsCodePreview" class="text-blue-300">val.ToHumanWords("Dollars")</span>
                     </div>
                 </div>
             </div>
@@ -443,7 +441,7 @@
                     <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">ASP.NET Core TagHelpers</h3>
                     <p class="text-gray-600 dark:text-gray-400 text-sm">Embed human-readable numbers directly in your Razor views</p>
                 </div>
-                <div class="bg-black/40 rounded-xl p-4 font-mono text-xs text-blue-300 border border-gray-800">
+                <div class="bg-gray-900 dark:bg-black/40 rounded-xl p-4 font-mono text-xs text-blue-300 border border-gray-800 shadow-lg">
                     &lt;hn-check value="1250.50" major-currency="Dollars" /&gt;
                 </div>
                 <div class="flex flex-col items-center">
@@ -483,7 +481,7 @@
                     <textarea id="financialInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-mono" rows="8">{
   "spread": "125 bps",
   "treasuryPrice": "101 16/32",
-  "rawAmount": "5432.10"
+  "rawAmount": 5432.10
 }</textarea>
                     
                     <button onclick="executePlayground()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-red-600 text-white hover:bg-red-700 shadow-md hover:shadow-lg w-full mt-4">
@@ -530,89 +528,73 @@
                     <table class="w-full">
                         <thead class="bg-gray-50 dark:bg-gray-800/50">
                             <tr>
-                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Feature</th>
-                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Execution Time</th>
-                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Allocated Memory</th>
-                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Optimization Level</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Method</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Scenario / Input</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Mean</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Allocated</th>
+                                <th class="text-left px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Engineering Context</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-800">
-                            <tr class="hover:bg-gray-800/30 transition-colors">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            <!-- StandardScaled -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">ToHuman()</code>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Scaling</div>
+                                    <code class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">StandardScaled</code>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~85 ns</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
-                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
-                                        </svg>
-                                    </div>
-                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">Naive (999,499)</td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">78.33 ns</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">80 B</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">Naive ToString + Concat approach.</td>
                             </tr>
-                            <tr class="hover:bg-gray-800/30 transition-colors">
+                            <!-- ToHuman -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors bg-blue-50/10 dark:bg-blue-900/5">
                                 <td class="px-6 py-4">
-                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">ToHumanCurrency()</code>
+                                    <code class="text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/50 px-2 py-1 rounded text-xs">ToHuman()</code>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~110 ns</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
-                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
-                                        </svg>
-                                    </div>
-                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">Governed (999,499)</td>
+                                <td class="px-6 py-4 text-sm font-bold text-blue-600 dark:text-blue-400">172.79 ns</td>
+                                <td class="px-6 py-4 text-sm font-bold text-blue-600 dark:text-blue-400">56 B</td>
+                                <td class="px-6 py-4 text-xs text-blue-500 font-medium">30% less memory than naive.</td>
                             </tr>
-                            <tr class="hover:bg-gray-800/30 transition-colors">
+                            <!-- ToHuman Span -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">HumanNumber.Parse()</code>
+                                    <code class="text-cyan-600 dark:text-cyan-400 bg-cyan-100/50 dark:bg-cyan-900/50 px-2 py-1 rounded text-xs">ToHuman() (Span)</code>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-blue-600 text-white border-transparent">~120 ns</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-gray-600 dark:text-gray-400 font-semibold">32 B</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Optimized</span>
-                                        <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                        </svg>
-                                    </div>
-                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">Governed (999,499)</td>
+                                <td class="px-6 py-4 text-sm font-medium text-cyan-600 dark:text-cyan-400">152.09 ns</td>
+                                <td class="px-6 py-4 text-sm font-medium text-cyan-600 dark:text-cyan-400">24 B</td>
+                                <td class="px-6 py-4 text-xs text-cyan-500">Optimized high-throughput path.</td>
                             </tr>
-                            <tr class="hover:bg-gray-800/30 transition-colors">
+                            <!-- TryParse -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm">Roman Numerals</code>
+                                    <code class="text-green-600 dark:text-green-400 bg-green-100/50 dark:bg-green-900/50 px-2 py-1 rounded text-xs">TryParse()</code>
                                 </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">$1.50M</td>
+                                <td class="px-6 py-4 text-sm font-medium text-green-600 dark:text-green-400">50.86 ns</td>
+                                <td class="px-6 py-4 text-sm font-bold text-green-600 dark:text-green-400">0 B</td>
+                                <td class="px-6 py-4 text-xs text-green-500 font-medium">Zero-Alloc parsing verified.</td>
+                            </tr>
+                            <!-- ToHumanBytes -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700 bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-500/30">~45 ns</span>
+                                    <code class="text-purple-600 dark:text-purple-400 bg-purple-100/50 dark:bg-purple-900/50 px-2 py-1 rounded text-xs">ToHumanBytes()</code>
                                 </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">1024 Bytes</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">56.62 ns</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">40 B</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">SI/IEC compliant scaling.</td>
+                            </tr>
+                            <!-- ToRoman -->
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <span class="text-cyan-600 dark:text-cyan-400 font-semibold">0 B</span>
+                                    <code class="text-yellow-600 dark:text-yellow-400 bg-yellow-100/50 dark:bg-yellow-900/50 px-2 py-1 rounded text-xs">ToRoman()</code>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-gray-600 dark:text-gray-400 text-sm">Zero-Allocation</span>
-                                        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.005 1.347.906.817 1.634l-3.426 2.926a1 1 0 01-1.175 0l-3.426-2.926c-.53-.728-.477-1.639.817-1.634l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.782-1.81.588-1.81l3.462-.004a1 1 0 00.951-.69l1.07-3.292z"/>
-                                        </svg>
-                                    </div>
-                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">2024</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">31.79 ns</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">40 B</td>
+                                <td class="px-6 py-4 text-xs text-gray-500">Optimized recursive buffer path.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -623,33 +605,98 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-16 px-4 sm:px-6 lg:px-8">
+<section class="py-20 px-4 sm:px-6 lg:px-8 border-t border-gray-100 dark:border-gray-800">
     <div class="max-w-7xl mx-auto">
-        <div class="text-center max-w-3xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Ready to Transform Your Numbers?</h2>
-            <p class="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                Join thousands of developers who are already using <span class="font-brand font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span> in production
+        <div class="text-center max-w-4xl mx-auto">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">Built for Modern .NET Performance</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-400 mb-12">
+                Join a growing ecosystem of high-performance services leveraging <span class="font-brand font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">HumanNumbers</span> for governed, allocation-aware numeric presentation.
             </p>
+            
+            <!-- Installation Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 text-left">
+                <!-- .NET CLI -->
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">.NET CLI</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="group relative bg-gray-900 dark:bg-black/40 rounded-xl p-4 border border-gray-800 hover:border-blue-500/50 transition-all">
+                            <div class="flex items-center justify-between">
+                                <pre id="cli-core" class="text-sm text-blue-300 font-mono">dotnet add package HumanNumbers</pre>
+                                <button onclick="copySnippet('cli-core')" class="relative p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-blue-400">
+                                    <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="group relative bg-gray-900 dark:bg-black/40 rounded-xl p-4 border border-gray-800 hover:border-blue-500/50 transition-all">
+                            <div class="flex items-center justify-between">
+                                <pre id="cli-aspnet" class="text-sm text-blue-400/80 font-mono">dotnet add package HumanNumbers.AspNetCore</pre>
+                                <button onclick="copySnippet('cli-aspnet')" class="relative p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-blue-400">
+                                    <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Manager -->
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <span class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">Package Manager</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="group relative bg-gray-900 dark:bg-black/40 rounded-xl p-4 border border-gray-800 hover:border-purple-500/50 transition-all">
+                            <div class="flex items-center justify-between">
+                                <pre id="pm-core" class="text-sm text-purple-300 font-mono">Install-Package HumanNumbers</pre>
+                                <button onclick="copySnippet('pm-core')" class="relative p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-500 hover:text-purple-400">
+                                    <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="group relative bg-gray-900 dark:bg-black/40 rounded-xl p-4 border border-gray-800 hover:border-purple-500/50 transition-all">
+                            <div class="flex items-center justify-between">
+                                <pre id="pm-aspnet" class="text-sm text-purple-400/80 font-mono">Install-Package HumanNumbers.AspNetCore</pre>
+                                <button onclick="copySnippet('pm-aspnet')" class="relative p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-500 hover:text-purple-400">
+                                    <span class="copy-tooltip absolute left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] font-bold rounded opacity-0 pointer-events-none transition-all duration-200">Copied!</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <a href="https://www.nuget.org/packages/HumanNumbers" 
                    target="_blank" 
                    rel="noopener noreferrer"
-                   class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg px-8 py-3 text-lg">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                   class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-medium rounded-xl transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
-                    Install NuGet
+                    Nuget.org
                 </a>
                 
-                <a href="https://github.com/your-repo/humannumbers" 
+                <a href="https://github.com/agdgb/HumanNumbers" 
                    target="_blank" 
                    rel="noopener noreferrer"
-                   class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer btn-vercel-secondary px-8 py-3 text-lg">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                   class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-medium rounded-xl transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-gray-200 dark:border-gray-800 cursor-pointer bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 shadow-sm">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
-                    View GitHub
+                    GitHub Source
                 </a>
             </div>
         </div>
@@ -658,14 +705,35 @@
 
 @section Scripts {
     <script>
-        // Utility: Copy to Clipboard
+        // Utility: Copy to Clipboard with Tooltip
         function copySnippet(id) {
             const text = document.getElementById(id).innerText;
+            const btn = event.currentTarget;
+            const tooltip = btn.querySelector('.copy-tooltip');
+            
             navigator.clipboard.writeText(text).then(() => {
-                const btn = event.currentTarget;
+                // Show tooltip
+                if (tooltip) {
+                    tooltip.classList.remove('opacity-0', '-translate-y-2');
+                    tooltip.classList.add('opacity-100', '-translate-y-8');
+                    
+                    setTimeout(() => {
+                        tooltip.classList.add('opacity-0', '-translate-y-2');
+                        tooltip.classList.remove('opacity-100', '-translate-y-8');
+                    }, 2000);
+                }
+
+                // Temporary icon change
                 const originalSvg = btn.innerHTML;
-                btn.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-                setTimeout(() => btn.innerHTML = originalSvg, 2000);
+                const checkSvg = '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                
+                // If there's a tooltip, we need to preserve it during the icon swap
+                const tooltipHtml = tooltip ? tooltip.outerHTML : '';
+                btn.innerHTML = checkSvg + tooltipHtml;
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalSvg;
+                }, 2000);
             });
         }
 
@@ -765,10 +833,48 @@
             }
         }
 
+        function setPolicyMode(mode) {
+            const current = document.getElementById('currentPolicyMode').value;
+            const btnNum = document.getElementById('btn-mode-number');
+            const btnCur = document.getElementById('btn-mode-currency');
+            const btnWords = document.getElementById('btn-mode-words');
+            
+            if (mode === 'number') {
+                // Clicking number disables everything else
+                document.getElementById('currentPolicyMode').value = 'number';
+            } else if (mode === 'currency') {
+                // Clicking currency keeps words if it was already selected, but disables number
+                // However, since DemoController only takes one mode, we prioritize the click
+                document.getElementById('currentPolicyMode').value = 'currency';
+            } else if (mode === 'words') {
+                // Clicking words activates ONLY itself and inactivates others
+                document.getElementById('currentPolicyMode').value = 'words';
+            }
+            
+            updateModeButtons();
+            executePolicyLab();
+        }
+
+        function updateModeButtons() {
+            const mode = document.getElementById('currentPolicyMode').value;
+            const buttons = ['number', 'currency', 'words'];
+            
+            buttons.forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (m === mode) {
+                    btn.classList.add('bg-blue-600', 'text-white', 'border-transparent', 'active');
+                    btn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-600', 'dark:text-gray-400', 'border-gray-200', 'dark:border-gray-700');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white', 'border-transparent', 'active');
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-600', 'dark:text-gray-400', 'border-gray-200', 'dark:border-gray-700');
+                }
+            });
+        }
+
         async function executePolicyLab() {
             const val = document.getElementById('policyValue').value;
             const policy = document.getElementById('policySelect').value;
-            const mode = document.querySelector('input[name="policyMode"]:checked').value;
+            const mode = document.getElementById('currentPolicyMode').value;
             const alwaysShowSuffix = document.getElementById('alwaysSuffixToggle').checked;
             const threshold = document.getElementById('thresholdOverride').value;
             const output = document.getElementById('policyOutput');
@@ -785,7 +891,11 @@
             if (policy !== "Default") code += `.UsingPolicy("${policy}")`;
             if (alwaysShowSuffix) code += `.UsingOptions(o => o.AlwaysShowSuffix = true)`;
             if (threshold) code += `.UsingOptions(o => o.Threshold = ${threshold}m)`;
-            code += mode === 'currency' ? '.ToHumanCurrency()' : '.ToHuman()';
+            
+            if (mode === 'currency') code += '.ToHumanCurrency()';
+            else if (mode === 'words') code += '.ToHumanWords()';
+            else code += '.ToHuman()';
+            
             codeEl.innerText = code;
 
             details.style.opacity = '0.5';
@@ -823,9 +933,9 @@
         function loadPreset(type) {
             const el = document.getElementById('financialInput');
             if (type === 'golden') {
-                el.value = '{\n  "spread": "125 bps",\n  "treasuryPrice": "101 16/32",\n  "rawAmount": "5432.10"\n}';
+                el.value = '{\n  "spread": "125 bps",\n  "treasuryPrice": "101 16/32",\n  "rawAmount": 5432.10\n}';
             } else if (type === 'negative') {
-                el.value = '{\n  "spread": "-50 bps",\n  "treasuryPrice": "99 1/32",\n  "rawAmount": "-1000.00"\n}';
+                el.value = '{\n  "spread": "-50 bps",\n  "treasuryPrice": "99 1/32",\n  "rawAmount": -1000.00\n}';
             }
         }
 

@@ -78,13 +78,9 @@
     <!-- Custom CSS -->
     <link href="~/css/main.css" rel="stylesheet" />
     
-    <!-- Theme Management -->
+    <!-- Permanent Dark Mode -->
     <script>
-        // Theme persistence
-        (function() {
-            const theme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.classList.toggle('dark', theme === 'dark');
-        })();
+        document.documentElement.classList.add('dark');
     </script>
     
     <!-- Meta tags for better SEO -->
@@ -99,7 +95,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>" />
 </head>
-<body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-inter antialiased selection:bg-blue-600 selection:text-white">
+<body class="bg-gray-950 text-gray-100 font-inter antialiased selection:bg-blue-600 selection:text-white">
     <!-- Navigation Header -->
     <header class="sticky top-0 z-50 w-full backdrop-blur-md border-b bg-white/80 border-gray-200 dark:bg-gray-950/80 dark:border-gray-800 shadow-sm transition-all duration-300">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -141,7 +137,7 @@
                 <!-- Right Side Actions -->
                 <div class="flex items-center space-x-4">
                     <!-- GitHub Link -->
-                    <a href="https://github.com/your-repo/humannumbers" 
+                    <a href="https://github.com/agdgb/HumanNumbers" 
                        target="_blank" 
                        rel="noopener noreferrer"
                        class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
@@ -150,17 +146,7 @@
                         </svg>
                     </a>
 
-                    <!-- Theme Toggle -->
-                    <button id="theme-toggle" 
-                            class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
-                            aria-label="Toggle theme">
-                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                        </svg>
-                    </button>
+
                 </div>
             </div>
         </nav>
@@ -187,17 +173,9 @@
         </div>
     </footer>
 
-    <!-- Theme Toggle Script -->
-    <script>
-        document.getElementById('theme-toggle').addEventListener('click', function() {
-            const html = document.documentElement;
-            const currentTheme = localStorage.getItem('theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            html.classList.toggle('dark', newTheme === 'dark');
-            localStorage.setItem('theme', newTheme);
-        });
 
+
+    <script>
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
