@@ -62,6 +62,12 @@ public class DemoController : ControllerBase
         if (alwaysShowSuffix.HasValue) options.AlwaysShowSuffix = alwaysShowSuffix.Value;
         if (threshold.HasValue) options.Threshold = threshold.Value;
 
+        // Force numeric-only formatting by suppressing currency symbol if not in currency mode
+        if (mode?.ToLower() != "currency")
+        {
+            options = options with { CurrencySymbol = null };
+        }
+
         var context = HumanNumber.Format(value).UsingOptions(options);
 
         // Find the options for technical detail display again if it was Default
