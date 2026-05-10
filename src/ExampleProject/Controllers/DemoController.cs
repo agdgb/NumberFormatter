@@ -172,11 +172,24 @@ public class DemoController : ControllerBase
         {
             var cultureInfo = string.IsNullOrEmpty(culture) ? CultureInfo.InvariantCulture : new CultureInfo(culture);
             var result = HumanNumber.Parse(input, cultureInfo);
-            return Ok(new ParseResult { Input = input, Culture = cultureInfo.Name, ParsedValue = result });
+
+            return Ok(new
+            {
+                input,
+                culture = cultureInfo.Name,
+                value = result,
+                formatted = new
+                {
+                    human = result.ToHuman(culture: cultureInfo),
+                    currency = result.ToHumanCurrency(culture: cultureInfo),
+                    native = result.ToString("N2", cultureInfo),
+                    words = result.ToHumanWords()
+                }
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = "Parsing failed: " + ex.Message });
+            return BadRequest(new { error = ex.Message });
         }
     }
 
@@ -256,5 +269,49 @@ public class DemoController : ControllerBase
             value,
             formatted = value.ToHumanWords(major, singular)
         });
+    }
+
+    [HttpGet("global-support")]
+    public IActionResult GetGlobalSupport([FromQuery] decimal value = 1250000m)
+    {
+        var cultures = new[] { 
+            new { Code = "en-US", Iso = "us" },
+            new { Code = "ar-SA", Iso = "sa" },
+            new { Code = "hi-IN", Iso = "in" },
+            new { Code = "fr-FR", Iso = "fr" },
+            new { Code = "de-DE", Iso = "de" },
+            new { Code = "am-ET", Iso = "et" },
+            new { Code = "ja-JP", Iso = "jp" },
+            new { Code = "ko-KR", Iso = "kr" },
+            new { Code = "es-ES", Iso = "es" },
+            new { Code = "it-IT", Iso = "it" },
+            new { Code = "zh-CN", Iso = "cn" }
+        };
+
+        var results = cultures.Select(c => {
+            try
+            {
+                var ci = new CultureInfo(c.Code);
+                var name = ci.EnglishName.Split('(')[0].Trim();
+                if (c.Code == "am-ET") name = "ኢትዮጵያ";
+
+                return (object)new
+                {
+                    c.Code,
+                    c.Iso,
+                    Name = name,
+                    Scaled = value.ToHuman(culture: ci),
+                    Currency = value.ToHumanCurrency(culture: ci),
+                    Grouping = value.ToString("N0", ci),
+                    NativeName = ci.NativeName
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }).Where(x => x != null);
+
+        return Ok(results);
     }
 }
