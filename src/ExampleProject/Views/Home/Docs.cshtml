@@ -522,7 +522,7 @@ options.CachedCustomSuffixes = new[] {
                                     The foundation layer containing all number formatting logic and performance optimizations.
                                 </p>
                                 <ul class="space-y-2 text-sm text-gray-400">
-                                    <li>Zero-allocation Span&lt;char&gt; operations</li>
+                                    <li>Low-Allocation Span&lt;char&gt; operations</li>
                                     <li>Stack-based formatting with fallback allocation</li>
                                     <li>Culture-aware number formatting</li>
                                     <li>Currency, basis points, and specialized formatters</li>
@@ -568,7 +568,7 @@ options.CachedCustomSuffixes = new[] {
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
-                                <h3 class="text-md font-semibold mb-2 text-primary">Zero Allocation by Default</h3>
+                                <h3 class="text-md font-semibold mb-2 text-primary">Low Allocation by Default</h3>
                                 <p class="text-sm text-muted-foreground">
                                     All formatting operations use stack-based allocation unless the result exceeds buffer size.
                                 </p>
@@ -640,7 +640,7 @@ options.CachedCustomSuffixes = new[] {
                                 <g class="diagram-node">
                                     <rect x="100" y="125" width="300" height="80" rx="12" fill="url(#grad-core)" stroke="#8b5cf6" stroke-width="1" />
                                     <text x="250" y="153" text-anchor="middle" class="diagram-label">2. Formatting Engine (Core)</text>
-                                    <text x="250" y="173" text-anchor="middle" class="diagram-text">Zero-allocation Span&lt;char&gt; ops</text>
+                                    <text x="250" y="173" text-anchor="middle" class="diagram-text">Low-Allocation Span&lt;char&gt; ops</text>
                                     <text x="250" y="190" text-anchor="middle" class="diagram-text">Culture-aware formatting logic</text>
                                 </g>
 
@@ -680,7 +680,7 @@ options.CachedCustomSuffixes = new[] {
                     <h1 class="text-4xl font-bold mb-4 text-white">Core Library</h1>
                     <p class="text-lg text-gray-300 mb-6">
                         The HumanNumbers core library provides comprehensive number formatting capabilities with 
-                        zero-allocation performance and extensive customization options.
+                        Low-Allocation performance and extensive customization options.
                     </p>
 
                     <div class="callout performance">
@@ -705,7 +705,7 @@ options.CachedCustomSuffixes = new[] {
                                     <li>Compact notation (K, M, B, T)</li>
                                     <li>Custom decimal precision</li>
                                     <li>Culture-aware formatting</li>
-                                    <li>Zero-allocation operations</li>
+                                    <li>Low-Allocation operations</li>
                                 </ul>
                             </div>
                             
@@ -1343,14 +1343,14 @@ public class HumanNumberErrorHandlingMiddleware
                     <section id="performance-overview">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Performance Overview</h2>
                         <p class="text-gray-300 mb-6 text-lg leading-relaxed">
-                            HumanNumbers is designed from the ground up for maximum performance with zero-allocation 
+                            HumanNumbers is designed from the ground up for maximum performance with Low-Allocation 
                             operations, Span&lt;char&gt; usage, and JIT optimizations. The library maintains consistent 
                             sub-microsecond formatting times even under high load.
                         </p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
-                                <h3 class="text-lg font-semibold mb-3 text-primary">Zero Allocation</h3>
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Low Allocation</h3>
                                 <p class="text-sm text-muted-foreground mb-2">
                                     Stack-based formatting for most operations
                                 </p>
@@ -1381,11 +1381,11 @@ public class HumanNumberErrorHandlingMiddleware
                     <section id="memory-allocation">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Memory & Allocation</h2>
                         <p class="text-gray-300 mb-4">
-                            Zero-allocation design with stack-based operations:
+                            Low-Allocation design with stack-based operations:
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Zero allocation for most operations
+                            <pre><code class="text-gray-100">// Low Allocation for most operations
 Span<char> buffer = stackalloc char[32];
 var success = 1500000.TryFormatHuman(buffer, out var written, out var result);
 // No heap allocation - result points to stack buffer
@@ -1402,7 +1402,7 @@ public static bool TryFormatHuman(
     out string result)
 {
     // Implementation uses stackalloc and Span<T>
-    // Zero allocation when result fits in buffer
+    // Low Allocation when result fits in buffer
 }</code></pre>
                         </div>
 
@@ -1592,7 +1592,7 @@ public class TradingDashboard
     {
         foreach (var update in updates)
         {
-            // Zero allocation formatting for real-time display
+            // Low Allocation formatting for real-time display
             update.Price.TryFormatHuman(_buffer, out var written, out var formatted);
             DisplayPrice(update.Symbol, formatted);
         }
@@ -1623,7 +1623,7 @@ public class FinancialController : ControllerBase
     {
         var portfolio = _service.GetPortfolio(id);
         
-        // Zero allocation JSON formatting
+        // Low Allocation JSON formatting
         return Ok(new
         {
             portfolio.Name,
@@ -1684,7 +1684,7 @@ public class FinancialController : ControllerBase
                             <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
                                 <h3 class="text-lg font-semibold mb-3 text-primary">High-Performance Systems</h3>
                                 <p class="text-sm text-muted-foreground mb-3">
-                                    Zero-allocation patterns for high-throughput scenarios.
+                                    Low-Allocation patterns for high-throughput scenarios.
                                 </p>
                                 <ul class="space-y-1 text-sm text-muted-foreground">
                                     <li>Trading platforms</li>
@@ -1787,7 +1787,7 @@ public class FinancialController : ControllerBase
                         <div class="callout rationale">
                             <h4 class="font-semibold text-yellow-400 mb-2">Development Guidelines</h4>
                             <p class="text-gray-300">
-                                All contributions should maintain the library's core principles: zero-allocation performance, 
+                                All contributions should maintain the library's core principles: Low-Allocation performance, 
                                 never-throw safety, and clean API design. Check the contributing guidelines for detailed 
                                 requirements and the development setup process.
                             </p>
@@ -2512,3 +2512,4 @@ public class FinancialController : ControllerBase
         }
     </script>
 }
+
