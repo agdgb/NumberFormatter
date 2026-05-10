@@ -1543,35 +1543,22 @@ public static void FormatBatch(
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// BenchmarkDotNet results
-| Method                    | Mean      | Allocated |
-|--------------------------|----------|----------|
-| HumanNumbers.ToHuman      | 85.21 ns | 0 B      |
-| String.Format("N0")       | 342.15 ns| 96 B     |
-| ToString("N0")            | 287.43 ns| 96 B     |
-| CustomFormatter          | 156.78 ns| 32 B     |
-
-// Large dataset performance
-| Dataset Size | HumanNumbers | String.Format | Improvement |
-|--------------|---------------|--------------|-------------|
-| 1K items     | 0.085 ms      | 0.342 ms     | 4.0x        |
-| 10K items    | 0.852 ms      | 3.421 ms     | 4.0x        |
-| 100K items   | 8.521 ms      | 34.215 ms    | 4.0x        |
-| 1M items     | 85.21 ms      | 342.15 ms    | 4.0x        |
-
-// Memory allocation comparison
-| Operation          | HumanNumbers | Standard Format |
-|--------------------|---------------|-----------------|
-| Single format      | 0 B           | 96 B           |
-| 1K formats         | 0 B           | 93.75 KB       |
-| 1M formats         | 0 B           | 91.55 MB       |</code></pre>
+                            <pre><code class="text-gray-100">// BenchmarkDotNet results (.NET 10.0 X64 RyuJIT)
+| Method                    | Scenario / Input | Mean      | Gen 0  | Allocated |
+|---------------------------|------------------|-----------|--------|-----------|
+| StandardScaled            | Naive (999,499)  | 78.33 ns  | 0.0026 | 80 B      |
+| ToHuman                   | Governed (999,499)| 172.79 ns| 0.0024 | 56 B      |
+| ToHuman (Span)            | Governed (999,499)| 152.09 ns| 0.0007 | 24 B      |
+| TryParse                  | $1.50M           | 50.86 ns  | -      | 0 B       |
+| ToHumanBytes              | 1024 Bytes       | 56.62 ns  | 0.0013 | 40 B      |
+| ToHumanWords              | 1234.56          | 322.15 ns | 0.0186 | 560 B     |
+| ToRoman                   | 2024             | 31.79 ns  | 0.0013 | 40 B      |</code></pre>
                         </div>
 
                         <div class="callout performance">
                             <h4 class="font-semibold text-green-400 mb-2">Benchmark Insights</h4>
                             <p class="text-gray-300">
-                                HumanNumbers consistently outperforms standard formatting by 4x while using zero memory. 
-                                The performance advantage increases with dataset size due to reduced GC pressure.
+                                While HumanNumbers handles complex threshold and rounding logic that naive implementations often miss, it does so with a <strong>smaller memory footprint</strong>—reducing allocations from 80 B down to 56 B for standard formatting, and down to 24 B for Span-based paths. Parsing operations (<code>TryParse</code>) are entirely allocation-free (0 B).
                             </p>
                         </div>
                     </section>
