@@ -30,15 +30,7 @@
             </p>
             
             <!-- Quick Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12">
-                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">~170ns</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Formatting Time</div>
-                </div>
-                <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
-                    <div class="text-2xl font-bold text-cyan-600 dark:text-cyan-400">56 B</div>
-                    <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Base Allocations</div>
-                </div>
+            <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
                 <div class="text-center p-4 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 shadow-sm">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">.NET Standard 2.0+</div>
                     <div class="text-sm text-gray-500 dark:text-gray-400 font-medium">Compatible</div>
@@ -202,20 +194,22 @@
                     </p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Formatted Input</label>
-                        <input type="text" id="parseInput" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" value="1.5M" placeholder="e.g. 1.5M, $50k, 1,250.50">
-                        <div class="flex gap-2 mt-2">
-                            <button onclick="setParsePreset('1.5M')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">1.5M</button>
-                            <button onclick="setParsePreset('$50.25k')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">$50.25k</button>
-                            <button onclick="setParsePreset('1,5k', 'fr-FR')" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-transparent text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white text-xs px-3 py-1 hover:bg-gray-800">1,5k (FR)</button>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+                    <div class="md:col-span-5">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Formatted Input</label>
+                        <div class="relative group">
+                            <input type="text" id="parseInput" oninput="executeParseDebounced()" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value="1.5M" placeholder="e.g. 1.5M, $50k">
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button onclick="setParsePreset('1.5M')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">1.5M</button>
+                            <button onclick="setParsePreset('$50.25k')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">$50.25k</button>
+                            <button onclick="setParsePreset('1,5k', 'fr-FR')" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">1,5k (FR)</button>
                         </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Culture</label>
-                        <select id="parseCulture" class="w-full px-4 py-2.5 text-sm bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 cursor-pointer">
+                    <div class="md:col-span-4">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3">Culture</label>
+                        <select id="parseCulture" onchange="executeParse()" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 rounded-xl text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
                             <option value="">Invariant / US</option>
                             <option value="fr-FR">French (fr-FR)</option>
                             <option value="de-DE">German (de-DE)</option>
@@ -223,28 +217,131 @@
                         </select>
                     </div>
                     
-                    <div class="flex items-end">
-                        <button onclick="executeParse()" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 border border-transparent cursor-pointer bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg w-full">
-                            Resolve
+                    <div class="md:col-span-3 flex items-start md:pt-7">
+                        <button onclick="executeParse()" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform active:scale-95 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <span>Resolve</span>
                         </button>
                     </div>
                 </div>
+
+                <!-- Error Message Display -->
+                <div id="parseError" class="hidden mb-6 p-4 bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl">
+                    <div class="flex items-center space-x-3 text-red-600 dark:text-red-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span id="parseErrorText" class="text-xs font-bold uppercase tracking-tight"></span>
+                    </div>
+                </div>
                 
-                <div id="parseResultContainer" class="hidden">
-                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 text-center border border-vercel-blue/20">
-                        <div class="inline-flex items-center justify-center w-12 h-12 bg-vercel-blue/10 rounded-full mb-3">
-                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                <div id="parseResultContainer" class="hidden border-t border-gray-100 dark:border-gray-800 pt-8 mt-4">
+                    <div class="space-y-6">
+                        <!-- Variation Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Resolved Value Card (De-emphasized) -->
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                                <div class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Resolved Value</div>
+                                <div id="parseOutput" class="text-xl font-mono font-bold text-gray-900 dark:text-white"></div>
+                                <div class="text-[9px] text-gray-400 font-mono mt-1">Context: <span id="parseCultureLabel"></span></div>
+                            </div>
+                            <!-- ToHuman Card -->
+                            <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                                <div class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase mb-1">Human Readable</div>
+                                <div id="res-human" class="text-xl font-bold text-blue-700 dark:text-blue-300"></div>
+                                <div class="text-[9px] text-blue-400 font-mono mt-1">.ToHuman()</div>
+                            </div>
+                            <!-- Currency Card -->
+                            <div class="bg-green-50/50 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-900/30 shadow-sm">
+                                <div class="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase mb-1">Currency</div>
+                                <div id="res-currency" class="text-xl font-bold text-green-700 dark:text-green-300"></div>
+                                <div class="text-[9px] text-green-400 font-mono mt-1">.ToHumanCurrency()</div>
+                            </div>
+                            <!-- Native Card -->
+                            <div class="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-900/30 shadow-sm">
+                                <div class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase mb-1">Native .NET</div>
+                                <div id="res-native" class="text-xl font-bold text-purple-700 dark:text-purple-300"></div>
+                                <div class="text-[9px] text-purple-400 font-mono mt-1">.ToString("N2")</div>
+                            </div>
+                            <!-- Words Card (Spans 2 columns on lg) -->
+                            <div class="lg:col-span-2 bg-orange-50/50 dark:bg-orange-900/10 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30 shadow-sm">
+                                <div class="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase mb-1">Words</div>
+                                <div id="res-words" class="text-sm font-medium text-orange-900 dark:text-orange-200 line-clamp-2 leading-tight"></div>
+                                <div class="text-[9px] text-orange-400 font-mono mt-1">.ToHumanWords()</div>
+                            </div>
                         </div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Resolved Decimal Value</div>
-                        <div id="parseOutput" class="text-3xl font-bold text-gray-900 dark:text-white"></div>
-                        
-                        <div class="mt-6 p-3 bg-gray-900 dark:bg-black/40 rounded-lg font-mono text-[10px] border border-gray-800 text-left shadow-inner">
-                            <span class="text-blue-400">decimal</span> <span class="text-gray-300">val = </span><span id="parseCodePreview" class="text-blue-200"></span>
+
+                        <!-- Roundtrip Logic -->
+                        <div class="bg-gray-950 rounded-xl p-4 font-mono text-sm border border-gray-800 shadow-inner overflow-x-auto">
+                            <div class="flex items-center space-x-2 mb-3 border-b border-gray-900 pb-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500/30"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-amber-500/30"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-green-500/30"></div>
+                                <span class="text-[10px] text-gray-600 uppercase tracking-widest ml-2 font-bold">Roundtrip Verification</span>
+                            </div>
+                            <div class="space-y-1.5 text-xs">
+                                <div><span class="text-purple-400">decimal</span> <span class="text-gray-300">result = </span><span class="text-blue-300">HumanNumber</span>.<span class="text-yellow-200">Parse</span>(<span id="parseCodeInput" class="text-orange-300"></span>, <span id="parseCodeCulture" class="text-green-300"></span>);</div>
+                                <div class="text-gray-600 italic">// Evaluates to: <span id="parseCodeValue" class="text-blue-400/80"></span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Global Support Section -->
+<section id="global-support" class="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900/10 border-b border-gray-100 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">🌍 Global Scaling & I18N</h2>
+            <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                HumanNumbers is built on the native .NET <code class="text-blue-600 dark:text-blue-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">CultureInfo</code> system, automatically respecting native numbering rules, separators, and currency symbols.
+            </p>
+        </div>
+
+        <!-- Sandbox Controls -->
+        <div class="max-w-2xl mx-auto mb-10">
+            <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-inner group focus-within:ring-2 focus-within:ring-blue-500/50 transition-all">
+                <input type="number" id="globalValueInput" 
+                       class="flex-1 bg-transparent px-6 py-3 text-xl font-bold text-blue-600 dark:text-blue-400 focus:outline-none" 
+                       value="1250000" 
+                       oninput="loadGlobalSupport()">
+                <div class="flex items-center px-4 border-l border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Sync</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl overflow-hidden transition-all duration-300" id="globalSupportContainer">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 dark:bg-gray-800/50">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Culture</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Scaled (ToHuman)</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Currency Format</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Native Grouping</th>
+                            <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Rules</th>
+                        </tr>
+                    </thead>
+                    <tbody id="globalSupportBody" class="divide-y divide-gray-100 dark:divide-gray-800">
+                        <!-- Populated via JS -->
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Syncing global cultures...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -784,23 +881,66 @@
         }
 
         // Parser
+        let parseTimeout = null;
+        async function executeParseDebounced() {
+            if (parseTimeout) clearTimeout(parseTimeout);
+            parseTimeout = setTimeout(executeParse, 400);
+        }
+
         async function executeParse() {
             const input = document.getElementById('parseInput').value;
             const culture = document.getElementById('parseCulture').value;
             const resContainer = document.getElementById('parseResultContainer');
-            const output = document.getElementById('parseOutput');
-            const codeEl = document.getElementById('parseCodePreview');
+            const errorContainer = document.getElementById('parseError');
+            const errorText = document.getElementById('parseErrorText');
             
-            const cultureArg = culture ? `, new CultureInfo("${culture}")` : '';
-            codeEl.innerText = `HumanNumber.Parse("${input}"${cultureArg});`;
+            if (!input.trim()) {
+                resContainer.classList.add('hidden');
+                errorContainer.classList.add('hidden');
+                return;
+            }
+
+            // UI Elements
+            const output = document.getElementById('parseOutput');
+            const cultureLabel = document.getElementById('parseCultureLabel');
+            const resHuman = document.getElementById('res-human');
+            const resCurrency = document.getElementById('res-currency');
+            const resNative = document.getElementById('res-native');
+            const resWords = document.getElementById('res-words');
+            
+            const codeInput = document.getElementById('parseCodeInput');
+            const codeCulture = document.getElementById('parseCodeCulture');
+            const codeValue = document.getElementById('parseCodeValue');
 
             try {
                 const url = `/api/demo/parse?input=${encodeURIComponent(input)}&culture=${culture}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error);
+                
+                if (!response.ok) {
+                    errorText.innerText = data.error || "Invalid Format";
+                    errorContainer.classList.remove('hidden');
+                    resContainer.classList.add('hidden');
+                    return;
+                }
 
-                output.innerText = data.parsedValue;
+                // Success State
+                errorContainer.classList.add('hidden');
+                
+                // Populate UI
+                output.innerText = new Intl.NumberFormat(data.culture || 'en-US').format(data.value);
+                cultureLabel.innerText = data.culture || "Invariant Culture";
+                
+                resHuman.innerText = data.formatted.human;
+                resCurrency.innerText = data.formatted.currency;
+                resNative.innerText = data.formatted.native;
+                resWords.innerText = data.formatted.words;
+                
+                // Code Snippet
+                codeInput.innerText = `"${input}"`;
+                codeCulture.innerText = data.culture ? `new CultureInfo("${data.culture}")` : "CultureInfo.InvariantCulture";
+                codeValue.innerText = data.value;
+
                 resContainer.classList.remove('hidden');
                 resContainer.classList.add('animate-scale-in');
             } catch (e) {
@@ -1019,12 +1159,70 @@
             } catch (e) { console.error(e); }
         }
 
+        async function loadGlobalSupport() {
+            const val = document.getElementById('globalValueInput').value || 0;
+            const body = document.getElementById('globalSupportBody');
+            const container = document.getElementById('globalSupportContainer');
+            
+            container.style.opacity = '0.7';
+            
+            try {
+                const response = await fetch(`/api/demo/global-support?value=${val}`);
+                const data = await response.json();
+                body.innerHTML = '';
+                
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group";
+                    
+                    let note = "";
+                    if (item.code === 'ar-SA') note = "Arabic Separators";
+                    else if (item.code === 'hi-IN') note = "Lakh/Crore Grouping";
+                    else if (item.code === 'fr-FR') note = "Space Separator";
+                    else if (item.code === 'de-DE') note = "Dot Grouping";
+                    else if (item.code === 'am-ET') note = "Ethiopian Symbol";
+                    else if (item.code === 'ja-JP' || item.code === 'ko-KR') note = "Symbol Position";
+                    else if (item.code === 'zh-CN') note = "Chinese Rules";
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://flagcdn.com/w40/${item.iso}.png" 
+                                     class="w-8 h-auto rounded shadow-sm border border-gray-100 dark:border-gray-800" 
+                                     alt="${item.name} flag">
+                                <div>
+                                    <div class="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">${item.name}</div>
+                                    <div class="text-[10px] text-gray-500 font-medium uppercase tracking-tighter">${item.nativeName} • ${item.code}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <code class="text-blue-600 dark:text-blue-400 bg-blue-100/30 dark:bg-blue-900/30 px-2 py-1 rounded font-mono text-sm">${item.scaled}</code>
+                        </td>
+                        <td class="px-6 py-4 font-bold text-gray-700 dark:text-gray-200">${item.currency}</td>
+                        <td class="px-6 py-4 text-gray-500 font-mono text-xs">${item.grouping}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 uppercase tracking-tighter">
+                                ${note || 'Standard'}
+                            </span>
+                        </td>
+                    `;
+                    body.appendChild(row);
+                });
+            } catch (e) {
+                console.error("Global support load failed", e);
+            } finally {
+                container.style.opacity = '1';
+            }
+        }
+
         // Initialize on load
         window.addEventListener('DOMContentLoaded', () => {
             fetchPolicies();
             executeBpsLab();
             executeFractionLab();
             executeWordsLab();
+            loadGlobalSupport();
         });
     </script>
 }
