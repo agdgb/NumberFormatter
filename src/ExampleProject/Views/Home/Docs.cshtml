@@ -522,7 +522,7 @@ options.CachedCustomSuffixes = new[] {
                                     The foundation layer containing all number formatting logic and performance optimizations.
                                 </p>
                                 <ul class="space-y-2 text-sm text-gray-400">
-                                    <li>Zero-allocation Span&lt;char&gt; operations</li>
+                                    <li>Low-Allocation Span&lt;char&gt; operations</li>
                                     <li>Stack-based formatting with fallback allocation</li>
                                     <li>Culture-aware number formatting</li>
                                     <li>Currency, basis points, and specialized formatters</li>
@@ -568,7 +568,7 @@ options.CachedCustomSuffixes = new[] {
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="p-4 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
-                                <h3 class="text-md font-semibold mb-2 text-primary">Zero Allocation by Default</h3>
+                                <h3 class="text-md font-semibold mb-2 text-primary">Low Allocation by Default</h3>
                                 <p class="text-sm text-muted-foreground">
                                     All formatting operations use stack-based allocation unless the result exceeds buffer size.
                                 </p>
@@ -640,7 +640,7 @@ options.CachedCustomSuffixes = new[] {
                                 <g class="diagram-node">
                                     <rect x="100" y="125" width="300" height="80" rx="12" fill="url(#grad-core)" stroke="#8b5cf6" stroke-width="1" />
                                     <text x="250" y="153" text-anchor="middle" class="diagram-label">2. Formatting Engine (Core)</text>
-                                    <text x="250" y="173" text-anchor="middle" class="diagram-text">Zero-allocation Span&lt;char&gt; ops</text>
+                                    <text x="250" y="173" text-anchor="middle" class="diagram-text">Low-Allocation Span&lt;char&gt; ops</text>
                                     <text x="250" y="190" text-anchor="middle" class="diagram-text">Culture-aware formatting logic</text>
                                 </g>
 
@@ -680,7 +680,7 @@ options.CachedCustomSuffixes = new[] {
                     <h1 class="text-4xl font-bold mb-4 text-white">Core Library</h1>
                     <p class="text-lg text-gray-300 mb-6">
                         The HumanNumbers core library provides comprehensive number formatting capabilities with 
-                        zero-allocation performance and extensive customization options.
+                        Low-Allocation performance and extensive customization options.
                     </p>
 
                     <div class="callout performance">
@@ -705,7 +705,7 @@ options.CachedCustomSuffixes = new[] {
                                     <li>Compact notation (K, M, B, T)</li>
                                     <li>Custom decimal precision</li>
                                     <li>Culture-aware formatting</li>
-                                    <li>Zero-allocation operations</li>
+                                    <li>Low-Allocation operations</li>
                                 </ul>
                             </div>
                             
@@ -1343,14 +1343,14 @@ public class HumanNumberErrorHandlingMiddleware
                     <section id="performance-overview">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Performance Overview</h2>
                         <p class="text-gray-300 mb-6 text-lg leading-relaxed">
-                            HumanNumbers is designed from the ground up for maximum performance with zero-allocation 
+                            HumanNumbers is designed from the ground up for maximum performance with Low-Allocation 
                             operations, Span&lt;char&gt; usage, and JIT optimizations. The library maintains consistent 
                             sub-microsecond formatting times even under high load.
                         </p>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                             <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
-                                <h3 class="text-lg font-semibold mb-3 text-primary">Zero Allocation</h3>
+                                <h3 class="text-lg font-semibold mb-3 text-primary">Low Allocation</h3>
                                 <p class="text-sm text-muted-foreground mb-2">
                                     Stack-based formatting for most operations
                                 </p>
@@ -1381,11 +1381,11 @@ public class HumanNumberErrorHandlingMiddleware
                     <section id="memory-allocation">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Memory & Allocation</h2>
                         <p class="text-gray-300 mb-4">
-                            Zero-allocation design with stack-based operations:
+                            Low-Allocation design with stack-based operations:
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Zero allocation for most operations
+                            <pre><code class="text-gray-100">// Low Allocation for most operations
 Span<char> buffer = stackalloc char[32];
 var success = 1500000.TryFormatHuman(buffer, out var written, out var result);
 // No heap allocation - result points to stack buffer
@@ -1402,7 +1402,7 @@ public static bool TryFormatHuman(
     out string result)
 {
     // Implementation uses stackalloc and Span<T>
-    // Zero allocation when result fits in buffer
+    // Low Allocation when result fits in buffer
 }</code></pre>
                         </div>
 
@@ -1543,35 +1543,22 @@ public static void FormatBatch(
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// BenchmarkDotNet results
-| Method                    | Mean      | Allocated |
-|--------------------------|----------|----------|
-| HumanNumbers.ToHuman      | 85.21 ns | 0 B      |
-| String.Format("N0")       | 342.15 ns| 96 B     |
-| ToString("N0")            | 287.43 ns| 96 B     |
-| CustomFormatter          | 156.78 ns| 32 B     |
-
-// Large dataset performance
-| Dataset Size | HumanNumbers | String.Format | Improvement |
-|--------------|---------------|--------------|-------------|
-| 1K items     | 0.085 ms      | 0.342 ms     | 4.0x        |
-| 10K items    | 0.852 ms      | 3.421 ms     | 4.0x        |
-| 100K items   | 8.521 ms      | 34.215 ms    | 4.0x        |
-| 1M items     | 85.21 ms      | 342.15 ms    | 4.0x        |
-
-// Memory allocation comparison
-| Operation          | HumanNumbers | Standard Format |
-|--------------------|---------------|-----------------|
-| Single format      | 0 B           | 96 B           |
-| 1K formats         | 0 B           | 93.75 KB       |
-| 1M formats         | 0 B           | 91.55 MB       |</code></pre>
+                            <pre><code class="text-gray-100">// BenchmarkDotNet results (.NET 10.0 X64 RyuJIT)
+| Method                    | Scenario / Input | Mean      | Gen 0  | Allocated |
+|---------------------------|------------------|-----------|--------|-----------|
+| StandardScaled            | Naive (999,499)  | 78.33 ns  | 0.0026 | 80 B      |
+| ToHuman                   | Governed (999,499)| 172.79 ns| 0.0024 | 56 B      |
+| ToHuman (Span)            | Governed (999,499)| 152.09 ns| 0.0007 | 24 B      |
+| TryParse                  | $1.50M           | 50.86 ns  | -      | 0 B       |
+| ToHumanBytes              | 1024 Bytes       | 56.62 ns  | 0.0013 | 40 B      |
+| ToHumanWords              | 1234.56          | 322.15 ns | 0.0186 | 560 B     |
+| ToRoman                   | 2024             | 31.79 ns  | 0.0013 | 40 B      |</code></pre>
                         </div>
 
                         <div class="callout performance">
                             <h4 class="font-semibold text-green-400 mb-2">Benchmark Insights</h4>
                             <p class="text-gray-300">
-                                HumanNumbers consistently outperforms standard formatting by 4x while using zero memory. 
-                                The performance advantage increases with dataset size due to reduced GC pressure.
+                                While HumanNumbers handles complex threshold and rounding logic that naive implementations often miss, it does so with a <strong>smaller memory footprint</strong>—reducing allocations from 80 B down to 56 B for standard formatting, and down to 24 B for Span-based paths. Parsing operations (<code>TryParse</code>) are entirely allocation-free (0 B).
                             </p>
                         </div>
                     </section>
@@ -1592,7 +1579,7 @@ public class TradingDashboard
     {
         foreach (var update in updates)
         {
-            // Zero allocation formatting for real-time display
+            // Low Allocation formatting for real-time display
             update.Price.TryFormatHuman(_buffer, out var written, out var formatted);
             DisplayPrice(update.Symbol, formatted);
         }
@@ -1623,7 +1610,7 @@ public class FinancialController : ControllerBase
     {
         var portfolio = _service.GetPortfolio(id);
         
-        // Zero allocation JSON formatting
+        // Low Allocation JSON formatting
         return Ok(new
         {
             portfolio.Name,
@@ -1653,8 +1640,17 @@ public class FinancialController : ControllerBase
                     <section id="explore-samples">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Explore Samples</h2>
                         <p class="text-gray-300 mb-4">
-                            Dive into real-world examples and implementation patterns:
+                            We are actively developing real-world examples and implementation patterns. The following sample projects will be available in the GitHub repository soon:
                         </p>
+                        
+                        <div class="mb-6 p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-200 text-sm flex items-start space-x-3">
+                            <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="text-red-700">
+                                <strong class="font-semibold">Coming Soon:</strong> These sample projects are currently planned and are not yet available for download.
+                            </div>
+                        </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
@@ -1684,7 +1680,7 @@ public class FinancialController : ControllerBase
                             <div class="p-6 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
                                 <h3 class="text-lg font-semibold mb-3 text-primary">High-Performance Systems</h3>
                                 <p class="text-sm text-muted-foreground mb-3">
-                                    Zero-allocation patterns for high-throughput scenarios.
+                                    Low-Allocation patterns for high-throughput scenarios.
                                 </p>
                                 <ul class="space-y-1 text-sm text-muted-foreground">
                                     <li>Trading platforms</li>
@@ -1787,7 +1783,7 @@ public class FinancialController : ControllerBase
                         <div class="callout rationale">
                             <h4 class="font-semibold text-yellow-400 mb-2">Development Guidelines</h4>
                             <p class="text-gray-300">
-                                All contributions should maintain the library's core principles: zero-allocation performance, 
+                                All contributions should maintain the library's core principles: Low-Allocation performance, 
                                 never-throw safety, and clean API design. Check the contributing guidelines for detailed 
                                 requirements and the development setup process.
                             </p>
@@ -1805,7 +1801,7 @@ public class FinancialController : ControllerBase
                         <div class="text-center p-8 border border-border rounded-lg bg-card/50 backdrop-blur-sm">
                             <p class="text-lg text-primary font-semibold mb-2">Happy Formatting!</p>
                             <p class="text-sm text-muted-foreground">
-                                Join thousands of developers using HumanNumbers in production applications worldwide.
+                                Join developers using HumanNumbers in production applications worldwide.
                             </p>
                         </div>
                     </section>
@@ -2512,3 +2508,4 @@ public class FinancialController : ControllerBase
         }
     </script>
 }
+
