@@ -18,4 +18,10 @@ public class HomeController : Controller
         ViewBag.FormattedCurrency = _formatterService.FormatCurrency(9876543.21m, currencyCode: "EUR");
         return View();
     }
+
+    [Route("/docs")]
+    public IActionResult Docs()
+    {
+        return View();
+    }
 }
