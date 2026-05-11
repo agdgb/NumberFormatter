@@ -20,14 +20,32 @@ namespace HumanNumbers
         // Suffix multipliers used for parsing
         private static readonly Dictionary<string, decimal> SuffixMultipliers = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["k"] = 1000m,
-            ["K"] = 1000m,
-            ["M"] = 1000000m,
-            ["B"] = 1000000000m,
-            ["T"] = 1000000000000m,
-            ["Qa"] = 1000000000000000m,
-            ["Qi"] = 1000000000000000000m
+            ["K"] = 1_000m,
+            ["KB"] = 1_000m,
+            ["KiB"] = 1_024m,
+            ["M"] = 1_000_000m,
+            ["MB"] = 1_000_000m,
+            ["MiB"] = 1_048_576m,
+            ["B"] = 1_000_000_000m,
+            ["GB"] = 1_000_000_000m,
+            ["GiB"] = 1_073_741_824m,
+            ["T"] = 1_000_000_000_000m,
+            ["TB"] = 1_000_000_000_000m,
+            ["TiB"] = 1_099_511_627_776m,
+            ["P"] = 1_000_000_000_000_000m,
+            ["PB"] = 1_000_000_000_000_000m,
+            ["PiB"] = 1_125_899_906_842_624m,
+            ["E"] = 1_000_000_000_000_000_000m,
+            ["EB"] = 1_000_000_000_000_000_000m,
+            ["EiB"] = 1_152_921_504_606_846_976m,
+            ["Qa"] = 1_000_000_000_000_000m,
+            ["Qi"] = 1_000_000_000_000_000_000m
         };
+
+        private static readonly string[] SortedSuffixes = SuffixMultipliers.Keys
+            .OrderByDescending(s => s.Length)
+            .ThenByDescending(s => s)
+            .ToArray();
 
         #region Public API
 
@@ -724,82 +742,66 @@ namespace HumanNumbers
                 return false;
 
             culture ??= CultureInfo.InvariantCulture;
-            var nfi = culture.NumberFormat;
-            var decimalSeparator = nfi.NumberDecimalSeparator[0];
-            var groupSeparator = nfi.NumberGroupSeparator[0];
-
             var span = value.AsSpan().Trim();
 
-            // Strip non-numeric prefixes (like currency symbols)
-            while (span.Length > 0 && !char.IsDigit(span[0]) && span[0] != '+' && span[0] != '-' && span[0] != decimalSeparator)
+            // 1. Greedy Suffix Detection
+            string? foundSuffix = null;
+            foreach (var s in SortedSuffixes)
             {
-                span = span.Slice(1).TrimStart();
+                if (span.EndsWith(s.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                {
+                    foundSuffix = s;
+                    break;
+                }
             }
 
-            // Find where the number ends
-            int numEnd = 0;
-            while (numEnd < span.Length && (char.IsDigit(span[numEnd]) || span[numEnd] == decimalSeparator || span[numEnd] == groupSeparator || span[numEnd] == '+' || span[numEnd] == '-'))
+            if (foundSuffix != null)
             {
-                numEnd++;
-            }
-
-            var numberPart = span.Slice(0, numEnd);
-            var suffixPart = span.Slice(numEnd).Trim();
-
-            // Strip trailing non-numeric/non-letter characters (like trailing currency symbols)
-            int suffixEnd = suffixPart.Length;
-            while (suffixEnd > 0 && !char.IsLetter(suffixPart[suffixEnd - 1]))
-            {
-                suffixEnd--;
-            }
-            suffixPart = suffixPart.Slice(0, suffixEnd);
+                var numberPart = span.Slice(0, span.Length - foundSuffix.Length).Trim();
+                
+                // Strip leading non-numeric prefixes (like currency symbols) to handle "$1.5K"
+                var decimalSeparator = culture.NumberFormat.NumberDecimalSeparator[0];
+                while (numberPart.Length > 0 && !char.IsDigit(numberPart[0]) && numberPart[0] != '+' && numberPart[0] != '-' && numberPart[0] != decimalSeparator)
+                {
+                    numberPart = numberPart.Slice(1).TrimStart();
+                }
 
 #if !NETSTANDARD2_0
-            if (decimal.TryParse(numberPart, NumberStyles.Any, culture, out var number))
+                if (decimal.TryParse(numberPart, NumberStyles.Any, culture, out var number))
 #else
-            if (decimal.TryParse(numberPart.ToString(), NumberStyles.Any, culture, out var number))
+                if (decimal.TryParse(numberPart.ToString(), NumberStyles.Any, culture, out var number))
 #endif
-            {
-                if (suffixPart.Length > 0)
                 {
-                    if (TryGetMultiplier(suffixPart, out var multiplier))
+                    if (TryGetMultiplier(foundSuffix.AsSpan(), out var multiplier))
                     {
                         result = number * multiplier;
                         return true;
                     }
                 }
-                else
-                {
-                    result = number;
-                    return true;
-                }
             }
 
-            // Fallback: Try parsing the whole string natively
-            return decimal.TryParse(value, NumberStyles.Any, culture, out result);
+            // Fallback: Try parsing the whole string natively. 
+            // We manually strip leading noise here too for cases like "$1000".
+            var fallbackSpan = span;
+            var ds = culture.NumberFormat.NumberDecimalSeparator[0];
+            while (fallbackSpan.Length > 0 && !char.IsDigit(fallbackSpan[0]) && fallbackSpan[0] != '+' && fallbackSpan[0] != '-' && fallbackSpan[0] != ds)
+            {
+                fallbackSpan = fallbackSpan.Slice(1).TrimStart();
+            }
+
+#if !NETSTANDARD2_0
+            return decimal.TryParse(fallbackSpan, NumberStyles.Any, culture, out result);
+#else
+            return decimal.TryParse(fallbackSpan.ToString(), NumberStyles.Any, culture, out result);
+#endif
         }
 
         private static bool TryGetMultiplier(ReadOnlySpan<char> suffix, out decimal multiplier)
         {
             multiplier = 1;
-            if (suffix.Length == 0) return true;
+            if (suffix.IsEmpty) return true;
 
-            // Common short suffixes
-            if (suffix.Length == 1)
-            {
-                char c = char.ToUpperInvariant(suffix[0]);
-                switch (c)
-                {
-                    case 'K': multiplier = 1_000m; return true;
-                    case 'M': multiplier = 1_000_000m; return true;
-                    case 'B': multiplier = 1_000_000_000m; return true;
-                    case 'T': multiplier = 1_000_000_000_000m; return true;
-                    case 'P': multiplier = 1_000_000_000_000_000m; return true;
-                    case 'E': multiplier = 1_000_000_000_000_000_000m; return true;
-                }
-            }
-
-            // Fallback to dictionary for custom/longer suffixes
+            // Use dictionary for all lookups (now consolidated)
             return SuffixMultipliers.TryGetValue(suffix.ToString(), out multiplier);
         }
 
