@@ -33,6 +33,7 @@ Formatting numbers correctly at scale is deceptively complex. Naive implementati
   ```
 - **Performance**: Optimized `Span<char>`-based paths and zero-allocation parsing.
 - **Safety**: Non-intrusive ASP.NET Core integration that preserves API contracts by default.
+- **Thread-Safety**: All formatting operations are isolated and options are immutable by design (New in v2.1.0).
 - **Governance**: A central Policy system to ensure consistent formatting across distributed services.
 
 ---
@@ -221,6 +222,18 @@ In Minimal APIs, use `HumanOk` to trigger the transformation only when intended:
 ```csharp
 app.MapGet("/stats", () => Results.Extensions.HumanOk(new { Revenue = 1500000 }));
 ```
+
+### 4. Auto-Response Formatting (New in v2.1.0)
+Enable global automatic formatting for all numeric properties in your API responses without modifying your DTOs.
+
+```csharp
+builder.Services.AddHumanNumbersDefaults(options => 
+{
+    options.EnableAutoFormatting = true;
+    options.AutoFormatMode = AutoFormatMode.Global; // or OptInAttributeOnly, OptOutAttribute
+});
+```
+This uses a deep-transformation filter to automatically convert `decimal`, `int`, `long`, etc., into human-readable strings during the request lifecycle, respecting your global policy and local `[HumanNumber]` attributes.
 
 ---
 
