@@ -125,15 +125,13 @@ namespace HumanNumbers.Formatting
         /// <summary>Enables strict promotion mode — suffix only advances when the value exactly reaches the next magnitude.</summary>
         public HumanNumberFormatOptions Strict()
         {
-            PromotionThreshold = 1.0m;
-            return this;
+            return this with { PromotionThreshold = 1.0m };
         }
 
         /// <summary>Sets the currency symbol by ISO code (e.g. <c>"USD"</c> → <c>"$"</c>).</summary>
         public HumanNumberFormatOptions WithCurrency(string currencyCode)
         {
-            CurrencySymbol = CurrencyRegistry.GetSymbol(currencyCode);
-            return this;
+            return this with { CurrencySymbol = CurrencyRegistry.GetSymbol(currencyCode) };
         }
 
         /// <summary>Applies the named policy registered via <see cref="HumanNumbersConfig.AddPolicy"/>.</summary>
@@ -141,17 +139,19 @@ namespace HumanNumbers.Formatting
         {
             if (HumanNumbersConfig.Instance.TryGetPolicy(policyName, out var options))
             {
-                // Copy values from policy
-                this.DecimalPlaces = options!.DecimalPlaces;
-                this.PromotionThreshold = options.PromotionThreshold;
-                this.Threshold = options.Threshold;
-                this.AlwaysShowSuffix = options.AlwaysShowSuffix;
-                this.Culture = options.Culture;
-                this.CurrencySymbol = options.CurrencySymbol;
-                this.CachedCustomSuffixes = options.CachedCustomSuffixes;
-                this.CurrencyPosition = options.CurrencyPosition;
-                this.NegativePattern = options.NegativePattern;
-                this.ShowPlusSign = options.ShowPlusSign;
+                return this with
+                {
+                    DecimalPlaces = options!.DecimalPlaces,
+                    PromotionThreshold = options.PromotionThreshold,
+                    Threshold = options.Threshold,
+                    AlwaysShowSuffix = options.AlwaysShowSuffix,
+                    Culture = options.Culture,
+                    CurrencySymbol = options.CurrencySymbol,
+                    CachedCustomSuffixes = options.CachedCustomSuffixes,
+                    CurrencyPosition = options.CurrencyPosition,
+                    NegativePattern = options.NegativePattern,
+                    ShowPlusSign = options.ShowPlusSign
+                };
             }
             return this;
         }
@@ -159,9 +159,11 @@ namespace HumanNumbers.Formatting
         /// <summary>Applies the culture and its currency symbol to these options.</summary>
         public HumanNumberFormatOptions WithCulture(System.Globalization.CultureInfo culture)
         {
-            this.Culture = culture;
-            this.CurrencySymbol = culture.NumberFormat.CurrencySymbol;
-            return this;
+            return this with
+            {
+                Culture = culture,
+                CurrencySymbol = culture.NumberFormat.CurrencySymbol
+            };
         }
     }
 }
