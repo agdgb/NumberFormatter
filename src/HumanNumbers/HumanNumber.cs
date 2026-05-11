@@ -115,8 +115,8 @@ namespace HumanNumbers
             public FormattingContext Strict()
             {
                 var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
-                options.PromotionThreshold = 1.0m;
-                return new FormattingContext(_value, options, _culture);
+                var newOptions = options with { PromotionThreshold = 1.0m };
+                return new FormattingContext(_value, newOptions, _culture);
             }
 
             /// <summary>
@@ -124,7 +124,9 @@ namespace HumanNumbers
             /// </summary>
             public string ToHuman()
             {
-                var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
+                // Take a snapshot of options to ensure thread-safety during the formatting operation
+                var options = (_options ?? HumanNumbersConfig.Instance.GlobalOptions) with { };
+                
                 if (!HumanNumber.TryFormatNumber(_value, options, _culture, out var result))
                 {
                     if (options.ErrorMode == HumanNumbersErrorMode.Strict)
@@ -139,23 +141,24 @@ namespace HumanNumbers
             /// </summary>
             public string ToHumanCurrency(string? currencyCode = null)
             {
-                var options = _options ?? HumanNumbersConfig.Instance.GlobalOptions;
+                // Take a snapshot of options to ensure thread-safety during the formatting operation
+                var options = (_options ?? HumanNumbersConfig.Instance.GlobalOptions) with { };
                 
                 if (!string.IsNullOrEmpty(currencyCode))
                 {
-                    options.CurrencySymbol = GetCurrencySymbol(currencyCode!);
+                    options = options with { CurrencySymbol = GetCurrencySymbol(currencyCode!) };
                 }
                 else if (_culture != null && _culture.Name != "")
                 {
-                    options.CurrencySymbol = _culture.NumberFormat.CurrencySymbol;
+                    options = options with { CurrencySymbol = _culture.NumberFormat.CurrencySymbol };
                 }
                 else if (options.CurrencySymbol == null)
                 {
                     var activeCulture = _culture ?? CultureInfo.CurrentCulture;
                     if (activeCulture.Name != "")
-                        options.CurrencySymbol = activeCulture.NumberFormat.CurrencySymbol;
+                        options = options with { CurrencySymbol = activeCulture.NumberFormat.CurrencySymbol };
                     else
-                        options.CurrencySymbol = new CultureInfo("en-US").NumberFormat.CurrencySymbol;
+                        options = options with { CurrencySymbol = new CultureInfo("en-US").NumberFormat.CurrencySymbol };
                 }
 
                 if (!HumanNumber.TryFormatNumber(_value, options, _culture, out var result))
