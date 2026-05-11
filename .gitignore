@@ -375,3 +375,11 @@ FodyWeavers.xsd
 /
 /docs/FullDocumentation.md
 /site/complete-docs.html
+# DocFX
+_site/
+api/
+obj/
+/human_numbers_docs_audit_rewrite.md
+/
+/docs/FullDocumentation.md
+/site/complete-docs.html
