@@ -1276,6 +1276,35 @@ public class CustomValidator : IHumanNumberValidator
     }
 }</code></pre>
                         </div>
+
+                        <div class="callout rationale mt-6">
+                            <h4 class="font-semibold text-primary mb-2">⚡ Pluggable Currency Mapping DI (v2.1.0)</h4>
+                            <p class="text-gray-300 mb-3">
+                                You can register a custom <code>ICurrencyMappingProvider</code> implementation in the DI container. 
+                                This allows you to dynamically resolve and map arbitrary, context-specific regional keys 
+                                (such as <code>"EastAfrica"</code> or <code>"AsiaPacific"</code>) to standard ISO currency codes 
+                                during JSON serialization or database formatting:
+                            </p>
+                            <div class="code-block">
+                                <pre><code class="text-gray-100">// 1. Implement the provider
+public class RegionalCurrencyMappingProvider : ICurrencyMappingProvider
+{
+    public string MapKeyToCurrencyCode(string key)
+    {
+        return key switch
+        {
+            "EastAfrica" => "ETB",
+            "AsiaPacific" => "CNY",
+            "Europe" => "EUR",
+            _ => "USD"
+        };
+    }
+}
+
+// 2. Register it as a singleton in Program.cs
+builder.Services.AddSingleton&lt;ICurrencyMappingProvider, RegionalCurrencyMappingProvider&gt;();</code></pre>
+                            </div>
+                        </div>
                     </section>
 
                     <section id="error-handling">
