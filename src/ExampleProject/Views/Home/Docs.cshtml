@@ -2,6 +2,7 @@
     ViewData["Title"] = "Documentation";
     Layout = "_Layout";
 }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
             --background: 222.2 84% 4.9%;
@@ -288,7 +289,7 @@
                     <section id="installation">
                         <h2 class="text-2xl font-semibold mb-4 text-white">Installation</h2>
                         <div class="code-block">
-                            <pre><code class="text-gray-100"># Core Library
+                            <pre><code class="language-none"># Core Library
 dotnet add package HumanNumbers
 
 # ASP.NET Core Integration
@@ -303,7 +304,7 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers;
+                            <pre><code class="language-csharp">using HumanNumbers;
 
 // Basic number formatting
 1500000m.ToHuman();        // "1.5M"
@@ -336,7 +337,7 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
                                     To manually enforce a specific culture on a per-request basis (e.g., depending on a customer's database setting or custom token), use the <code>CultureResolver.SetCulture</code> method in your controllers or middleware:
                                 </p>
                                 <div class="code-block mt-3">
-                                    <pre><code class="text-gray-100">// Enforce French localization on the active HttpContext for the current request
+                                    <pre><code class="language-csharp">// Enforce French localization on the active HttpContext for the current request
 CultureResolver.SetCulture(HttpContext, new CultureInfo("fr-FR"));</code></pre>
                                 </div>
                             </div>
@@ -359,7 +360,7 @@ CultureResolver.SetCulture(HttpContext, new CultureInfo("fr-FR"));</code></pre>
                             When automatic formatting is enabled via <code>AddHumanNumbersMvc()</code>, the library registers a global action filter:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Program.cs
+                            <pre><code class="language-csharp">// Program.cs
 builder.Services.AddHumanNumbersMvc(options => {
     options.EnableAutoFormatting = true;
     options.AutoFormatMode = AutoFormatMode.OptOutAttribute; // Configure the auto-format mode
@@ -417,7 +418,7 @@ builder.Services.AddHumanNumbersMvc(options => {
                             When running in <code>AutoFormatMode.OptOutAttribute</code> mode, you can decorate sensitive DTO properties or database primary keys with <code>[NoHumanFormat]</code> to preserve their raw numeric representations:
                         </p>
                         <div class="code-block mb-6">
-                            <pre><code class="text-gray-100">public class AccountDetailsDto
+                            <pre><code class="language-csharp">public class AccountDetailsDto
 {
     public string Owner { get; set; } = string.Empty;
 
@@ -442,7 +443,7 @@ builder.Services.AddHumanNumbersMvc(options => {
                             Alternatively, enable the high-performance global JSON serialization converters:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Program.cs
+                            <pre><code class="language-csharp">// Program.cs
 builder.Services.AddHumanNumbersJsonGlobal(); // Formats all decimals, floats, and doubles in JSON</code></pre>
                         </div>
                         <p class="text-gray-300 mt-4 mb-4">
@@ -456,7 +457,7 @@ builder.Services.AddHumanNumbersJsonGlobal(); // Formats all decimals, floats, a
                             A complete Web API controller showcasing auto-formatted results:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using Microsoft.AspNetCore.Mvc;
+                            <pre><code class="language-csharp">using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/dashboard")]
@@ -492,7 +493,7 @@ public class DashboardController : ControllerBase
                             Decorating model or DTO properties with <code>[HumanNumber]</code> lets you control property-level rendering explicitly:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">public class SalesRecordDto
+                            <pre><code class="language-csharp">public class SalesRecordDto
 {
     public string Product { get; set; } = string.Empty;
 
@@ -513,7 +514,7 @@ public class DashboardController : ControllerBase
                             You can combine property attributes with named formatting policies defined in your Startup:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Decorate using named policies
+                            <pre><code class="language-csharp">// Decorate using named policies
 public class AnalyticsReport
 {
     [HumanNumber(PolicyName = "Financial")]
@@ -569,7 +570,7 @@ public class AnalyticsReport
                                 The old <strong><code>[ShortNumberFormat]</code></strong> attribute is now marked as obsolete. It acts as a direct, backward-compatible alias for <code>[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]</code>. This alias will be completely removed in version 3.0.0. We recommend developers transition to the standardized <code>[HumanNumber]</code> attribute configuration:
                             </p>
                             <div class="code-block mt-3">
-                                <pre><code class="text-gray-100">// Legacy usage:
+                                <pre><code class="language-csharp">// Legacy usage:
 [ShortNumberFormat(2)]
 public decimal Sales { get; set; }
 
@@ -596,7 +597,7 @@ public decimal Sales { get; set; }</code></pre>
                             Register HumanNumbers in your <code>Program.cs</code>:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">builder.Services.AddHumanNumbersCore(options => {
+                            <pre><code class="language-csharp">builder.Services.AddHumanNumbersCore(options => {
     options.DefaultDecimalPlaces = 2;
     options.EnableLogging = true;
 });
@@ -618,7 +619,7 @@ builder.Services.AddHumanNumbersMvc();</code></pre>
                             Control how numeric properties are serialized using the <code>[HumanNumber]</code> attribute:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">public class DashboardDto
+                            <pre><code class="language-csharp">public class DashboardDto
 {
     // Mode: FormatOnly (Default)
     // The value remains numeric in JSON, but metadata is available for UI filters
@@ -639,7 +640,7 @@ builder.Services.AddHumanNumbersMvc();</code></pre>
                             Use declarative TagHelpers in your Razor views for clean, consistent formatting:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">&lt;!-- Basic Number --&gt;
+                            <pre><code class="language-markup">&lt;!-- Basic Number --&gt;
 &lt;hn-number value="@@Model.Users" decimal-places="1" /&gt; &lt;!-- 48.4K --&gt;
 
 &lt;!-- Currency --&gt;
@@ -665,7 +666,7 @@ builder.Services.AddHumanNumbersMvc();</code></pre>
                         <div class="p-6 border border-blue-600 rounded-lg bg-blue-900/20 mb-6">
                             <h3 class="text-lg font-semibold mb-3 text-blue-400">Minimal API Results</h3>
                             <div class="code-block">
-                                <pre><code class="text-gray-100">app.MapGet("/api/stats", () => {
+                                <pre><code class="language-csharp">app.MapGet("/api/stats", () => {
     var stats = new { Revenue = 1500000m, Users = 45000 };
     
     // Returns JSON with formatted strings
@@ -700,7 +701,7 @@ builder.Services.AddHumanNumbersMvc();</code></pre>
                             Define reusable formatting policies to maintain consistency across your application:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Registration in Program.cs
+                            <pre><code class="language-csharp">// Registration in Program.cs
 builder.Services.AddHumanNumbersCore(options => {
     options.AddPolicy("StrictFinancial", p => p.Strict().WithCurrency("USD"));
     options.AddPolicy("Technical", p => p.WithDecimalPlaces(3).AlwaysShowSuffix());
@@ -764,7 +765,7 @@ public decimal Balance { get; set; }</code></pre>
                             Override standard 3-digit scaling for unique numbering systems:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Custom string suffixes (auto-mapped to 10^3, 10^6, etc.)
+                            <pre><code class="language-csharp">// Custom string suffixes (auto-mapped to 10^3, 10^6, etc.)
 options.CustomSuffixes = new[] { "thou", "lac", "cr" }; // Indian numbering
 
 // Manual Magnitude Thresholds (Full Control)
@@ -789,7 +790,7 @@ options.CachedCustomSuffixes = new[] {
                                 In Chinese (zh-CN), numbers are scaled by 10,000 (万, Wan) and 100,000,000 (亿, Yi).
                             </p>
                             <div class="code-block">
-                                <pre><code class="text-gray-100">var zhOptions = new HumanNumberFormatOptions
+                                <pre><code class="language-csharp">var zhOptions = new HumanNumberFormatOptions
 {
     Culture = new CultureInfo("zh-CN"),
     CachedCustomSuffixes = new[]
@@ -1037,7 +1038,7 @@ options.CachedCustomSuffixes = new[] {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Extension methods for all numeric types
+                            <pre><code class="language-csharp">// Extension methods for all numeric types
 1500000m.ToHuman();        // "1.5M"
 (48000).ToHuman();         // "48K"
 (1.2345e9).ToHuman(1);     // "1.2B"
@@ -1070,7 +1071,7 @@ options.CachedCustomSuffixes = new[] {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Uses CurrentCulture default currency symbol
+                            <pre><code class="language-csharp">// Uses CurrentCulture default currency symbol
 1500000.ToHumanCurrency();                    // "$1.5M" (en-US)
 
 // Explicit ISO codes
@@ -1088,7 +1089,7 @@ options.CachedCustomSuffixes = new[] {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers.Roman;
+                            <pre><code class="language-csharp">using HumanNumbers.Roman;
 
 2024.ToRoman();    // "MMXXIV"
 14.ToRoman();      // "XIV"
@@ -1111,7 +1112,7 @@ options.CachedCustomSuffixes = new[] {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers.Bytes;
+                            <pre><code class="language-csharp">using HumanNumbers.Bytes;
 
 // Binary Prefixes (Base 1024) - Library Default
 (1024L).ToHumanBytes();            // "1 KiB"
@@ -1142,7 +1143,7 @@ size.ToHumanBytes(1);             // "1.5 MiB"</code></pre>
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Parse compact strings
+                            <pre><code class="language-csharp">// Parse compact strings
 decimal val1 = HumanNumber.Parse("1.5M");    // 1500000
 decimal val2 = HumanNumber.Parse("$48K");    // 48000
 
@@ -1208,7 +1209,7 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers.Financial;
+                            <pre><code class="language-csharp">using HumanNumbers.Financial;
 
 0.0125m.ToHumanBps();      // "125 bps"
 0.0025m.ToHumanBps();      // "25 bps"
@@ -1234,7 +1235,7 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers.Financial;
+                            <pre><code class="language-csharp">using HumanNumbers.Financial;
 
 // Default 32nds (Treasury Style)
 99.5m.ToFractionalPrice();    // "99 16/32"
@@ -1262,7 +1263,7 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">using HumanNumbers.Financial;
+                            <pre><code class="language-csharp">using HumanNumbers.Financial;
 
 1500.50m.ToHumanWords(); 
 // "One Thousand Five Hundred and 50/100"
@@ -1289,7 +1290,7 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                             For capital markets APIs, register the specialized financial JSON serialization pipeline during application startup:
                         </p>
                         <div class="code-block mb-4">
-                            <pre><code class="text-gray-100">// Program.cs - Register specialized financial JSON converters
+                            <pre><code class="language-csharp">// Program.cs - Register specialized financial JSON converters
 builder.Services.AddHumanFinancialFormatters(options => {
     options.BasisPoints.Decimals = 1;
     options.Fractions.MinFraction = 32;
@@ -1299,7 +1300,7 @@ builder.Services.AddHumanFinancialFormatters(options => {
                             Once registered, decorate DTO or model properties with specialized attributes to serialize values directly into basis points or fractional price notation natively, without any runtime overhead:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">public class TreasuryBondDto
+                            <pre><code class="language-csharp">public class TreasuryBondDto
 {
     public string CUSIP { get; set; } = string.Empty;
 
@@ -1377,7 +1378,7 @@ builder.Services.AddHumanFinancialFormatters(options => {
                                     Set application-wide behavior during startup. Use for consistent formatting across your entire application.
                                 </p>
                                 <div class="code-block">
-                                    <pre><code class="text-gray-100">// Program.cs - Global configuration
+                                    <pre><code class="language-csharp">// Program.cs - Global configuration
 builder.Services.AddHumanNumbersDefaults();
 
 // Or with custom defaults
@@ -1399,7 +1400,7 @@ builder.Services.AddHumanNumbersCore(options =>
                                     Define scenario-specific behavior through policies and model attributes. Use for different formatting needs in different contexts.
                                 </p>
                                 <div class="code-block">
-                                    <pre><code class="text-gray-100">// Model attributes for JSON serialization
+                                    <pre><code class="language-csharp">// Model attributes for JSON serialization
 public class FinancialReport
 {
     [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]
@@ -1435,7 +1436,7 @@ builder.Services.AddHumanNumbersCore(options =>
                                     Override behavior for specific formatting operations. Use for one-off formatting needs or dynamic requirements.
                                 </p>
                                 <div class="code-block">
-                                    <pre><code class="text-gray-100">// Manual formatting with custom options
+                                    <pre><code class="language-csharp">// Manual formatting with custom options
 var result = value.ToHuman(new HumanNumberFormatOptions 
 { 
     DecimalPlaces = 3, 
@@ -1473,7 +1474,7 @@ var success = value.TryFormatHuman(buffer, out var written, out var result);</co
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Program.cs - Single line setup
+                            <pre><code class="language-csharp">// Program.cs - Single line setup
 builder.Services.AddHumanNumbersDefaults();
 
 // This enables:
@@ -1507,7 +1508,7 @@ builder.Services.AddHumanNumbersCore(options =>
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">public class FinancialReport
+                            <pre><code class="language-csharp">public class FinancialReport
 {
     // Metadata only - no JSON transformation
     [HumanNumber]
@@ -1524,10 +1525,11 @@ builder.Services.AddHumanNumbersCore(options =>
         CurrencyCode = "USD"
     )]
     public decimal UsdRevenue { get; set; }
-}
-
-// JSON output
-{
+}</code></pre>
+                        </div>
+                        <p class="text-gray-300 mt-4 mb-4">Corresponding JSON output:</p>
+                        <div class="code-block">
+                            <pre><code class="language-json">{
   "revenue": 1500000.00,
   "displayRevenue": "1.50M",
   "usdRevenue": "$1.50M"
@@ -1549,7 +1551,7 @@ builder.Services.AddHumanNumbersCore(options =>
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">@@addTagHelper *, HumanNumbers.AspNetCore
+                            <pre><code class="language-markup">@@addTagHelper *, HumanNumbers.AspNetCore
 
 <!-- Basic number formatting -->
 <hn-number value="1500000" />                    <!-- 1.5M -->
@@ -1577,7 +1579,7 @@ builder.Services.AddHumanNumbersCore(options =>
                             In addition to TagHelpers, HumanNumbers ships with a built-in <code>HumanNumberViewComponent</code> for scenarios where TagHelpers cannot be cleanly resolved or when you prefer a programmatic MVC syntax:
                         </p>
                         <div class="code-block">
-                            <pre><code class="text-gray-100">@@await Component.InvokeAsync("HumanNumber", new { 
+                            <pre><code class="language-markup">@@await Component.InvokeAsync("HumanNumber", new { 
     value = Model.TotalRevenue, 
     decimalPlaces = 2, 
     isCurrency = true, 
@@ -1596,7 +1598,7 @@ builder.Services.AddHumanNumbersCore(options =>
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Inject services in controllers
+                            <pre><code class="language-csharp">// Inject services in controllers
 public class FinancialController : ControllerBase
 {
     private readonly IHumanNumberService _formatter;
@@ -1643,7 +1645,7 @@ public class CustomValidator : IHumanNumberValidator
                                 during JSON serialization or database formatting:
                             </p>
                             <div class="code-block">
-                                <pre><code class="text-gray-100">// 1. Implement the provider
+                                <pre><code class="language-csharp">// 1. Implement the provider
 public class RegionalCurrencyMappingProvider : ICurrencyMappingProvider
 {
     public string MapKeyToCurrencyCode(string key)
@@ -1672,7 +1674,7 @@ builder.Services.AddSingleton&lt;ICurrencyMappingProvider, RegionalCurrencyMappi
                                 Simply decorate dictionary DTO properties to serialize them instantly into regional currencies:
                             </p>
                             <div class="code-block">
-                                <pre><code class="text-gray-100">public class RegionalReportDto
+                                <pre><code class="language-csharp">public class RegionalReportDto
 {
     // The dictionary keys match the currency provider regions
     [JsonConverter(typeof(CurrencyDictionaryConverter))]
@@ -1693,7 +1695,7 @@ builder.Services.AddSingleton&lt;ICurrencyMappingProvider, RegionalCurrencyMappi
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Safe mode (default) - returns empty strings
+                            <pre><code class="language-csharp">// Safe mode (default) - returns empty strings
 var safe = "invalid".ToHuman(HumanNumbersErrorMode.Safe);
 // Result: ""
 
@@ -1793,7 +1795,7 @@ public class HumanNumberErrorHandlingMiddleware
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Zero allocation for most operations
+                            <pre><code class="language-csharp">// Zero allocation for most operations
 Span<char> buffer = stackalloc char[32];
 var success = 1500000.TryFormatHuman(buffer, out var written, out var result);
 // No heap allocation - result points to stack buffer
@@ -1831,7 +1833,7 @@ public static bool TryFormatHuman(
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Direct Span operations
+                            <pre><code class="language-csharp">// Direct Span operations
 public static void FormatToSpan(
     this decimal value,
     Span<char> destination,
@@ -1870,7 +1872,7 @@ foreach (var value in largeDataSet)
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Culture-specific caching
+                            <pre><code class="language-csharp">// Culture-specific caching
 private static readonly ConcurrentDictionary&lt;string, string&gt; _formatCache = new();
 
 public static string FormatCached(this decimal value, CultureInfo culture)
@@ -1905,7 +1907,7 @@ private static readonly Dictionary&lt;string, Func&lt;decimal, string&gt;&gt; _f
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// Aggressive inlining for hot paths
+                            <pre><code class="language-csharp">// Aggressive inlining for hot paths
 [MethodImpl(MethodImplOptions.AggressiveInlining)]
 public static string ToHuman(this decimal value)
 {
@@ -1946,7 +1948,7 @@ public static void FormatBatch(
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// BenchmarkDotNet results
+                            <pre><code class="language-none">// BenchmarkDotNet results
 | Method                    | Mean      | Allocated |
 |--------------------------|----------|----------|
 | HumanNumbers.ToHuman      | 85.21 ns | 0 B      |
@@ -1986,7 +1988,7 @@ public static void FormatBatch(
                         </p>
                         
                         <div class="code-block">
-                            <pre><code class="text-gray-100">// High-frequency trading dashboard
+                            <pre><code class="language-csharp">// High-frequency trading dashboard
 public class TradingDashboard
 {
     private readonly Span<char> _buffer = stackalloc char[32];
@@ -2690,6 +2692,10 @@ public class FinancialController : ControllerBase
     </div>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
     <script>
         // Section management
         const sections = {
