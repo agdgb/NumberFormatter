@@ -316,6 +316,167 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
                 </article>
             </section>
 
+            <!-- Automatic API Formatting Section -->
+            <section id="automatic-api-formatting" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Automatic API Formatting</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        HumanNumbers provides high-performance filters and serialization middleware to automatically scale and format response payloads.
+                    </p>
+
+                    <section id="api-response-transformation">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Response Transformation</h2>
+                        <p class="text-gray-300 mb-4">
+                            When automatic formatting is enabled via <code>AddHumanNumbersMvc()</code>, the library registers a global action filter:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Program.cs
+builder.Services.AddHumanNumbersMvc(options => {
+    options.EnableAutoFormatting = true;
+});</code></pre>
+                        </div>
+                        <p class="text-gray-300 mt-4 mb-4">
+                            The filter intercepts successful <code>OkObjectResult</code> or raw objects returned from your controllers and dynamically formats numeric properties into human-readable strings using optimized <code>ExpandoObject</code> recursion.
+                        </p>
+                        <div class="callout rationale">
+                            <h4 class="font-semibold text-yellow-400 mb-2">Circular Reference & Schema Note</h4>
+                            <p class="text-gray-300">
+                                <strong>Safety Built-in:</strong> The response transformation filter utilizes a local backtracking reference tracker to prevent circular reference stack overflows. It dynamically yields the raw unformatted object reference if a loop is detected.
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="json-converters">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Built-in JSON Converters</h2>
+                        <p class="text-gray-300 mb-4">
+                            Alternatively, enable the high-performance global JSON serialization converters:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Program.cs
+builder.Services.AddHumanNumbersJsonGlobal(); // Formats all decimals, floats, and doubles in JSON</code></pre>
+                        </div>
+                        <p class="text-gray-300 mt-4 mb-4">
+                            This registers the <code>HumanNumberJsonConverterFactory</code>, intercepting serialization directly at the <code>System.Text.Json</code> layer without mutating objects or schemas on the heap.
+                        </p>
+                    </section>
+
+                    <section id="controller-example">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Controller Example</h2>
+                        <p class="text-gray-300 mb-4">
+                            A complete Web API controller showcasing auto-formatted results:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+[Route("api/dashboard")]
+public class DashboardController : ControllerBase
+{
+    [HttpGet("metrics")]
+    public IActionResult GetMetrics()
+    {
+        return Ok(new DashboardMetrics
+        {
+            GrossRevenue = 12500450m,    // Formats to "12.50M"
+            TransactionCount = 845000,   // Formats to "845.00K"
+            NetProfitMargin = 0.155m     // Preserves default percentage precision
+        });
+    }
+}</code></pre>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
+            <!-- Attribute-Based Formatting Section -->
+            <section id="attribute-formatting" class="section-content">
+                <article class="prose prose-invert max-w-none">
+                    <h1 class="text-4xl font-bold mb-4 text-white">Attribute-Based Formatting</h1>
+                    <p class="text-lg text-gray-300 mb-6">
+                        Decorate model properties with specific layout attributes to gain fine-grained control over JSON outputs while keeping DB types numeric.
+                    </p>
+
+                    <section id="available-attributes">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Available Attributes</h2>
+                        <p class="text-gray-300 mb-4">
+                            Decorating model or DTO properties with <code>[HumanNumber]</code> lets you control property-level rendering explicitly:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">public class SalesRecordDto
+{
+    public string Product { get; set; } = string.Empty;
+
+    // Forces formatting during JSON serialization
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, DecimalPlaces = 1)]
+    public decimal MonthlySales { get; set; } // JSON output: "45.8K"
+
+    // Formats directly into currency based on context
+    [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, IsCurrency = true)]
+    public decimal RetailPrice { get; set; } // JSON output: "$1,250.00"
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="attribute-scenarios">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Real-World Scenarios</h2>
+                        <p class="text-gray-300 mb-4">
+                            You can combine property attributes with named formatting policies defined in your Startup:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">// Decorate using named policies
+public class AnalyticsReport
+{
+    [HumanNumber(PolicyName = "Financial")]
+    public decimal DailyLiquidity { get; set; } // Applies the "Financial" policy configurations
+
+    [HumanNumber(PolicyName = "Chinese")]
+    public decimal RegionalExposure { get; set; } // Serializes using Chinese Wan/Yi magnitudes
+}</code></pre>
+                        </div>
+                    </section>
+
+                    <section id="attribute-configuration">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Configuration Options</h2>
+                        <p class="text-gray-300 mb-4">
+                            The <code>[HumanNumber]</code> attribute supports the following parameters:
+                        </p>
+                        <div class="overflow-x-auto rounded-lg border border-border bg-card/50 backdrop-blur-sm">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-border bg-muted/30">
+                                        <th class="px-6 py-4 text-sm font-semibold text-white">Parameter</th>
+                                        <th class="px-6 py-4 text-sm font-semibold text-white">Type</th>
+                                        <th class="px-6 py-4 text-sm font-semibold text-white">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border text-sm">
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">OutputMode</td>
+                                        <td class="px-6 py-4 text-gray-400">HumanNumberOutputMode</td>
+                                        <td class="px-6 py-4 text-gray-300">Determines if the property is serialized as a human-readable string (SerializeAsHuman) or formatted only as metadata.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">DecimalPlaces</td>
+                                        <td class="px-6 py-4 text-gray-400">int</td>
+                                        <td class="px-6 py-4 text-gray-300">Overrides global decimal precision on a per-property basis.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">IsCurrency</td>
+                                        <td class="px-6 py-4 text-gray-400">bool</td>
+                                        <td class="px-6 py-4 text-gray-300">Forces currency symbol and alignment logic on the property value.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">PolicyName</td>
+                                        <td class="px-6 py-4 text-gray-400">string</td>
+                                        <td class="px-6 py-4 text-gray-300">Binds formatting to a named policy configured globally in DI.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </article>
+            </section>
+
             <!-- ASP.NET Core Integration Section -->
             <section id="aspnet" class="section-content">
                 <article class="prose prose-invert max-w-none">
