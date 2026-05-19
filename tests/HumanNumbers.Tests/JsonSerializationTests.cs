@@ -8,6 +8,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Linq;
 using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Serialization;
+using HumanNumbers.Formatting;
 using Xunit;
 
 namespace HumanNumbers.Tests;
@@ -198,5 +199,74 @@ public class JsonSerializationTests
         public decimal Revenue { get; set; }
         public decimal Expenses { get; set; }
         public decimal ProfitMargin { get; set; }
+    }
+
+    [Fact]
+    public void CurrencyDictionaryConverter_WithCustomMappingProvider_ResolvesCorrectSymbols()
+    {
+        // Arrange
+        var dict = new Dictionary<string, decimal>
+        {
+            ["UK"] = 1000000m,
+            ["EUROPE"] = 2500000m
+        };
+
+        var customProvider = new CustomCurrencyMappingProvider();
+        var options = CreateOptions();
+        options.Converters.Add(new CurrencyDictionaryConverter(decimalPlaces: 2, mappingProvider: customProvider));
+
+        // Act
+        var json = JsonSerializer.Serialize(dict, options);
+
+        // Assert
+        Assert.Contains("\"UK\":\"£1.00M\"", json);
+        Assert.Contains("\"EUROPE\":\"€2.50M\"", json);
+    }
+
+    private class CustomCurrencyMappingProvider : ICurrencyMappingProvider
+    {
+        public string MapKeyToCurrencyCode(string key)
+        {
+            return key switch
+            {
+                "UK" => "GBP",
+                "EUROPE" => "EUR",
+                _ => "USD"
+            };
+        }
+    }
+
+    [Fact]
+    public void Serialize_WithAttributePolicy_RespectsAttributePolicyOptions()
+    {
+        // Arrange
+        HumanNumber.Configure(config =>
+        {
+            config.AddPolicy("TestPolicy5DP", new HumanNumberFormatOptions
+            {
+                DecimalPlaces = 5,
+                AlwaysShowSuffix = true,
+                Threshold = 100m
+            });
+        });
+
+        var model = new PolicyPropertyModel
+        {
+            Value = 1234.56m
+        };
+
+        var options = CreateOptions();
+
+        // Act
+        var json = JsonSerializer.Serialize(model, options);
+
+        // Assert
+        Assert.Contains("\"value\":\"1.23456K\"", json);
+    }
+
+    private class PolicyPropertyModel
+    {
+        [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, PolicyName = "TestPolicy5DP")]
+        public decimal Value { get; set; }
     }
 }

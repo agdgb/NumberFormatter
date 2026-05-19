@@ -2,6 +2,7 @@ using System.Globalization;
 using HumanNumbers;
 using HumanNumbers.Currencies;
 using HumanNumbers.Formatting;
+using HumanNumbers.Suffixes;
 
 namespace HumanNumbers.Tests;
 
@@ -280,5 +281,56 @@ public class HumanNumberTests
             Assert.True(success, $"Failed to parse scaled value '{formatted}'");
             Assert.Equal(val, parsed);
         }
+    }
+
+    [Fact]
+    public void ResetHooks_ClearGlobalConfigurationState()
+    {
+        // Arrange
+        var customPolicy = new HumanNumberFormatOptions { DecimalPlaces = 5 };
+        HumanNumbersConfig.Instance.AddPolicy("CustomResetTest", customPolicy);
+        Assert.True(HumanNumbersConfig.Instance.TryGetPolicy("CustomResetTest", out _));
+
+        CurrencyRegistry.RegisterCurrency("XXX", "X_SYMBOL");
+        Assert.Equal("X_SYMBOL", CurrencyRegistry.GetSymbol("XXX"));
+
+        // Act
+        HumanNumbersConfig.Reset();
+        CurrencyRegistry.Reset();
+
+        // Assert
+        Assert.False(HumanNumbersConfig.Instance.TryGetPolicy("CustomResetTest", out _));
+        Assert.Equal("XXX", CurrencyRegistry.GetSymbol("XXX")); // should fall back to using currency code
+    }
+
+    [Fact]
+    public void LargeCustomSuffixSets_TriggersBinarySearch_FormatsCorrectly()
+    {
+        // Create a large list of custom suffixes (> 8 elements) manually to avoid decimal overflow
+        var suffixes = new MagnitudeSuffix[]
+        {
+            new(1000000000000000m, "Qa"),
+            new(1000000000000m, "T"),
+            new(1000000000m, "B"),
+            new(100000000m, "HM"),
+            new(10000000m, "TenM"),
+            new(1000000m, "M"),
+            new(100000m, "HK"),
+            new(10000m, "TenK"),
+            new(1000m, "K"),
+            new(1m, "")
+        };
+        var options = new HumanNumberFormatOptions
+        {
+            CachedCustomSuffixes = suffixes
+        };
+
+        // Act
+        var result1 = 1250m.ToHuman(options); // 1.25K
+        var result2 = 1250000000000m.ToHuman(options); // 1.25T
+
+        // Assert
+        Assert.Equal("1.25K", result1);
+        Assert.Equal("1.25T", result2);
     }
 }

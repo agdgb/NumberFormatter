@@ -12,14 +12,17 @@ namespace HumanNumbers.AspNetCore;
 public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, decimal>>
 {
     private readonly int _decimalPlaces;
+    private readonly ICurrencyMappingProvider _mappingProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CurrencyDictionaryConverter"/> class.
     /// </summary>
     /// <param name="decimalPlaces">Number of decimal places for formatting.</param>
-    public CurrencyDictionaryConverter(int decimalPlaces = 2)
+    /// <param name="mappingProvider">The currency mapping provider. If null, a default provider is used.</param>
+    public CurrencyDictionaryConverter(int decimalPlaces = 2, ICurrencyMappingProvider? mappingProvider = null)
     {
         _decimalPlaces = decimalPlaces;
+        _mappingProvider = mappingProvider ?? new DefaultCurrencyMappingProvider();
     }
 
     /// <inheritdoc />
@@ -68,25 +71,12 @@ public class CurrencyDictionaryConverter : JsonConverter<Dictionary<string, deci
         foreach (var kvp in value)
         {
             writer.WritePropertyName(kvp.Key);
-            // Determine currency based on key (custom mapping)
-            string currencyCode = MapKeyToCurrencyCode(kvp.Key);
+            // Determine currency based on key via mapping provider
+            string currencyCode = _mappingProvider.MapKeyToCurrencyCode(kvp.Key);
             string formatted = kvp.Value.ToHumanCurrency(currencyCode, decimalPlaces: _decimalPlaces);
             writer.WriteStringValue(formatted);
         }
         writer.WriteEndObject();
-    }
-
-    private string MapKeyToCurrencyCode(string key)
-    {
-        // Define your mapping from dictionary keys to ISO currency codes
-        return key switch
-        {
-            "USA" => "USD",
-            "EUR" => "EUR",
-            "JPY" => "JPY",
-            "GBP" => "GBP",
-            _ => "USD" // fallback
-        };
     }
 
     private decimal ParseFormattedNumber(string value)

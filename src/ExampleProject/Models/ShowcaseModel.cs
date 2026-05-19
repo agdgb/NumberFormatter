@@ -1,4 +1,4 @@
-﻿using HumanNumbers.AspNetCore;
+using HumanNumbers.AspNetCore;
 using HumanNumbers.AspNetCore.Serialization;
 using System;
 
@@ -20,6 +20,10 @@ namespace HumanNumbers.Demo.Models
 
         // Demonstration of a field without any attributes (uses default JSON converter)
         public int ActiveTransactions { get; set; } = 1250;
+
+        // Demonstration of a field using a custom named policy ("Chinese" / 万 system)
+        [HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, PolicyName = "Chinese")]
+        public decimal RegionalExposure { get; set; } = 250000000m; // 2.5亿
 
         // Used for Roman conversion demo
         public int FoundationYear { get; set; } = 2024;

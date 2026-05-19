@@ -1193,15 +1193,50 @@ namespace HumanNumbers
             if (value < threshold && !alwaysShowSuffix)
                 return (1m, "");
 
-            foreach (var current in suffixes)
+            if (suffixes.Length <= 8)
             {
-                // If alwaysShowSuffix is true, we skip the "no-suffix" entry (empty string)
-                // to force selection of a higher magnitude suffix.
-                if (string.IsNullOrEmpty(current.Suffix) && alwaysShowSuffix)
-                    continue;
+                foreach (var current in suffixes)
+                {
+                    if (string.IsNullOrEmpty(current.Suffix) && alwaysShowSuffix)
+                        continue;
 
-                if (value >= current.Threshold * promotionThreshold)
-                    return (current.Threshold, current.Suffix);
+                    if (value >= current.Threshold * promotionThreshold)
+                        return (current.Threshold, current.Suffix);
+                }
+            }
+            else
+            {
+                // Binary search on descending ordered thresholds for O(log N) scalability
+                int low = 0;
+                int high = suffixes.Length - 1;
+                int bestIdx = -1;
+
+                while (low <= high)
+                {
+                    int mid = low + (high - low) / 2;
+                    var current = suffixes[mid];
+
+                    if (string.IsNullOrEmpty(current.Suffix) && alwaysShowSuffix)
+                    {
+                        high = mid - 1;
+                        continue;
+                    }
+
+                    if (value >= current.Threshold * promotionThreshold)
+                    {
+                        bestIdx = mid;
+                        high = mid - 1; // Try to find a larger applicable threshold at a smaller index
+                    }
+                    else
+                    {
+                        low = mid + 1; // Try smaller thresholds at larger indices
+                    }
+                }
+
+                if (bestIdx != -1)
+                {
+                    return (suffixes[bestIdx].Threshold, suffixes[bestIdx].Suffix);
+                }
             }
 
             if (alwaysShowSuffix && suffixes.Length > 1)

@@ -49,11 +49,14 @@ public static class ServiceCollectionExtensions
                         var coreOptions = options.CoreOptions;
                         var originalError = coreOptions.OnFormattingError;
                         
-                        // We wrap the existing error handler to add logging
-                        coreOptions.OnFormattingError = ex =>
+                        // We wrap the existing error handler to add logging via non-mutating with-expression
+                        coreOptions = coreOptions with
                         {
-                            logger.LogError(ex, "HumanNumbers formatting error: {Message}", ex.Message);
-                            originalError?.Invoke(ex);
+                            OnFormattingError = ex =>
+                            {
+                                logger.LogError(ex, "HumanNumbers formatting error: {Message}", ex.Message);
+                                originalError?.Invoke(ex);
+                            }
                         };
                         
                         options.CoreOptions = coreOptions;
@@ -66,6 +69,7 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton(sp => sp.GetRequiredService<IOptions<HumanNumbersOptions>>().Value);
         services.TryAddSingleton<IHumanNumberService, HumanNumberService>();
+        services.TryAddSingleton<ICurrencyMappingProvider, DefaultCurrencyMappingProvider>();
         
         return services;
     }
@@ -149,16 +153,7 @@ public static class ServiceCollectionExtensions
         }
     }
 
-    internal static bool IsNumericType(Type type)
-    {
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
-               underlyingType == typeof(float) || underlyingType == typeof(int) ||
-               underlyingType == typeof(long) || underlyingType == typeof(short) ||
-               underlyingType == typeof(byte) || underlyingType == typeof(uint) ||
-               underlyingType == typeof(ulong) || underlyingType == typeof(ushort) ||
-               underlyingType == typeof(sbyte);
-    }
+    internal static bool IsNumericType(Type type) => NumberUtils.IsNumericType(type);
 
     /// <summary>
     /// Configures MVC to use HumanNumbers features.

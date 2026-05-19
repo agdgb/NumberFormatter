@@ -88,23 +88,7 @@ namespace HumanNumbers.Financial
                 if (sb.Length > 0) sb.Append(' ');
 
                 // Convert chunk
-                if (chunk >= 100)
-                {
-                    sb.Append(Units[chunk / 100]).Append(" Hundred");
-                    chunk %= 100;
-                    if (chunk > 0) sb.Append(' ');
-                }
-
-                if (chunk >= 20)
-                {
-                    sb.Append(Tens[chunk / 10]);
-                    chunk %= 10;
-                    if (chunk > 0) sb.Append('-').Append(Units[chunk]);
-                }
-                else if (chunk > 0)
-                {
-                    sb.Append(Units[chunk]);
-                }
+                NumberUtils.AppendChunk(sb, chunk);
 
                 if (i < ThousandsGroups.Length && !string.IsNullOrEmpty(ThousandsGroups[i]))
                 {
@@ -118,27 +102,7 @@ namespace HumanNumbers.Financial
 
         private static string ConvertChunk(int value)
         {
-            var sb = new StringBuilder();
-            
-            if (value >= 100)
-            {
-                sb.Append(Units[value / 100]).Append(" Hundred");
-                value %= 100;
-                if (value > 0) sb.Append(' ');
-            }
-
-            if (value >= 20)
-            {
-                sb.Append(Tens[value / 10]);
-                value %= 10;
-                if (value > 0) sb.Append('-').Append(Units[value]);
-            }
-            else if (value > 0)
-            {
-                sb.Append(Units[value]);
-            }
-
-            return sb.ToString();
+            return NumberUtils.ConvertChunk(value);
         }
     }
 }

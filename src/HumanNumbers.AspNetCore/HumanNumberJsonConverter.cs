@@ -32,16 +32,7 @@ public class HumanNumberJsonConverterFactory : JsonConverterFactory
     /// <inheritdoc />
     public override bool CanConvert(Type typeToConvert) => IsNumericType(typeToConvert);
 
-    private static bool IsNumericType(Type type)
-    {
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
-               underlyingType == typeof(float) || underlyingType == typeof(int) ||
-               underlyingType == typeof(long) || underlyingType == typeof(short) ||
-               underlyingType == typeof(byte) || underlyingType == typeof(uint) ||
-               underlyingType == typeof(ulong) || underlyingType == typeof(ushort) ||
-               underlyingType == typeof(sbyte);
-    }
+    private static bool IsNumericType(Type type) => NumberUtils.IsNumericType(type);
 
     /// <inheritdoc />
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
@@ -191,7 +182,9 @@ public class HumanNumberCollectionConverter<T, TCollection> : JsonConverter<TCol
     /// <inheritdoc />
     public override TCollection? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        throw new NotSupportedException("Deserializing human-formatted collections is not supported.");
+        throw new NotSupportedException(
+            $"Deserializing human-formatted collections into '{typeToConvert.Name}' is not supported because human-readable formatting is a lossy representation. " +
+            "If deserialization is required, please serialize utilizing raw standard numeric formats or supply a custom parser.");
     }
 
     /// <inheritdoc />
