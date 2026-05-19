@@ -313,6 +313,35 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
 (48000).ToHuman();         // "48K"</code></pre>
                         </div>
                     </section>
+
+                    <section id="request-culture-resolution">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Request Culture Resolution</h2>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers integrates directly with ASP.NET Core localization features to format numbers dynamically according to the requester's culture:
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="p-6 border border-border rounded-lg bg-card/50">
+                                <h3 class="font-semibold text-white mb-2 text-md">Resolution Precedence Order</h3>
+                                <ol class="list-decimal pl-6 space-y-2 text-sm text-gray-400">
+                                    <li><strong>Explicit Context Override:</strong> Looks for a culture set inside HttpContext Items using the <code>CultureResolver</code> helper.</li>
+                                    <li><strong>Request Localization Middleware:</strong> Resolves using standard ASP.NET Core <code>IRequestCultureFeature</code> (based on cookies, query strings, or <code>Accept-Language</code> headers).</li>
+                                    <li><strong>Thread Default:</strong> Falls back to <code>CultureInfo.CurrentCulture</code>.</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="callout rationale">
+                                <h4 class="font-semibold text-yellow-400 mb-2">Setting Explicit Culture Manually</h4>
+                                <p class="text-gray-300">
+                                    To manually enforce a specific culture on a per-request basis (e.g., depending on a customer's database setting or custom token), use the <code>CultureResolver.SetCulture</code> method in your controllers or middleware:
+                                </p>
+                                <div class="code-block mt-3">
+                                    <pre><code class="text-gray-100">// Enforce French localization on the active HttpContext for the current request
+CultureResolver.SetCulture(HttpContext, new CultureInfo("fr-FR"));</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </article>
             </section>
 
@@ -325,7 +354,7 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
                     </p>
 
                     <section id="api-response-transformation">
-                        <h2 class="text-2xl font-semibold mb-4 text-white">Response Transformation</h2>
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Response Transformation & Global Modes</h2>
                         <p class="text-gray-300 mb-4">
                             When automatic formatting is enabled via <code>AddHumanNumbersMvc()</code>, the library registers a global action filter:
                         </p>
@@ -333,14 +362,75 @@ dotnet add package HumanNumbers.AspNetCore</code></pre>
                             <pre><code class="text-gray-100">// Program.cs
 builder.Services.AddHumanNumbersMvc(options => {
     options.EnableAutoFormatting = true;
+    options.AutoFormatMode = AutoFormatMode.OptOutAttribute; // Configure the auto-format mode
 });</code></pre>
                         </div>
                         <p class="text-gray-300 mt-4 mb-4">
                             The filter intercepts successful <code>OkObjectResult</code> or raw objects returned from your controllers and dynamically formats numeric properties into human-readable strings using optimized <code>ExpandoObject</code> recursion.
                         </p>
+
+                        <div class="p-6 border border-yellow-600 rounded-lg bg-yellow-900/20 mb-6 mt-6">
+                            <h3 class="text-lg font-semibold mb-3 text-yellow-400">⚠️ Swagger / OpenAPI Schema Warning</h3>
+                            <p class="text-gray-300 text-sm mb-4">
+                                Enabling global auto-formatting filters (via <code>EnableAutoFormatting = true</code>) transforms response DTO payloads into dynamic <code>ExpandoObject</code> representations during MVC action execution. <strong>This causes Swagger/OpenAPI to lose strongly-typed schema metadata</strong>, rendering them as generic JSON objects in your Swagger UI page.
+                            </p>
+                            <p class="text-gray-300 text-sm font-medium">
+                                💡 Best Practice: If preserving exact Swagger schema models is critical for your client generation pipeline or API compliance, configure **Opt-in JSON Serialization** (via <code>builder.Services.AddHumanNumbersJson()</code> and explicit property attributes) rather than dynamic global filters.
+                            </p>
+                        </div>
+
+                        <h3 class="text-xl font-semibold mb-3 text-white">AutoFormatMode Configurations</h3>
+                        <p class="text-gray-300 mb-4">
+                            You can customize how aggressively numbers are automatically formatted by setting the <code>AutoFormatMode</code> enum:
+                        </p>
+                        <div class="overflow-x-auto mb-6">
+                            <table class="min-w-full divide-y divide-border border border-border rounded-lg">
+                                <thead class="bg-card">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-semibold text-white">Mode Name</th>
+                                        <th class="px-4 py-2 text-left text-xs font-semibold text-white">Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border text-sm text-gray-300">
+                                    <tr>
+                                        <td class="px-4 py-2 font-mono text-primary">AutoFormatMode.Off</td>
+                                        <td class="px-4 py-2">Auto-formatting is disabled entirely.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 font-mono text-primary">AutoFormatMode.OptInAttributeOnly</td>
+                                        <td class="px-4 py-2"><strong>(Default)</strong> Formats only properties decorated with the <code>[HumanNumber]</code> attribute.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 font-mono text-primary">AutoFormatMode.OptOutAttribute</td>
+                                        <td class="px-4 py-2">Formats all numeric properties automatically, *except* those explicitly marked with <code>[NoHumanFormat]</code>.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-2 font-mono text-primary">AutoFormatMode.Global</td>
+                                        <td class="px-4 py-2">Automatically scales and formats every single numeric response property returned by the API.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3 class="text-xl font-semibold mb-3 text-white">Opt-Out with [NoHumanFormat]</h3>
+                        <p class="text-gray-300 mb-4">
+                            When running in <code>AutoFormatMode.OptOutAttribute</code> mode, you can decorate sensitive DTO properties or database primary keys with <code>[NoHumanFormat]</code> to preserve their raw numeric representations:
+                        </p>
+                        <div class="code-block mb-6">
+                            <pre><code class="text-gray-100">public class AccountDetailsDto
+{
+    public string Owner { get; set; } = string.Empty;
+
+    public decimal Balance { get; set; } // Formatted to "4.2M" in Opt-Out mode
+
+    [NoHumanFormat]
+    public decimal InternalAccountNumber { get; set; } // Kept as raw numeric: 9812401
+}</code></pre>
+                        </div>
+
                         <div class="callout rationale">
                             <h4 class="font-semibold text-yellow-400 mb-2">Circular Reference & Schema Note</h4>
-                            <p class="text-gray-300">
+                            <p class="text-gray-300 text-sm">
                                 <strong>Safety Built-in:</strong> The response transformation filter utilizes a local backtracking reference tracker to prevent circular reference stack overflows. It dynamically yields the raw unformatted object reference if a loop is detected.
                             </p>
                         </div>
@@ -473,12 +563,27 @@ public class AnalyticsReport
                                 </tbody>
                             </table>
                         </div>
+                        <div class="callout rationale mt-6">
+                            <h4 class="font-semibold text-yellow-400 mb-2">⚠️ Upgrading from v1.x: Deprecated Aliases</h4>
+                            <p class="text-gray-300 text-sm">
+                                The old <strong><code>[ShortNumberFormat]</code></strong> attribute is now marked as obsolete. It acts as a direct, backward-compatible alias for <code>[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman)]</code>. This alias will be completely removed in version 3.0.0. We recommend developers transition to the standardized <code>[HumanNumber]</code> attribute configuration:
+                            </p>
+                            <div class="code-block mt-3">
+                                <pre><code class="text-gray-100">// Legacy usage:
+[ShortNumberFormat(2)]
+public decimal Sales { get; set; }
+
+// Modern usage:
+[HumanNumber(OutputMode = HumanNumberOutputMode.SerializeAsHuman, DecimalPlaces = 2)]
+public decimal Sales { get; set; }</code></pre>
+                            </div>
+                        </div>
                     </section>
                 </article>
             </section>
 
             <!-- ASP.NET Core Integration Section -->
-            <section id="aspnet" class="section-content">
+            <section id="aspnet-quick" class="section-content">
                 <article class="prose prose-invert max-w-none">
                     <h1 class="text-4xl font-bold mb-4 text-white">ASP.NET Core Integration</h1>
                     <p class="text-lg text-gray-300 mb-6">
@@ -607,6 +712,49 @@ val.Format().UsingPolicy("StrictFinancial").ToHuman();
 // Usage via Attribute
 [HumanNumber(PolicyName = "StrictFinancial")]
 public decimal Balance { get; set; }</code></pre>
+                        </div>
+
+                        <h3 class="text-xl font-semibold mb-4 text-white mt-6">Built-in Policies Reference</h3>
+                        <p class="text-gray-300 mb-4">
+                            HumanNumbers ships with several predefined named policies for common use cases:
+                        </p>
+                        <div class="overflow-x-auto rounded-lg border border-border bg-card/50 mb-6">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="border-b border-border bg-muted/30">
+                                        <th class="px-6 py-4 font-semibold text-white">Policy Name</th>
+                                        <th class="px-6 py-4 font-semibold text-white">Key Configuration</th>
+                                        <th class="px-6 py-4 font-semibold text-white">Best Use Case</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-border">
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">"Default"</td>
+                                        <td class="px-6 py-4 text-gray-300">DecimalPlaces = 2</td>
+                                        <td class="px-6 py-4 text-gray-400">Standard numeric UI fields and general displays.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">"Dashboard"</td>
+                                        <td class="px-6 py-4 text-gray-300">DecimalPlaces = 0, PromotionThreshold = 0.9</td>
+                                        <td class="px-6 py-4 text-gray-400">Compact high-level metrics, overview panels, and charts.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">"Financial"</td>
+                                        <td class="px-6 py-4 text-gray-300">DecimalPlaces = 2, Threshold = 1000</td>
+                                        <td class="px-6 py-4 text-gray-400">Standard portfolios, accounting tables, and transactional DTOs.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">"StrictFinancial"</td>
+                                        <td class="px-6 py-4 text-gray-300">DecimalPlaces = 2, ErrorMode = Strict</td>
+                                        <td class="px-6 py-4 text-gray-400">SaaS checkout APIs and financial models where failure must throw.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-blue-400">"PublicApi"</td>
+                                        <td class="px-6 py-4 text-gray-300">DecimalPlaces = 1, Threshold = 1000</td>
+                                        <td class="px-6 py-4 text-gray-400">High-throughput JSON APIs feeding mobile or third-party clients.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </section>
 
@@ -1134,6 +1282,37 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                             </p>
                         </div>
                     </section>
+
+                    <section id="financial-serialization">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Financial JSON Serialization</h2>
+                        <p class="text-gray-300 mb-4">
+                            For capital markets APIs, register the specialized financial JSON serialization pipeline during application startup:
+                        </p>
+                        <div class="code-block mb-4">
+                            <pre><code class="text-gray-100">// Program.cs - Register specialized financial JSON converters
+builder.Services.AddHumanFinancialFormatters(options => {
+    options.BasisPoints.Decimals = 1;
+    options.Fractions.MinFraction = 32;
+});</code></pre>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            Once registered, decorate DTO or model properties with specialized attributes to serialize values directly into basis points or fractional price notation natively, without any runtime overhead:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">public class TreasuryBondDto
+{
+    public string CUSIP { get; set; } = string.Empty;
+
+    // Formats directly to standard bps string in JSON: "125.7 bps"
+    [BasisPoints(Decimals = 1, WriteAsString = true)]
+    public decimal Spread { get; set; } = 0.01257m;
+
+    // Formats US Treasury price to fractional notation in JSON: "99 16/32"
+    [FractionPrice(WriteAsString = true)]
+    public decimal BidPrice { get; set; } = 99.50m;
+}</code></pre>
+                        </div>
+                    </section>
                 </article>
             </section>
 
@@ -1390,7 +1569,24 @@ builder.Services.AddHumanNumbersCore(options =>
 
 <!-- Basis points -->
 <hn-basis-points value="0.015" />                <!-- 150 bps --></code></pre>
+                    </section>
+
+                    <section id="view-components">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Razor View Components</h2>
+                        <p class="text-gray-300 mb-4">
+                            In addition to TagHelpers, HumanNumbers ships with a built-in <code>HumanNumberViewComponent</code> for scenarios where TagHelpers cannot be cleanly resolved or when you prefer a programmatic MVC syntax:
+                        </p>
+                        <div class="code-block">
+                            <pre><code class="text-gray-100">@@await Component.InvokeAsync("HumanNumber", new { 
+    value = Model.TotalRevenue, 
+    decimalPlaces = 2, 
+    isCurrency = true, 
+    currencyCode = "USD" 
+})</code></pre>
                         </div>
+                        <p class="text-gray-300 mt-4 mb-4">
+                            The View Component resolves the global <code>HumanNumbersOptions</code> automatically from the DI container to respect your custom defaults, while allowing per-call parameter overrides.
+                        </p>
                     </section>
 
                     <section id="dependency-injection">
@@ -1439,7 +1635,7 @@ public class CustomValidator : IHumanNumberValidator
                         </div>
 
                         <div class="callout rationale mt-6">
-                            <h4 class="font-semibold text-primary mb-2">⚡ Pluggable Currency Mapping DI (v2.1.0)</h4>
+                            <h4 class="font-semibold text-primary mb-2">⚡ Pluggable Currency Mapping DI (v2.0.2)</h4>
                             <p class="text-gray-300 mb-3">
                                 You can register a custom <code>ICurrencyMappingProvider</code> implementation in the DI container. 
                                 This allows you to dynamically resolve and map arbitrary, context-specific regional keys 
@@ -1464,6 +1660,28 @@ public class RegionalCurrencyMappingProvider : ICurrencyMappingProvider
 
 // 2. Register it as a singleton in Program.cs
 builder.Services.AddSingleton&lt;ICurrencyMappingProvider, RegionalCurrencyMappingProvider&gt;();</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-6 border border-border rounded-lg bg-card/30">
+                            <h3 class="text-xl font-semibold text-white mb-3">Currency Dictionary Converter</h3>
+                            <p class="text-gray-300 mb-4">
+                                Under the hood, HumanNumbers provides a specialized <code>CurrencyDictionaryConverter</code> for serializing <code>Dictionary&lt;string, decimal&gt;</code> into a dynamic set of formatted regional currency strings. It resolves the keys of your dictionaries via the registered <code>ICurrencyMappingProvider</code> automatically.
+                            </p>
+                            <p class="text-gray-300 mb-4">
+                                Simply decorate dictionary DTO properties to serialize them instantly into regional currencies:
+                            </p>
+                            <div class="code-block">
+                                <pre><code class="text-gray-100">public class RegionalReportDto
+{
+    // The dictionary keys match the currency provider regions
+    [JsonConverter(typeof(CurrencyDictionaryConverter))]
+    public Dictionary&lt;string, decimal&gt; RegionalBalances { get; set; } = new()
+    {
+        { "EastAfrica", 450000m },   // Serializes to formatted: "Br450.00K"
+        { "Europe", 120000m }        // Serializes to formatted: "€120.00K"
+    };
+}</code></pre>
                             </div>
                         </div>
                     </section>
@@ -1653,21 +1871,16 @@ foreach (var value in largeDataSet)
                         
                         <div class="code-block">
                             <pre><code class="text-gray-100">// Culture-specific caching
-private static readonly ConcurrentDictionary<string, NumberFormatInfo> _formatCache = new();
+private static readonly ConcurrentDictionary&lt;string, string&gt; _formatCache = new();
 
 public static string FormatCached(this decimal value, CultureInfo culture)
 {
     var cacheKey = $"{culture.Name}:{value}";
-    if (_formatCache.TryGetValue(cacheKey, out var cached))
-        return cached.ToString();
-    
-    var formatted = value.ToHuman(culture);
-    _formatCache.TryAdd(cacheKey, new NumberFormatInfo { /* ... */ });
-    return formatted;
+    return _formatCache.GetOrAdd(cacheKey, _ => value.ToHuman(culture));
 }
 
 // Pattern-based caching
-private static readonly Dictionary<string, Func<decimal, string>> _formatters = new()
+private static readonly Dictionary&lt;string, Func&lt;decimal, string&gt;&gt; _formatters = new()
 {
     ["K"] = v => (v / 1000).ToString("F1") + "K",
     ["M"] = v => (v / 1000000).ToString("F1") + "M",
@@ -2314,6 +2527,67 @@ public class FinancialController : ControllerBase
                                 </div>
                             </div>
 
+                            <div class="mt-8">
+                                <h3 class="text-lg font-semibold mb-4 text-white">HumanNumbersOptions</h3>
+                                <p class="text-gray-300 mb-4">Configuration options for ASP.NET Core integration registration:</p>
+                                <div class="overflow-x-auto rounded-lg border border-border bg-card/50">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-border bg-muted/30">
+                                                <th class="px-6 py-4 text-sm font-semibold text-white">Property</th>
+                                                <th class="px-6 py-4 text-sm font-semibold text-white">Type</th>
+                                                <th class="px-6 py-4 text-sm font-semibold text-white">Default</th>
+                                                <th class="px-6 py-4 text-sm font-semibold text-white">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-border text-sm">
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">DefaultDecimalPlaces</td>
+                                                <td class="px-6 py-4 text-gray-400">int</td>
+                                                <td class="px-6 py-4 text-gray-400">2</td>
+                                                <td class="px-6 py-4 text-gray-300">Default number of decimal places to include in formatted outputs.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">DefaultErrorMode</td>
+                                                <td class="px-6 py-4 text-gray-400">HumanNumbersErrorMode</td>
+                                                <td class="px-6 py-4 text-gray-400">SafeFallback</td>
+                                                <td class="px-6 py-4 text-gray-300">Configures default behavior (SafeFallback vs Strict) on formatting errors.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">EnableLogging</td>
+                                                <td class="px-6 py-4 text-gray-400">bool</td>
+                                                <td class="px-6 py-4 text-gray-400">true</td>
+                                                <td class="px-6 py-4 text-gray-300">Determines whether to log formatting errors automatically to standard ILogger.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">EnableAutoFormatting</td>
+                                                <td class="px-6 py-4 text-gray-400">bool</td>
+                                                <td class="px-6 py-4 text-gray-400">false</td>
+                                                <td class="px-6 py-4 text-gray-300">Enables MVC global response formatting action filters.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">AutoFormatMode</td>
+                                                <td class="px-6 py-4 text-gray-400">AutoFormatMode</td>
+                                                <td class="px-6 py-4 text-gray-400">OptInAttributeOnly</td>
+                                                <td class="px-6 py-4 text-gray-300">Determines the auto-formatting behavior level (Off, OptIn, OptOut, Global).</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">RespectDataAnnotations</td>
+                                                <td class="px-6 py-4 text-gray-400">bool</td>
+                                                <td class="px-6 py-4 text-gray-400">true</td>
+                                                <td class="px-6 py-4 text-gray-300">If true, respects standard formatting data annotation properties like [DisplayFormat].</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-6 py-4 font-mono text-blue-400">DefaultPolicyName</td>
+                                                <td class="px-6 py-4 text-gray-400">string</td>
+                                                <td class="px-6 py-4 text-gray-400">"Default"</td>
+                                                <td class="px-6 py-4 text-gray-300">The named policy to fall back on when resolving format options.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <div>
                                 <h3 class="text-lg font-semibold mb-4 text-white">IHumanNumberService</h3>
                                 <p class="text-gray-300 mb-4">Inject this interface to format numbers manually within your business logic or services.</p>
@@ -2327,12 +2601,12 @@ public class FinancialController : ControllerBase
                                         </thead>
                                         <tbody class="divide-y divide-border">
                                             <tr>
-                                                <td class="px-6 py-4 font-mono text-sm text-blue-400">Format()</td>
-                                                <td class="px-6 py-4 text-sm text-gray-300">Formats a value using global policy and optional overrides.</td>
+                                                <td class="px-6 py-4 font-mono text-sm text-blue-400">Format(decimal value, int? decimalPlaces = null, string? culture = null)</td>
+                                                <td class="px-6 py-4 text-sm text-gray-300">Formats a value according to the current policy, with optional decimal and culture overrides.</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-6 py-4 font-mono text-sm text-blue-400">FormatCurrency()</td>
-                                                <td class="px-6 py-4 text-sm text-gray-300">Formats a currency value using global policy.</td>
+                                                <td class="px-6 py-4 font-mono text-sm text-blue-400">FormatCurrency(decimal value, string? currencyCode = null, int? decimalPlaces = null)</td>
+                                                <td class="px-6 py-4 text-sm text-gray-300">Formats a currency value using the specified ISO code and decimal precision overrides.</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -2453,7 +2727,8 @@ public class FinancialController : ControllerBase
                 { id: 'financial-overview', title: 'Overview' },
                 { id: 'basis-points', title: 'Basis Points' },
                 { id: 'fractional-pricing', title: 'Fractional Pricing' },
-                { id: 'financial-words', title: 'Financial Words' }
+                { id: 'financial-words', title: 'Financial Words' },
+                { id: 'financial-serialization', title: 'Financial Serialization' }
             ],
             'aspnet': [
                 { id: 'aspnet-overview', title: 'Overview' },
@@ -2461,6 +2736,7 @@ public class FinancialController : ControllerBase
                 { id: 'integration-setup', title: 'Integration Setup' },
                 { id: 'json-serialization', title: 'JSON Serialization' },
                 { id: 'tag-helpers', title: 'TagHelpers' },
+                { id: 'view-components', title: 'Razor View Components' },
                 { id: 'aspnet-middleware', title: 'Middleware & Results' },
                 { id: 'dependency-injection', title: 'Dependency Injection' },
                 { id: 'error-handling', title: 'Error Handling' }

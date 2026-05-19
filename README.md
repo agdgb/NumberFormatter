@@ -99,7 +99,7 @@ public class SpanishWordsProvider : IWordsProvider
 
 ---
 
-## 🚀 Modernization & New Features (v2.1.0)
+## 🚀 Modernization & New Features (v2.0.2)
 
 We have significantly hardened and optimized the codebase with robust enterprise-grade features:
 
