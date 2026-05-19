@@ -1553,24 +1553,25 @@ builder.Services.AddHumanNumbersCore(options =>
                         <div class="code-block">
                             <pre><code class="language-markup">@@addTagHelper *, HumanNumbers.AspNetCore
 
-<!-- Basic number formatting -->
-<hn-number value="1500000" />                    <!-- 1.5M -->
-<hn-number value="1500000" decimal-places="2" /> <!-- 1.50M -->
+&lt;!-- Basic number formatting --&gt;
+&lt;hn-number value="1500000" /&gt;                    &lt;!-- 1.5M --&gt;
+&lt;hn-number value="1500000" decimal-places="2" /&gt; &lt;!-- 1.50M --&gt;
 
-<!-- Currency formatting -->
-<hn-currency value="1500000" />                  <!-- $1.5M -->
-<hn-currency value="1500000" currency="EUR" />   <!-- 1.5M EUR -->
+&lt;!-- Currency formatting --&gt;
+&lt;hn-currency value="1500000" /&gt;                  &lt;!-- $1.5M --&gt;
+&lt;hn-currency value="1500000" currency="EUR" /&gt;   &lt;!-- 1.5M EUR --&gt;
 
-<!-- Financial words -->
-<hn-check value="1500" />                        <!-- One Thousand Five Hundred -->
-<hn-check value="1500" currency="USD" />         <!-- One Thousand Five Hundred Dollars -->
+&lt;!-- Financial words --&gt;
+&lt;hn-check value="1500" /&gt;                        &lt;!-- One Thousand Five Hundred --&gt;
+&lt;hn-check value="1500" currency="USD" /&gt;         &lt;!-- One Thousand Five Hundred Dollars --&gt;
 
-<!-- Byte scaling -->
-<hn-bytes value="1048576" />                      <!-- 1.0 MB -->
-<hn-bytes value="1000000" binary="false" />       <!-- 1.0 MB -->
+&lt;!-- Byte scaling --&gt;
+&lt;hn-bytes value="1048576" /&gt;                      &lt;!-- 1.0 MB --&gt;
+&lt;hn-bytes value="1000000" binary="false" /&gt;       &lt;!-- 1.0 MB --&gt;
 
-<!-- Basis points -->
-<hn-basis-points value="0.015" />                <!-- 150 bps --></code></pre>
+&lt;!-- Basis points --&gt;
+&lt;hn-basis-points value="0.015" /&gt;                &lt;!-- 150 bps --&gt;</code></pre>
+                        </div>
                     </section>
 
                     <section id="view-components">
