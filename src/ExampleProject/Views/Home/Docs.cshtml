@@ -1282,6 +1282,26 @@ if (HumanNumber.TryParse("invalid", out decimal result)) {
                                 to prevent fraud (as words are harder to alter than digits).
                             </p>
                         </div>
+
+                        <div class="mt-6 p-6 border border-border rounded-lg bg-card/30">
+                            <h3 class="text-xl font-semibold text-white mb-3">Extensible Words Engine (IWordsProvider)</h3>
+                            <p class="text-gray-300 mb-4">
+                                Need to spell out checks or invoices in Spanish, French, or another language? HumanNumbers' spelling engine is completely extensible. Simply implement the <code>IWordsProvider</code> interface:
+                            </p>
+                            <div class="code-block">
+                                <pre><code class="language-csharp">public class FrenchWordsProvider : IWordsProvider
+{
+    public string ToWords(decimal value) => /* custom translation logic */;
+    public string NegativeWord => "Moins";
+    public string ConjunctionWord => "et";
+}
+
+// Pass your custom provider directly to the formatter
+var checkAmount = 1500.50m;
+var frenchCheck = checkAmount.ToHumanWords("Euros", "Euro", new FrenchWordsProvider());
+// "Mille Cinq Cents Euros et 50/100"</code></pre>
+                            </div>
+                        </div>
                     </section>
 
                     <section id="financial-serialization">
@@ -1862,6 +1882,15 @@ foreach (var value in largeDataSet)
     value.FormatToSpan(buffer, out var written);
     // Process buffer without allocation
     ProcessFormatted(buffer.Slice(0, written));
+}
+
+// Direct zero-allocation data size formatting into a Span
+Span<char> byteBuffer = stackalloc char[64];
+long fileSizeBytes = 1048576 * 50; // 50 MiB
+if (fileSizeBytes.ToHumanBytes(byteBuffer, out var charsWritten, decimalPlaces: 2))
+{
+    var formattedBytes = byteBuffer.Slice(0, charsWritten);
+    // formattedBytes is "50.00 MiB" without any heap allocation
 }</code></pre>
                         </div>
                     </section>
@@ -2245,9 +2274,19 @@ public class FinancialController : ControllerBase
                                         <td class="px-6 py-4 text-sm text-gray-400">string</td>
                                     </tr>
                                     <tr>
+                                        <td class="px-6 py-4 font-mono text-sm text-blue-400">TryToHuman()</td>
+                                        <td class="px-6 py-4 text-sm text-gray-300">Resilient no-throw formatting. Outputs the formatted string in <code class="text-primary">out string result</code>; returns false on failure.</td>
+                                        <td class="px-6 py-4 text-sm text-gray-400">bool</td>
+                                    </tr>
+                                    <tr>
                                         <td class="px-6 py-4 font-mono text-sm text-blue-400">ToHumanCurrency()</td>
                                         <td class="px-6 py-4 text-sm text-gray-300">Formats a number as a human-readable currency (e.g., $1.5M).</td>
                                         <td class="px-6 py-4 text-sm text-gray-400">string</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 font-mono text-sm text-blue-400">TryToHumanCurrency()</td>
+                                        <td class="px-6 py-4 text-sm text-gray-300">Resilient no-throw currency formatting. Outputs currency in <code class="text-primary">out string result</code>; returns false on failure.</td>
+                                        <td class="px-6 py-4 text-sm text-gray-400">bool</td>
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 font-mono text-sm text-blue-400">TryParse()</td>
@@ -2271,6 +2310,44 @@ public class FinancialController : ControllerBase
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold mb-4 text-white">FormattingContext (Fluent Pipeline)</h3>
+                            <p class="text-gray-300 mb-4">Returned by <code>Format()</code>, these methods allow fluent chaining of formatting rules and targets.</p>
+                            <div class="overflow-x-auto rounded-lg border border-border bg-card/50 backdrop-blur-sm">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-border bg-muted/30">
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Method</th>
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Description</th>
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Returns</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border">
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">UsingPolicy(string name)</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Applies a registered named formatting policy to the context.</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">FormattingContext</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">UsingOptions(HumanNumberFormatOptions options)</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Applies custom inline formatting options to the context.</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">FormattingContext</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">UsingCulture(CultureInfo culture)</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Sets the formatting culture context (e.g., en-US, fr-FR).</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">FormattingContext</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">ToHuman()</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Terminal operation. Evaluates the fluent pipeline and returns the human-readable string.</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">string</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <div class="mt-8">
@@ -2355,6 +2432,49 @@ public class FinancialController : ControllerBase
                                 </tbody>
                             </table>
                         </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold mb-4 text-white">Global Runtime Configuration (HumanNumbersConfig)</h3>
+                            <p class="text-gray-300 mb-4">The singleton configuration instance available via <code>HumanNumbersConfig.Instance</code> allows runtime management and inspection of formatting policies.</p>
+                            <div class="overflow-x-auto rounded-lg border border-border bg-card/50 backdrop-blur-sm">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-border bg-muted/30">
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Member</th>
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Type</th>
+                                            <th class="px-6 py-4 text-sm font-semibold text-white">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border">
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">Instance</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">Static Property</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Gets the singleton configuration instance.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">GlobalOptions</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">Property</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Gets or sets the global default formatting options.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">AddPolicy(string, HumanNumberFormatOptions)</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">Method</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Registers a named formatting policy.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">TryGetPolicy(string, out HumanNumberFormatOptions)</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">Method</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Attempts to retrieve a registered named policy.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-mono text-sm text-blue-400">GetPolicyNames()</td>
+                                            <td class="px-6 py-4 text-sm text-gray-400">Method</td>
+                                            <td class="px-6 py-4 text-sm text-gray-300">Returns an enumerable list of all currently registered named policies.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </section>
 
                     <!-- Financial Extensions -->
@@ -2388,9 +2508,9 @@ public class FinancialController : ControllerBase
                                         <td class="px-6 py-4 text-sm text-gray-300">Spells out numbers for checks (e.g., "One Thousand Two Hundred and 50/100").</td>
                                     </tr>
                                     <tr>
-                                        <td class="px-6 py-4 font-mono text-sm text-blue-400">RoundToTick()</td>
+                                        <td class="px-6 py-4 font-mono text-sm text-blue-400">RoundToTick(decimal, TickRoundingMode)</td>
                                         <td class="px-6 py-4 text-sm text-gray-400">decimal</td>
-                                        <td class="px-6 py-4 text-sm text-gray-300">Rounds to the nearest tick size (e.g., 0.05, 0.001) for market orders.</td>
+                                        <td class="px-6 py-4 text-sm text-gray-300">Rounds to the nearest tick size (e.g., 0.05, 0.001) for market orders. Supports <code class="text-primary">TickRoundingMode</code> (<code class="text-gray-300">Nearest</code>, <code class="text-gray-300">Up</code>, <code class="text-gray-300">Down</code>).</td>
                                     </tr>
                                 </tbody>
                             </table>
