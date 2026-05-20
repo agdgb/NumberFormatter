@@ -13,12 +13,12 @@ public class HumanNumbersOptions
     /// <summary>
     /// Default number of decimal places for formatting.
     /// </summary>
-    public int DefaultDecimalPlaces { get => _coreOptions.DecimalPlaces; set => _coreOptions.DecimalPlaces = value; }
+    public int DefaultDecimalPlaces { get => _coreOptions.DecimalPlaces; set => _coreOptions = _coreOptions with { DecimalPlaces = value }; }
 
     /// <summary>
     /// Default error mode (SafeFallback vs Strict) for formatting operations.
     /// </summary>
-    public HumanNumbersErrorMode DefaultErrorMode { get => _coreOptions.ErrorMode; set => _coreOptions.ErrorMode = value; }
+    public HumanNumbersErrorMode DefaultErrorMode { get => _coreOptions.ErrorMode; set => _coreOptions = _coreOptions with { ErrorMode = value }; }
 
 
     /// <summary>
@@ -35,6 +35,17 @@ public class HumanNumbersOptions
     /// <summary>
     /// Whether to enable automatic response formatting via filters.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ⚠️ WARNING: Enabling auto-formatting transforms response objects into dynamic <see cref="System.Dynamic.ExpandoObject"/> 
+    /// representations during filter execution. This will cause Swagger/OpenAPI to lose strongly-typed schema metadata 
+    /// for endpoints relying on this dynamic conversion.
+    /// </para>
+    /// <para>
+    /// If preserving exact Swagger schema models is required, configure opt-in attribute-based serialization (via 
+    /// <see cref="ServiceCollectionExtensions.AddHumanNumbersJson"/>) rather than global auto-formatting filters.
+    /// </para>
+    /// </remarks>
     public bool EnableAutoFormatting { get; set; } = false;
 
     /// <summary>

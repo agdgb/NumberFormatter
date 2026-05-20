@@ -11,7 +11,7 @@
 		<PackageId>HumanNumbers.AspNetCore</PackageId>
 		<RootNamespace>HumanNumbers.AspNetCore</RootNamespace>
 		<AssemblyName>HumanNumbers.AspNetCore</AssemblyName>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<Authors>Amanuel Girma</Authors>
 		<Description>ASP.NET Core integration for HumanNumbers – includes JSON converters, tag helpers, and DI extensions for human-readable number formatting.</Description>
 		<PackageTags>aspnetcore;number;format;human-numbers;json;taghelper</PackageTags>

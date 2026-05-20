@@ -12,9 +12,8 @@ public static class CurrencyRegistry
 {
     private static readonly ConcurrentDictionary<string, string> SymbolCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly ConcurrentDictionary<string, RegionInfo?> RegionCache = new(StringComparer.OrdinalIgnoreCase);
-    
-    // Core fallback map for symbols not easily discovered by CultureInfo
-    private static readonly ConcurrentDictionary<string, string> FallbackSymbolMap = new(StringComparer.OrdinalIgnoreCase)
+
+    private static readonly Dictionary<string, string> InitialFallbackSymbols = new(StringComparer.OrdinalIgnoreCase)
     {
         ["USD"] = "$", ["EUR"] = "€", ["GBP"] = "£", ["JPY"] = "¥",
         ["CAD"] = "$", ["AUD"] = "$", ["CHF"] = "CHF", ["CNY"] = "¥",
@@ -25,8 +24,7 @@ public static class CurrencyRegistry
         ["MYR"] = "RM"
     };
 
-    // Mapping for when we need to reconstruct a CultureInfo primarily based on Currency
-    private static readonly ConcurrentDictionary<string, string> FallbackRegionMap = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> InitialFallbackRegions = new(StringComparer.OrdinalIgnoreCase)
     {
         ["USD"] = "US", ["EUR"] = "FR", ["GBP"] = "GB", ["JPY"] = "JP",
         ["CAD"] = "CA", ["AUD"] = "AU", ["CHF"] = "CH", ["CNY"] = "CN",
@@ -36,6 +34,73 @@ public static class CurrencyRegistry
         ["DKK"] = "DK", ["PLN"] = "PL", ["TWD"] = "TW", ["THB"] = "TH",
         ["MYR"] = "MY"
     };
+
+    private static readonly ConcurrentDictionary<string, string> FallbackSymbolMap = new(InitialFallbackSymbols, StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, string> FallbackRegionMap = new(InitialFallbackRegions, StringComparer.OrdinalIgnoreCase);
+
+    // Pre-cache tables for O(1) OS region and symbol resolution
+    private static readonly Lazy<Dictionary<string, string>> OsSymbolCache = new(() =>
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+        {
+            try
+            {
+                var region = new RegionInfo(culture.Name);
+                var code = region.ISOCurrencySymbol;
+                if (!string.IsNullOrEmpty(code) && !map.ContainsKey(code))
+                {
+                    map[code] = region.CurrencySymbol;
+                }
+            }
+            catch
+            {
+                // Ignore invalid cultures
+            }
+        }
+        return map;
+    });
+
+    private static readonly Lazy<Dictionary<string, RegionInfo>> OsRegionCache = new(() =>
+    {
+        var map = new Dictionary<string, RegionInfo>(StringComparer.OrdinalIgnoreCase);
+        foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+        {
+            try
+            {
+                var region = new RegionInfo(culture.Name);
+                var code = region.ISOCurrencySymbol;
+                if (!string.IsNullOrEmpty(code) && !map.ContainsKey(code))
+                {
+                    map[code] = region;
+                }
+            }
+            catch { }
+        }
+        return map;
+    });
+
+    /// <summary>
+    /// Resets the currency registry and caches to their initial/default state.
+    /// Useful for test isolation.
+    /// </summary>
+    public static void Reset()
+    {
+        SymbolCache.Clear();
+        RegionCache.Clear();
+
+        FallbackSymbolMap.Clear();
+        foreach (var kvp in InitialFallbackSymbols)
+        {
+            FallbackSymbolMap[kvp.Key] = kvp.Value;
+        }
+
+        FallbackRegionMap.Clear();
+        foreach (var kvp in InitialFallbackRegions)
+        {
+            FallbackRegionMap[kvp.Key] = kvp.Value;
+        }
+    }
 
     /// <summary>
     /// Registers or overrides a currency mapping globally.
@@ -74,22 +139,9 @@ public static class CurrencyRegistry
             if (FallbackSymbolMap.TryGetValue(code, out var symbol))
                 return symbol;
 
-            // 2. Try OS region discovery
-            foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
-            {
-                try
-                {
-                    var region = new RegionInfo(culture.Name);
-                    if (string.Equals(region.ISOCurrencySymbol, code, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return region.CurrencySymbol;
-                    }
-                }
-                catch
-                {
-                    // Ignore invalid cultures
-                }
-            }
+            // 2. Try OS region discovery via pre-cached table
+            if (OsSymbolCache.Value.TryGetValue(code, out var osSymbol))
+                return osSymbol;
 
             // 3. Fallback to just using the code (e.g. USD)
             return code.ToUpperInvariant();
@@ -115,17 +167,9 @@ public static class CurrencyRegistry
                 catch { }
             }
 
-            foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+            if (OsRegionCache.Value.TryGetValue(code, out var region))
             {
-                try
-                {
-                    var region = new RegionInfo(culture.Name);
-                    if (string.Equals(region.ISOCurrencySymbol, code, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return region;
-                    }
-                }
-                catch { }
+                return region;
             }
 
             return null;

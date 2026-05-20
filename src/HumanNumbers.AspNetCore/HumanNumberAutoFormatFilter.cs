@@ -40,7 +40,7 @@ public class HumanNumberAutoFormatFilter : IAsyncActionFilter
         }
     }
 
-    private object? ProcessValue(object? value)
+    private object? ProcessValue(object? value, HashSet<object>? visited = null)
     {
         if (value == null) return null;
 
@@ -52,22 +52,37 @@ public class HumanNumberAutoFormatFilter : IAsyncActionFilter
             return value;
         }
 
-        // 2. Handle collections (Arrays, Lists, etc.)
-        if (value is IEnumerable enumerable && !(value is string))
+        // Detect circular references
+        visited ??= new HashSet<object>(ReferenceEqualityComparer.Instance);
+        if (!visited.Add(value))
         {
-            var list = new List<object?>();
-            foreach (var item in enumerable)
-            {
-                list.Add(ProcessValue(item));
-            }
-            return list;
+            // Circular reference detected, return original value to avoid stack overflow
+            return value;
         }
 
-        // 3. Handle complex objects via ExpandoObject transformation
-        return TransformObject(value);
+        try
+        {
+            // 2. Handle collections (Arrays, Lists, etc.)
+            if (value is IEnumerable enumerable && !(value is string))
+            {
+                var list = new List<object?>();
+                foreach (var item in enumerable)
+                {
+                    list.Add(ProcessValue(item, visited));
+                }
+                return list;
+            }
+
+            // 3. Handle complex objects via ExpandoObject transformation
+            return TransformObject(value, visited);
+        }
+        finally
+        {
+            visited.Remove(value);
+        }
     }
 
-    private object TransformObject(object obj)
+    private object TransformObject(object obj, HashSet<object> visited)
     {
         var type = obj.GetType();
         var expando = new ExpandoObject();
@@ -101,7 +116,7 @@ public class HumanNumberAutoFormatFilter : IAsyncActionFilter
             else
             {
                 // Recursively process nested objects
-                dictionary[entry.Name] = ProcessValue(rawValue);
+                dictionary[entry.Name] = ProcessValue(rawValue, visited);
             }
         }
 
@@ -145,11 +160,5 @@ public class HumanNumberAutoFormatFilter : IAsyncActionFilter
         public bool IsExempt { get; set; }
     }
 
-    private static bool IsNumericType(Type type)
-    {
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
-               underlyingType == typeof(float) || underlyingType == typeof(int) ||
-               underlyingType == typeof(long);
-    }
+    private static bool IsNumericType(Type type) => NumberUtils.IsNumericType(type);
 }

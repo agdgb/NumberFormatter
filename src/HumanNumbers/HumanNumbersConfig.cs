@@ -25,6 +25,15 @@ public class HumanNumbersConfig
     }
 
     /// <summary>
+    /// Resets the global configuration instance to its default state.
+    /// Useful for test isolation.
+    /// </summary>
+    public static void Reset()
+    {
+        _instance = new HumanNumbersConfig();
+    }
+
+    /// <summary>
     /// Obsolete access property pointing to the singleton's default options.
     /// Maintained for temporary backwards compatibility.
     /// </summary>

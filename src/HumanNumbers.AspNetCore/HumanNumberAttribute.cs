@@ -76,7 +76,7 @@ public class HumanNumberAttribute : Attribute
         
         if (!string.IsNullOrEmpty(PolicyName))
         {
-            options.UsingPolicy(PolicyName);
+            options = options.UsingPolicy(PolicyName);
         }
         else
         {
@@ -109,16 +109,7 @@ public class HumanNumberAttribute : Attribute
         return null;
     }
 
-    private static bool IsNumericType(Type type)
-    {
-        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-        return underlyingType == typeof(decimal) || underlyingType == typeof(double) ||
-               underlyingType == typeof(float) || underlyingType == typeof(int) ||
-               underlyingType == typeof(long) || underlyingType == typeof(short) ||
-               underlyingType == typeof(byte) || underlyingType == typeof(uint) ||
-               underlyingType == typeof(ulong) || underlyingType == typeof(ushort) ||
-               underlyingType == typeof(sbyte);
-    }
+    private static bool IsNumericType(Type type) => NumberUtils.IsNumericType(type);
 
     private static bool TryGetCollectionElementType(Type type, out Type elementType)
     {

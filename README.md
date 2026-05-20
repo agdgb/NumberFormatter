@@ -99,6 +99,21 @@ public class SpanishWordsProvider : IWordsProvider
 
 ---
 
+## 🚀 Modernization & New Features (v2.0.2)
+
+We have significantly hardened and optimized the codebase with robust enterprise-grade features:
+
+* **Pluggable Currency Dependency Injection (`ICurrencyMappingProvider`)**: Map custom regional or business keys (like `"EastAfrica"`, `"AsiaPacific"`) to ISO currency codes by registering a custom provider to the DI container:
+  ```csharp
+  builder.Services.AddSingleton<ICurrencyMappingProvider, MyCustomMappingProvider>();
+  ```
+* **O(1) Pre-Cached Currency Lookups**: High-latency culture scanning is gone! Currency symbols are fully pre-cached, turning regional scans into O(1) dictionary lookups.
+* **O(log N) Suffix Lookups**: Support for large custom suffix arrays with O(log N) binary search threshold selection, retaining fast linear scanning for standard `<= 8` suffix arrays.
+* **Thread-Safe Option Mutations**: Shared options registration utilizes record `with`-expressions, preventing thread cross-contamination during concurrent executions.
+* **Circular Reference Protection**: Dynamic serialization filter protects APIs from recursion crashes by tracing visited nodes via identity-based reference sets.
+
+---
+
 ## 🧩 Policy-Driven Formatting (Enterprise Ready)
 
 Define formatting rules once and enforce them across your entire infrastructure. Ensure that APIs, dashboards, and reports share the same magnitude logic and rounding rules.

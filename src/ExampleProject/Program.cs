@@ -11,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 CurrencyRegistry.RegisterCurrency("ETB", "ብር", "ET");
 CurrencyRegistry.RegisterCurrency("CNY", "¥", "CN");
 
+// Showcase custom ICurrencyMappingProvider DI capabilities (resolves regional keys to currency symbols)
+builder.Services.AddSingleton<ICurrencyMappingProvider, DemoCurrencyMappingProvider>();
+
 // Add services with proper ASP.NET Core integration using the new unified setup
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -82,3 +85,18 @@ app.MapControllers(); // map API controllers
 app.MapGet("/api/demo/minimal", () => Results.Extensions.HumanOk(new { Revenue = 1500000m }));
 
 app.Run();
+
+// Example custom currency mapping provider to resolve symbols based on region/context keys
+public class DemoCurrencyMappingProvider : ICurrencyMappingProvider
+{
+    public string MapKeyToCurrencyCode(string key)
+    {
+        return key switch
+        {
+            "EastAfrica" => "ETB",
+            "AsiaPacific" => "CNY",
+            "Europe" => "EUR",
+            _ => "USD"
+        };
+    }
+}
